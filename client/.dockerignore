@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+.pnpm-store
+
+# Next.js build output
+.next
+out
+dist
+build
+
+# Environment files
+.env
+.env*.local
+.env.production
+
+# Testing
+coverage
+.nyc_output
+
+# IDEs and editors
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# Misc
+*.md
+.eslintrc.json
+.prettierrc
+.editorconfig
