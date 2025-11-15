@@ -30,14 +30,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { CalendarDays, CreditCard, LayoutDashboard, LogOut, Package, Stethoscope, Users, User } from "lucide-react"
+import { CalendarDays, CreditCard, LayoutDashboard, LogOut, Package, Users, User } from "lucide-react"
 import type * as React from "react"
 import { ModeToggle } from "@/components/mode-toggle"
+import { ProtectedRoute } from "@/components/auth/protected-route"
+import { useAuth } from "@/hooks/use-auth"
+import { toast } from "sonner"
 
 const routes = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
-  { href: "/admin/patients", label: "Patients", icon: Users },
+  { href: "/admin/users", label: "Users Management", icon: Users },
   { href: "/admin/appointments", label: "Appointments", icon: CalendarDays },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
@@ -49,6 +51,7 @@ function usePageTitle(pathname: string) {
   if (parts[0] !== "admin") return "Admin"
   if (parts.length === 1) return "Dashboard"
   const map: Record<string, string> = {
+    users: "Users Management",
     doctors: "Doctors",
     patients: "Patients",
     appointments: "Appointments",
@@ -59,14 +62,37 @@ function usePageTitle(pathname: string) {
   if (parts[1] in map) {
     if (parts[2] === "new") return `Add ${map[parts[1]].slice(0, -1)}`
     if (parts[2] === "edit") return `Edit ${map[parts[1]].slice(0, -1)}`
+    if (parts[2] === "doctors") return "Doctors"
+    if (parts[2] === "patients") return "Patients"
     return map[parts[1]]
   }
   return "Admin"
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const title = usePageTitle(pathname)
+  const { user, logoutAndRedirect } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await logoutAndRedirect()
+      toast.success("Logged out successfully")
+    } catch (error) {
+      console.error("Logout error:", error)
+      toast.error("Failed to logout")
+    }
+  }
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user) return "AD"
+    const names = user.username.split(" ")
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase()
+    }
+    return user.username.substring(0, 2).toUpperCase()
+  }
 
   return (
     <div className="min-h-svh">
@@ -75,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarHeader className="px-3 py-2">
             <div className="flex items-center gap-2 px-1">
               <div className="size-6 rounded-md bg-primary" />
-              <div className="text-sm font-semibold">Health Admin</div>
+              <div className="text-sm font-semibold">HomeoPatha Admin</div>
             </div>
           </SidebarHeader>
           <SidebarContent>
@@ -100,14 +126,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   ))}
                   <SidebarSeparator />
                   <SidebarMenuItem>
-                    <Link href="/login">
-                      <SidebarMenuButton asChild className="text-red-600 data-[active=true]:text-red-700">
-                        <span className="flex items-center gap-2">
-                          <LogOut className="size-4" />
-                          <span>Logout</span>
-                        </span>
-                      </SidebarMenuButton>
-                    </Link>
+                    <SidebarMenuButton 
+                      onClick={handleLogout}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                    >
+                      <span className="flex items-center gap-2">
+                        <LogOut className="size-4" />
+                        <span>Logout</span>
+                      </span>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -115,7 +142,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarContent>
           <SidebarFooter className="text-xs text-muted-foreground">
             <div className="rounded-md bg-muted p-2">
-              <div className="font-medium text-foreground">Doctor Panel</div>
+              <div className="font-medium text-foreground">
+                {user?.user_type || 'Admin'} Panel
+              </div>
               <div className="text-muted-foreground">Manage appointments & products</div>
             </div>
           </SidebarFooter>
@@ -134,20 +163,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Button variant="outline" className="h-9 gap-2 bg-transparent">
                       <Avatar className="size-6">
                         <AvatarImage src="/placeholder-user.jpg" alt="Admin avatar" />
-                        <AvatarFallback>AD</AvatarFallback>
+                        <AvatarFallback>{getUserInitials()}</AvatarFallback>
                       </Avatar>
-                      <span className="hidden md:inline">Admin</span>
+                      <span className="hidden md:inline">{user?.username || 'Admin'}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">{user?.username || 'Admin'}</p>
+                        <p className="text-xs text-muted-foreground">{user?.email || ''}</p>
+                      </div>
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <Link href="/admin/profile">
                       <DropdownMenuItem>Profile</DropdownMenuItem>
                     </Link>
-                    <Link href="/login">
-                      <DropdownMenuItem>Logout</DropdownMenuItem>
-                    </Link>
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                      Logout
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -157,5 +191,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </SidebarInset>
       </SidebarProvider>
     </div>
+  )
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </ProtectedRoute>
   )
 }
