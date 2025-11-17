@@ -33,10 +33,12 @@ const connectDB = require("./config/db.js");
 connectDB();
 
 // Imported Routes
-// const authRoutes = require("./routes/authRoutes.js");
+const authRoutes = require("./routes/authRoutes.js");
+const userRoutes = require("./routes/userRoutes.js");
 
 // Routes
-// app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

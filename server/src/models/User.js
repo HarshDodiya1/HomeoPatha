@@ -25,7 +25,6 @@ const userSchema = new mongoose.Schema(
       default: "patient",
     },
     addresses: [addressSchema],
-    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
