@@ -1,6 +1,6 @@
 'use client';
 
-import { User, UserTypeEnum } from '@/types/auth';
+import { User, UserRoleEnum } from '@/types/auth';
 import {
   Table,
   TableBody,
@@ -30,11 +30,11 @@ interface UserTableProps {
 
 const getUserTypeColor = (type: string) => {
   switch (type) {
-    case UserTypeEnum.ADMIN:
+    case UserRoleEnum.SUPERADMIN:
       return 'bg-red-100 text-red-800';
-    case UserTypeEnum.DOCTOR:
+    case UserRoleEnum.DOCTOR:
       return 'bg-blue-100 text-blue-800';
-    case UserTypeEnum.PATIENT:
+    case UserRoleEnum.PATIENT:
       return 'bg-green-100 text-green-800';
     default:
       return 'bg-gray-100 text-gray-800';
@@ -84,20 +84,20 @@ export function UserTable({
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id} className="hover:bg-muted/50">
-              <TableCell className="font-medium">{user.username}</TableCell>
+              <TableCell className="font-medium">{user.fullName}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
-                <Badge className={getUserTypeColor(user.user_type)}>
-                  {getUserTypeLabel(user.user_type)}
+                <Badge className={getUserTypeColor(user.role)}>
+                  {getUserTypeLabel(user.role)}
                 </Badge>
               </TableCell>
               <TableCell>
-                <Badge variant={user.is_active ? 'default' : 'destructive'}>
-                  {user.is_active ? 'Active' : 'Inactive'}
+                <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                  {user.isActive ? 'Active' : 'Inactive'}
                 </Badge>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {format(new Date(user.created_at), 'MMM dd, yyyy')}
+                {format(new Date(user.createdAt), 'MMM dd, yyyy')}
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>

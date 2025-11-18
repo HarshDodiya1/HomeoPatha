@@ -32,8 +32,8 @@ export function UserDetailDialog({
 
         <div className="space-y-4">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Username</p>
-            <p className="text-base font-semibold">{user.username}</p>
+            <p className="text-sm font-medium text-muted-foreground">Full Name</p>
+            <p className="text-base font-semibold">{user.fullName}</p>
           </div>
 
           <div>
@@ -42,17 +42,17 @@ export function UserDetailDialog({
           </div>
 
           <div>
-            <p className="text-sm font-medium text-muted-foreground">User Type</p>
+            <p className="text-sm font-medium text-muted-foreground">Role</p>
             <div className="mt-1">
-              <Badge>{user.user_type}</Badge>
+              <Badge>{user.role}</Badge>
             </div>
           </div>
 
           <div>
             <p className="text-sm font-medium text-muted-foreground">Status</p>
             <div className="mt-1">
-              <Badge variant={user.is_active ? 'default' : 'destructive'}>
-                {user.is_active ? 'Active' : 'Inactive'}
+              <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                {user.isActive ? 'Active' : 'Inactive'}
               </Badge>
             </div>
           </div>
@@ -60,27 +60,16 @@ export function UserDetailDialog({
           <div>
             <p className="text-sm font-medium text-muted-foreground">Created</p>
             <p className="text-sm">
-              {format(new Date(user.created_at), 'PPP pp')}
+              {format(new Date(user.createdAt), 'PPP pp')}
             </p>
           </div>
 
           <div>
             <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
             <p className="text-sm">
-              {format(new Date(user.updated_at), 'PPP pp')}
+              {format(new Date(user.updatedAt), 'PPP pp')}
             </p>
           </div>
-
-          {user.last_login && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Last Login
-              </p>
-              <p className="text-sm">
-                {format(new Date(user.last_login), 'PPP pp')}
-              </p>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>

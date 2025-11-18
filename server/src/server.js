@@ -32,13 +32,53 @@ app.use(cookieParser());
 const connectDB = require("./config/db.js");
 connectDB();
 
+// Swagger Documentation
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpecs = require("./config/swagger.js");
+
 // Imported Routes
 const authRoutes = require("./routes/authRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
+const doctorRoutes = require("./routes/doctorRoutes.js");
+
+// Swagger Documentation Route
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayOperationId: true,
+  },
+  customCss: `.topbar { display: none }`,
+  customCssUrl: "",
+  customJs: `
+    window.onload = function() {
+      // Add download link to the page
+      const downloadLink = document.createElement('a');
+      downloadLink.href = '/api-docs.json';
+      downloadLink.download = 'openapi.json';
+      downloadLink.className = 'btn authorize unlocked';
+      downloadLink.style.cssText = 'position: absolute; top: 20px; right: 20px; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; cursor: pointer; z-index: 1000;';
+      downloadLink.textContent = '⬇️ Download OpenAPI JSON';
+      
+      const topbar = document.querySelector('.topbar-inner');
+      if (topbar && !document.getElementById('download-openapi')) {
+        downloadLink.id = 'download-openapi';
+        topbar.parentElement.style.position = 'relative';
+        topbar.parentElement.appendChild(downloadLink);
+      }
+    };
+  `,
+}));
+
+// OpenAPI JSON endpoint - Access at http://localhost:5000/api-docs.json
+app.get("/api-docs.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpecs);
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/doctors", doctorRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

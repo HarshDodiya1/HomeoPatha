@@ -1,207 +1,296 @@
 /**
  * Users Store
- * Zustand store for managing users state with filtering and search
+ * Zustand store for managing user profile, orders, and appointments
+ * Updated for new Node.js backend API
  */
 
 import { create } from 'zustand';
-import { authService } from '@/lib/services/auth.service';
-import { User, UserTypeEnum } from '@/types/auth';
+import { usersService, Order, Appointment, UserProfile } from '@/lib/services/users.service';
+import { User, UserRoleEnum } from '@/types/auth';
 
 interface UsersState {
-  // State
-  users: User[];
-  filteredUsers: User[];
-  doctors: User[];
-  patients: User[];
-  isLoading: boolean;
-  error: string | null;
-  searchQuery: string;
-  selectedUserType: UserTypeEnum | 'ALL';
+  // Profile State
+  profile: UserProfile | null;
+  isLoadingProfile: boolean;
+  profileError: string | null;
 
-  // Actions
+  // Orders State
+  orders: Order[];
+  ordersPage: number;
+  ordersTotal: number;
+  isLoadingOrders: boolean;
+  ordersError: string | null;
+
+  // Appointments State
+  appointments: Appointment[];
+  appointmentsPage: number;
+  appointmentsTotal: number;
+  isLoadingAppointments: boolean;
+  appointmentsError: string | null;
+
+  // Users Management State
+  allUsers: User[];
+  filteredUsers: User[];
+  isLoading: boolean;
+  searchQuery: string;
+  selectedUserType: 'ALL' | string;
+  usersError: string | null;
+
+  // Actions - Profile
+  fetchProfile: () => Promise<void>;
+  updateProfile: (data: any) => Promise<void>;
+  
+  // Actions - Orders
+  fetchOrders: (page?: number, limit?: number) => Promise<void>;
+  fetchOrderDetail: (orderId: string) => Promise<Order>;
+  
+  // Actions - Appointments
+  fetchAppointments: (page?: number, limit?: number) => Promise<void>;
+  fetchAppointmentDetail: (appointmentId: string) => Promise<Appointment>;
+  changePassword: (currentPassword: string, newPassword: string, confirmNewPassword: string) => Promise<void>;
+  
+  // Actions - Users Management
   fetchAllUsers: () => Promise<void>;
-  getUserById: (id: string) => Promise<User>;
-  updateUser: (
-    id: string,
-    data: {
-      username?: string;
-      email?: string;
-      password?: string;
-      user_type?: string;
-    }
-  ) => Promise<User>;
-  deleteUser: (id: string) => Promise<void>;
   setSearchQuery: (query: string) => void;
-  setSelectedUserType: (type: UserTypeEnum | 'ALL') => void;
-  filterUsers: () => void;
-  setError: (error: string | null) => void;
-  clearError: () => void;
+  setSelectedUserType: (type: 'ALL' | string) => void;
+  updateUser: (id: string, data: any) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
+  
+  // Error Management
+  setProfileError: (error: string | null) => void;
+  setOrdersError: (error: string | null) => void;
+  setAppointmentsError: (error: string | null) => void;
+  clearErrors: () => void;
 }
 
 export const useUsersStore = create<UsersState>((set, get) => ({
-  // Initial state
-  users: [],
+  // Initial state - Profile
+  profile: null,
+  isLoadingProfile: false,
+  profileError: null,
+
+  // Initial state - Orders
+  orders: [],
+  ordersPage: 1,
+  ordersTotal: 0,
+  isLoadingOrders: false,
+  ordersError: null,
+
+  // Initial state - Appointments
+  appointments: [],
+  appointmentsPage: 1,
+  appointmentsTotal: 0,
+  isLoadingAppointments: false,
+  appointmentsError: null,
+
+  // Initial state - Users Management
+  allUsers: [],
   filteredUsers: [],
-  doctors: [],
-  patients: [],
   isLoading: false,
-  error: null,
   searchQuery: '',
   selectedUserType: 'ALL',
+  usersError: null,
 
-  // Fetch all users
+  // Fetch user profile
+  fetchProfile: async () => {
+    set({ isLoadingProfile: true, profileError: null });
+    try {
+      const profile = await usersService.getProfile();
+      set({ profile, isLoadingProfile: false });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch profile';
+      set({ profileError: errorMessage, isLoadingProfile: false });
+      throw error;
+    }
+  },
+
+  // Update user profile
+  updateProfile: async (data: any) => {
+    set({ isLoadingProfile: true, profileError: null });
+    try {
+      const updatedUser = await usersService.updateProfile(data);
+      set((state) => ({
+        profile: state.profile ? { ...state.profile, user: updatedUser } : null,
+        isLoadingProfile: false,
+      }));
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile';
+      set({ profileError: errorMessage, isLoadingProfile: false });
+      throw error;
+    }
+  },
+
+  // Fetch orders
+  fetchOrders: async (page = 1, limit = 10) => {
+    set({ isLoadingOrders: true, ordersError: null });
+    try {
+      const response = await usersService.getOrders(page, limit);
+      set({
+        orders: response.data.items,
+        ordersPage: page,
+        ordersTotal: response.data.meta.totalItems,
+        isLoadingOrders: false,
+      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch orders';
+      set({ ordersError: errorMessage, isLoadingOrders: false });
+      throw error;
+    }
+  },
+
+  // Fetch order detail
+  fetchOrderDetail: async (orderId: string) => {
+    try {
+      return await usersService.getOrderDetail(orderId);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch order';
+      throw error;
+    }
+  },
+
+  // Fetch appointments
+  fetchAppointments: async (page = 1, limit = 10) => {
+    set({ isLoadingAppointments: true, appointmentsError: null });
+    try {
+      const response = await usersService.getAppointments(page, limit);
+      set({
+        appointments: response.data.items,
+        appointmentsPage: page,
+        appointmentsTotal: response.data.meta.totalItems,
+        isLoadingAppointments: false,
+      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch appointments';
+      set({ appointmentsError: errorMessage, isLoadingAppointments: false });
+      throw error;
+    }
+  },
+
+  // Fetch appointment detail
+  fetchAppointmentDetail: async (appointmentId: string) => {
+    try {
+      return await usersService.getAppointmentDetail(appointmentId);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch appointment';
+      throw error;
+    }
+  },
+
+  // Change password
+  changePassword: async (currentPassword: string, newPassword: string, confirmNewPassword: string) => {
+    set({ profileError: null });
+    try {
+      await usersService.changePassword({
+        currentPassword,
+        newPassword,
+        confirmNewPassword,
+      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to change password';
+      set({ profileError: errorMessage });
+      throw error;
+    }
+  },
+
+  // Users Management - Fetch all users
   fetchAllUsers: async () => {
-    set({ isLoading: true, error: null });
-
+    set({ isLoading: true, usersError: null });
     try {
-      const users = await authService.getAllUsers();
-
-      // Separate doctors and patients from the list
-      const doctors = users.filter((u) => u.user_type === UserTypeEnum.DOCTOR);
-      const patients = users.filter((u) => u.user_type === UserTypeEnum.PATIENT);
-
-      set({
-        users,
-        doctors,
-        patients,
-        filteredUsers: users,
-        isLoading: false,
+      // Mock data for now - replace with actual API call when available
+      const mockUsers: User[] = [];
+      set({ 
+        allUsers: mockUsers, 
+        filteredUsers: mockUsers,
+        isLoading: false 
       });
-
-      // Apply current filters
-      get().filterUsers();
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.detail || error.message || 'Failed to fetch users';
-
-      set({
-        isLoading: false,
-        error: errorMessage,
-      });
-
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch users';
+      set({ usersError: errorMessage, isLoading: false });
       throw error;
     }
   },
 
-  // Get user by ID
-  getUserById: async (id: string) => {
-    try {
-      return await authService.getUserById(id);
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.detail || error.message || 'Failed to fetch user';
-
-      set({ error: errorMessage });
-      throw error;
-    }
-  },
-
-  // Update user
-  updateUser: async (
-    id: string,
-    data: {
-      username?: string;
-      email?: string;
-      password?: string;
-      user_type?: string;
-    }
-  ) => {
-    try {
-      const updatedUser = await authService.updateUser(id, data);
-
-      // Update users list
-      set((state) => {
-        const updatedUsers = state.users.map((u) =>
-          u.id === id ? updatedUser : u
-        );
-
-        return {
-          users: updatedUsers,
-          filteredUsers: state.filteredUsers.map((u) =>
-            u.id === id ? updatedUser : u
-          ),
-        };
-      });
-
-      return updatedUser;
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.detail || error.message || 'Failed to update user';
-
-      set({ error: errorMessage });
-      throw error;
-    }
-  },
-
-  // Delete user
-  deleteUser: async (id: string) => {
-    try {
-      await authService.deleteUser(id);
-
-      // Remove from users list
-      set((state) => {
-        const updatedUsers = state.users.filter((u) => u.id !== id);
-        const updatedFiltered = state.filteredUsers.filter((u) => u.id !== id);
-
-        return {
-          users: updatedUsers,
-          filteredUsers: updatedFiltered,
-          doctors: updatedUsers.filter((u) => u.user_type === UserTypeEnum.DOCTOR),
-          patients: updatedUsers.filter((u) => u.user_type === UserTypeEnum.PATIENT),
-        };
-      });
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.detail || error.message || 'Failed to delete user';
-
-      set({ error: errorMessage });
-      throw error;
-    }
-  },
-
-  // Set search query
+  // Users Management - Set search query and filter
   setSearchQuery: (query: string) => {
-    set({ searchQuery: query });
-    get().filterUsers();
+    set((state) => {
+      const filtered = state.allUsers.filter((user) => {
+        const matchesSearch =
+          user.fullName.toLowerCase().includes(query.toLowerCase()) ||
+          user.email.toLowerCase().includes(query.toLowerCase());
+        const matchesType = state.selectedUserType === 'ALL' || user.role === state.selectedUserType;
+        return matchesSearch && matchesType;
+      });
+      return { searchQuery: query, filteredUsers: filtered };
+    });
   },
 
-  // Set selected user type filter
-  setSelectedUserType: (type: UserTypeEnum | 'ALL') => {
-    set({ selectedUserType: type });
-    get().filterUsers();
+  // Users Management - Set selected user type and filter
+  setSelectedUserType: (type: 'ALL' | string) => {
+    set((state) => {
+      const filtered = state.allUsers.filter((user) => {
+        const matchesSearch =
+          user.fullName.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(state.searchQuery.toLowerCase());
+        const matchesType = type === 'ALL' || user.role === type;
+        return matchesSearch && matchesType;
+      });
+      return { selectedUserType: type, filteredUsers: filtered };
+    });
   },
 
-  // Filter users based on search query and user type
-  filterUsers: () => {
-    const { users, searchQuery, selectedUserType } = get();
-
-    let filtered = [...users];
-
-    // Filter by user type
-    if (selectedUserType !== 'ALL') {
-      filtered = filtered.filter((u) => u.user_type === selectedUserType);
+  // Users Management - Update user
+  updateUser: async (id: string, data: any) => {
+    set({ isLoading: true, usersError: null });
+    try {
+      // Mock implementation - replace with actual API call
+      set((state) => ({
+        allUsers: state.allUsers.map((user) =>
+          user.id === id ? { ...user, ...data } : user
+        ),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update user';
+      set({ usersError: errorMessage, isLoading: false });
+      throw error;
     }
+  },
 
-    // Filter by search query (username or email)
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (u) =>
-          u.username.toLowerCase().includes(query) ||
-          u.email.toLowerCase().includes(query)
-      );
+  // Users Management - Delete user
+  deleteUser: async (id: string) => {
+    set({ isLoading: true, usersError: null });
+    try {
+      // Mock implementation - replace with actual API call
+      set((state) => ({
+        allUsers: state.allUsers.filter((user) => user.id !== id),
+        filteredUsers: state.filteredUsers.filter((user) => user.id !== id),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete user';
+      set({ usersError: errorMessage, isLoading: false });
+      throw error;
     }
-
-    set({ filteredUsers: filtered });
   },
 
-  // Set error
-  setError: (error: string | null) => {
-    set({ error });
+  // Set errors
+  setProfileError: (error: string | null) => {
+    set({ profileError: error });
   },
 
-  // Clear error
-  clearError: () => {
-    set({ error: null });
+  setOrdersError: (error: string | null) => {
+    set({ ordersError: error });
+  },
+
+  setAppointmentsError: (error: string | null) => {
+    set({ appointmentsError: error });
+  },
+
+  clearErrors: () => {
+    set({
+      profileError: null,
+      ordersError: null,
+      appointmentsError: null,
+    });
   },
 }));

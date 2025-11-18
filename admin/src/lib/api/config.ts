@@ -4,7 +4,7 @@
  */
 
 // API Base URL - can be configured via environment variable
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.homeopatha.hetsaraiya.com';
+export const API_BASE_URL = 'http://localhost:5000';
 
 // API Endpoints
 export const API_ENDPOINTS = {
@@ -12,15 +12,24 @@ export const API_ENDPOINTS = {
     login: '/api/auth/login',
     register: '/api/auth/register',
     logout: '/api/auth/logout',
-    refreshToken: '/api/auth/refresh-token',
-    activity: '/api/auth/activity',
+    updateProfile: '/api/auth/update-profile',
+    changePassword: '/api/auth/change-password',
+    me: '/api/auth/me',
   },
   users: {
-    me: '/api/users/me',
-    list: '/api/users',
-    detail: (id: string) => `/api/users/${id}`,
-    update: (id: string) => `/api/users/${id}`,
-    delete: '/api/users',
+    profile: '/api/users/profile',
+    orders: '/api/users/orders',
+    orderDetail: (id: string) => `/api/users/orders/${id}`,
+    appointments: '/api/users/appointments',
+    appointmentDetail: (id: string) => `/api/users/appointments/${id}`,
+  },
+  doctors: {
+    list: '/api/doctors',
+    detail: (id: string) => `/api/doctors/${id}`,
+    profile: '/api/doctors/profile',
+    appointments: '/api/doctors/appointments',
+    appointmentDetail: (id: string) => `/api/doctors/appointments/${id}`,
+    updateAppointment: (id: string) => `/api/doctors/appointments/${id}`,
   },
 } as const;
 

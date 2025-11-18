@@ -16,13 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { User, UserTypeEnum } from '@/types/auth';
+import { User, UserRoleEnum } from '@/types/auth';
 import { Loader2, Search, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function PatientsPage() {
   const {
-    patients,
+    filteredUsers,
     isLoading,
     searchQuery,
     fetchAllUsers,
@@ -40,7 +40,7 @@ export default function PatientsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    setSelectedUserType(UserTypeEnum.PATIENT);
+    setSelectedUserType(UserRoleEnum.PATIENT);
     fetchAllUsers();
   }, [fetchAllUsers, setSelectedUserType]);
 
@@ -84,13 +84,6 @@ export default function PatientsPage() {
     }
   };
 
-  // Filter patients by search query
-  const filteredPatients = patients.filter(
-    (patient) =>
-      patient.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -127,7 +120,7 @@ export default function PatientsPage() {
         <CardHeader>
           <CardTitle className="text-lg">Patients List</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Total: {filteredPatients.length} patients
+            Total: {filteredUsers.length} patients
           </p>
         </CardHeader>
         <CardContent>
@@ -137,7 +130,7 @@ export default function PatientsPage() {
             </div>
           ) : (
             <UserTable
-              users={filteredPatients}
+              users={filteredUsers}
               onView={handleViewUser}
               onEdit={handleEditUser}
               onDelete={handleDeleteUser}
@@ -170,7 +163,7 @@ export default function PatientsPage() {
             <AlertDialogTitle>Delete Patient</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete{' '}
-              <span className="font-semibold">{userToDelete?.username}</span>?
+              <span className="font-semibold">{userToDelete?.fullName || 'this patient'}</span>?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

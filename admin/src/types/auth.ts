@@ -1,69 +1,84 @@
 /**
  * Authentication Types
  * TypeScript interfaces for authentication-related data structures
+ * Based on new Node.js backend API (api-docs.json)
  */
 
-export enum UserTypeEnum {
-  ADMIN = 'ADMIN',
-  DOCTOR = 'DOCTOR',
-  PATIENT = 'PATIENT',
-  RIDER = 'RIDER',
+export enum UserRoleEnum {
+  SUPERADMIN = 'superadmin',
+  DOCTOR = 'doctor',
+  PATIENT = 'patient',
+}
+
+export interface Address {
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  isDefault?: boolean;
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface RegisterRequest {
-  username: string;
+  fullName: string;
   email: string;
   password: string;
-  phone: string;
-  role: UserTypeEnum;
+  confirmPassword: string;
+  phoneNumber: string;
 }
 
-export interface JWTResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  refresh_token?: string;
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+  code: string;
+  data: {
+    user: User;
+    token: string;
+  };
 }
 
 export interface User {
   id: string;
-  username: string;
+  fullName: string;
   email: string;
-  user_type: UserTypeEnum;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  last_login?: string;
+  phoneNumber: string;
+  role: UserRoleEnum;
+  addresses?: Address[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface ActivityRecord {
-  timestamp: string;
-  device_name: string;
-  device_type: string;
-  ip_address: string;
-  location?: {
-    country?: string;
-    city?: string;
+export interface UpdateProfileRequest {
+  fullName?: string;
+  phoneNumber?: string;
+  addresses?: Address[];
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  code: string;
+  data?: T;
+  errors?: {
+    [key: string]: string;
   };
-  is_android: boolean;
-  model?: string;
-  os_version?: string;
-}
-
-export interface ActivityResponse {
-  recent_activity: ActivityRecord[];
-  suspicious_activity: any[];
 }
 
 export interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;

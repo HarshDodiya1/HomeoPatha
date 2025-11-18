@@ -7,19 +7,17 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import * as React from "react"
-import { useAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuthStore } from "@/store/auth.store"
 
 export default function LoginPage() {
-  const [username, setUsername] = React.useState("")
+  const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [isInitialized, setIsInitialized] = React.useState(false)
-  const { isLoading, error } = useAuth()
   const router = useRouter()
-  const { isAuthenticated, isInitialized: storeInitialized, login } = useAuthStore()
+  const { isAuthenticated, isInitialized: storeInitialized, login, isLoading, error } = useAuthStore()
 
   // Check if already authenticated and redirect once
   React.useEffect(() => {
@@ -40,8 +38,8 @@ export default function LoginPage() {
     e.preventDefault()
     
     // Validation
-    if (!username.trim()) {
-      toast.error("Please enter your username")
+    if (!email.trim()) {
+      toast.error("Please enter your email")
       return
     }
     
@@ -51,7 +49,7 @@ export default function LoginPage() {
     }
 
     try {
-      await login({ username, password })
+      await login({ email, password })
       toast.success("Login successful!")
       // Redirect after successful login
       setTimeout(() => {
@@ -59,7 +57,7 @@ export default function LoginPage() {
       }, 500)
     } catch (err: any) {
       console.error('Login error:', err)
-      const errorMessage = err.response?.data?.detail || err.message || "Login failed"
+      const errorMessage = err.response?.data?.message || err.message || "Login failed"
       toast.error(errorMessage)
     }
   }
@@ -105,16 +103,16 @@ export default function LoginPage() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.currentTarget.value)}
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.currentTarget.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Enter your username"
+                placeholder="Enter your email"
                 disabled={isLoading}
-                autoComplete="username"
+                autoComplete="email"
                 required
               />
             </div>

@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { User, UserTypeEnum } from '@/types/auth';
+import { User, UserRoleEnum } from '@/types/auth';
 import { Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -124,7 +124,7 @@ export default function UsersPage() {
             <Select
               value={selectedUserType}
               onValueChange={(value) =>
-                setSelectedUserType(value as UserTypeEnum | 'ALL')
+                setSelectedUserType(value as UserRoleEnum | 'ALL')
               }
             >
               <SelectTrigger className="w-40">
@@ -132,9 +132,9 @@ export default function UsersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All Users</SelectItem>
-                <SelectItem value={UserTypeEnum.ADMIN}>Admin</SelectItem>
-                <SelectItem value={UserTypeEnum.DOCTOR}>Doctors</SelectItem>
-                <SelectItem value={UserTypeEnum.PATIENT}>Patients</SelectItem>
+                <SelectItem value={UserRoleEnum.SUPERADMIN}>Admin</SelectItem>
+                <SelectItem value={UserRoleEnum.DOCTOR}>Doctors</SelectItem>
+                <SelectItem value={UserRoleEnum.PATIENT}>Patients</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -189,7 +189,7 @@ export default function UsersPage() {
             <AlertDialogTitle>Delete User</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete{' '}
-              <span className="font-semibold">{userToDelete?.username}</span>?
+              <span className="font-semibold">{userToDelete?.fullName || 'this user'}</span>?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

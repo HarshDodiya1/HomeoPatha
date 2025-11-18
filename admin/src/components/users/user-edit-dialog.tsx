@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { User, UserTypeEnum } from '@/types/auth';
+import { User, UserRoleEnum } from '@/types/auth';
 import {
   Dialog,
   DialogContent,
@@ -32,10 +32,10 @@ interface UserEditDialogProps {
 }
 
 export interface UpdateUserData {
-  username?: string;
+  fullName?: string;
   email?: string;
-  password?: string;
-  user_type?: string;
+  phoneNumber?: string;
+  role?: string;
 }
 
 export function UserEditDialog({
@@ -46,10 +46,10 @@ export function UserEditDialog({
   isLoading,
 }: UserEditDialogProps) {
   const [formData, setFormData] = useState<UpdateUserData>({
-    username: user?.username || '',
+    fullName: user?.fullName || '',
     email: user?.email || '',
-    password: '',
-    user_type: user?.user_type || UserTypeEnum.PATIENT,
+    phoneNumber: user?.phoneNumber || '',
+    role: user?.role || UserRoleEnum.PATIENT,
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -67,8 +67,8 @@ export function UserEditDialog({
     setError(null);
 
     // Validation
-    if (!formData.username || !formData.email) {
-      setError('Username and email are required');
+    if (!formData.fullName || !formData.email) {
+      setError('Full name and email are required');
       return;
     }
 
@@ -78,18 +78,13 @@ export function UserEditDialog({
       return;
     }
 
-    if (formData.password && formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
     try {
       // Only send fields that were changed
       const dataToSend: UpdateUserData = {
-        username: formData.username !== user.username ? formData.username : undefined,
+        fullName: formData.fullName !== user.fullName ? formData.fullName : undefined,
         email: formData.email !== user.email ? formData.email : undefined,
-        password: formData.password || undefined,
-        user_type: formData.user_type !== user.user_type ? formData.user_type : undefined,
+        phoneNumber: formData.phoneNumber !== user.phoneNumber ? formData.phoneNumber : undefined,
+        role: formData.role !== user.role ? formData.role : undefined,
       };
 
       // Remove undefined fields
@@ -126,12 +121,12 @@ export function UserEditDialog({
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="fullName">Full Name</Label>
             <Input
-              id="username"
-              value={formData.username}
-              onChange={(e) => handleChange('username', e.currentTarget.value)}
-              placeholder="Enter username"
+              id="fullName"
+              value={formData.fullName}
+              onChange={(e) => handleChange('fullName', e.currentTarget.value)}
+              placeholder="Enter full name"
               disabled={isLoading}
             />
           </div>
@@ -149,31 +144,31 @@ export function UserEditDialog({
           </div>
 
           <div>
-            <Label htmlFor="password">Password (leave blank to keep current)</Label>
+            <Label htmlFor="phoneNumber">Phone Number</Label>
             <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => handleChange('password', e.currentTarget.value)}
-              placeholder="Enter new password"
+              id="phoneNumber"
+              type="tel"
+              value={formData.phoneNumber}
+              onChange={(e) => handleChange('phoneNumber', e.currentTarget.value)}
+              placeholder="Enter phone number"
               disabled={isLoading}
             />
           </div>
 
           <div>
-            <Label htmlFor="user_type">User Type</Label>
+            <Label htmlFor="role">Role</Label>
             <Select
-              value={formData.user_type}
-              onValueChange={(value) => handleChange('user_type', value)}
+              value={formData.role}
+              onValueChange={(value) => handleChange('role', value)}
               disabled={isLoading}
             >
-              <SelectTrigger id="user_type">
-                <SelectValue placeholder="Select user type" />
+              <SelectTrigger id="role">
+                <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={UserTypeEnum.ADMIN}>Admin</SelectItem>
-                <SelectItem value={UserTypeEnum.DOCTOR}>Doctor</SelectItem>
-                <SelectItem value={UserTypeEnum.PATIENT}>Patient</SelectItem>
+                <SelectItem value={UserRoleEnum.SUPERADMIN}>Super Admin</SelectItem>
+                <SelectItem value={UserRoleEnum.DOCTOR}>Doctor</SelectItem>
+                <SelectItem value={UserRoleEnum.PATIENT}>Patient</SelectItem>
               </SelectContent>
             </Select>
           </div>

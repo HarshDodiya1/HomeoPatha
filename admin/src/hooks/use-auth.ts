@@ -16,9 +16,9 @@ export function useAuth() {
   const router = useRouter();
   const store = useAuthStore();
 
-  const loginAndRedirect = useCallback(async (username: string, password: string) => {
+  const loginAndRedirect = useCallback(async (email: string, password: string) => {
     try {
-      await store.login({ username, password });
+      await store.login({ email, password });
       router.push('/admin');
     } catch (error) {
       // Error is already in store.error
@@ -38,7 +38,6 @@ export function useAuth() {
   return {
     user: store.user,
     accessToken: store.accessToken,
-    refreshToken: store.refreshToken,
     isAuthenticated: store.isAuthenticated,
     isLoading: store.isLoading,
     error: store.error,
@@ -63,6 +62,4 @@ export function useRequireAuth(redirectUrl = '/login') {
     isAuthenticated,
     isLoading,
   };
-
-  return { isAuthenticated, isLoading };
 }

@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { CalendarDays, CreditCard, LayoutDashboard, LogOut, Package, Users, User } from "lucide-react"
+import { CalendarDays, CreditCard, LayoutDashboard, LogOut, Package, Users, User, Stethoscope } from "lucide-react"
 import type * as React from "react"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ProtectedRoute } from "@/components/auth/protected-route"
@@ -40,6 +40,7 @@ import { toast } from "sonner"
 const routes = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users Management", icon: Users },
+  { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
   { href: "/admin/appointments", label: "Appointments", icon: CalendarDays },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
@@ -86,12 +87,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   // Get user initials for avatar
   const getUserInitials = () => {
-    if (!user) return "AD"
-    const names = user.username.split(" ")
+    if (!user?.fullName) return "AD"
+    const names = user.fullName.split(" ")
     if (names.length >= 2) {
       return `${names[0][0]}${names[1][0]}`.toUpperCase()
     }
-    return user.username.substring(0, 2).toUpperCase()
+    return user.fullName.substring(0, 2).toUpperCase()
   }
 
   return (
@@ -143,7 +144,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           <SidebarFooter className="text-xs text-muted-foreground">
             <div className="rounded-md bg-muted p-2">
               <div className="font-medium text-foreground">
-                {user?.user_type || 'Admin'} Panel
+                {user?.role || 'Admin'} Panel
               </div>
               <div className="text-muted-foreground">Manage appointments & products</div>
             </div>
@@ -165,13 +166,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                         <AvatarImage src="/placeholder-user.jpg" alt="Admin avatar" />
                         <AvatarFallback>{getUserInitials()}</AvatarFallback>
                       </Avatar>
-                      <span className="hidden md:inline">{user?.username || 'Admin'}</span>
+                      <span className="hidden md:inline">{user?.fullName || 'Admin'}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium">{user?.username || 'Admin'}</p>
+                        <p className="text-sm font-medium">{user?.fullName || 'Admin'}</p>
                         <p className="text-xs text-muted-foreground">{user?.email || ''}</p>
                       </div>
                     </DropdownMenuLabel>

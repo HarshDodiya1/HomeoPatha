@@ -4,23 +4,20 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import * as React from "react"
 import { toast } from "sonner"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { UserTypeEnum } from "@/types/auth"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 
 export default function RegisterPage() {
-  const [username, setUsername] = React.useState("")
+  const [fullName, setFullName] = React.useState("")
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [confirmPassword, setConfirmPassword] = React.useState("")
-  const [phone, setPhone] = React.useState("")
-  const [role, setRole] = React.useState<UserTypeEnum>(UserTypeEnum.ADMIN)
+  const [phoneNumber, setPhoneNumber] = React.useState("")
   const [isInitialized, setIsInitialized] = React.useState(false)
   
   const router = useRouter()
@@ -45,8 +42,8 @@ export default function RegisterPage() {
     e.preventDefault()
     
     // Validation
-    if (!username.trim()) {
-      toast.error("Please enter a username")
+    if (!fullName.trim()) {
+      toast.error("Please enter your full name")
       return
     }
     
@@ -77,18 +74,18 @@ export default function RegisterPage() {
       return
     }
 
-    if (!phone.trim()) {
+    if (!phoneNumber.trim()) {
       toast.error("Please enter a phone number")
       return
     }
 
     try {
       await register({
-        username: username.trim(),
+        fullName: fullName.trim(),
         email: email.trim(),
         password,
-        phone: phone.trim(),
-        role,
+        confirmPassword,
+        phoneNumber: phoneNumber.trim(),
       })
       
       toast.success("Registration successful! Redirecting...")
@@ -97,18 +94,33 @@ export default function RegisterPage() {
       }, 500)
     } catch (err: any) {
       console.error('Registration error:', err)
-      const errorMessage = err.response?.data?.detail || err.message || "Registration failed"
+      const errorMessage = err.response?.data?.message || err.message || "Registration failed"
       toast.error(errorMessage)
     }
+  }
+
+  if (!isInitialized) {
+    return (
+      <main className="flex min-h-svh items-center justify-center p-4 bg-gradient-to-br from-background to-muted/20">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+            <CardDescription>
+              Initializing...
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </main>
+    )
   }
 
   return (
     <main className="flex min-h-svh items-center justify-center p-4 bg-gradient-to-br from-background to-muted/20">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create Admin Account</CardTitle>
+          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
           <CardDescription>
-            Fill in the details to create a new admin account
+            Fill in the details to create a new account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -121,15 +133,15 @@ export default function RegisterPage() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="fullName">Full Name</Label>
               <Input
-                id="username"
+                id="fullName"
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.currentTarget.value)}
-                placeholder="Enter username"
+                value={fullName}
+                onChange={(e) => setFullName(e.currentTarget.value)}
+                placeholder="Enter your full name"
                 disabled={isLoading}
-                autoComplete="username"
+                autoComplete="name"
                 required
               />
             </div>
@@ -149,36 +161,17 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input
-                id="phone"
+                id="phoneNumber"
                 type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.currentTarget.value)}
-                placeholder="+1234567890"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.currentTarget.value)}
+                placeholder="9876543210"
                 disabled={isLoading}
                 autoComplete="tel"
                 required
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select
-                value={role}
-                onValueChange={(value) => setRole(value as UserTypeEnum)}
-                disabled={isLoading}
-              >
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={UserTypeEnum.ADMIN}>Admin</SelectItem>
-                  <SelectItem value={UserTypeEnum.DOCTOR}>Doctor</SelectItem>
-                  <SelectItem value={UserTypeEnum.PATIENT}>Patient</SelectItem>
-                  <SelectItem value={UserTypeEnum.RIDER}>Rider</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             
             <div className="space-y-2">

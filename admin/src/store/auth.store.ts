@@ -1,6 +1,7 @@
 /**
  * Authentication Store
  * Zustand store for managing authentication state
+ * Updated for new Node.js backend API (api-docs.json)
  */
 
 import { create } from 'zustand';
@@ -34,7 +35,6 @@ export const useAuthStore = create<AuthStore>()(
       // Initial state
       user: null,
       accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
       isInitialized: false,
@@ -54,56 +54,32 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           const token = localStorage.getItem(STORAGE_KEYS.accessToken);
-          const refreshToken = localStorage.getItem(STORAGE_KEYS.refreshToken);
           const userStr = localStorage.getItem(STORAGE_KEYS.user);
-          const expiry = localStorage.getItem(STORAGE_KEYS.tokenExpiry);
 
-          if (token && expiry) {
-            const expiryTime = parseInt(expiry);
-            const now = Date.now();
-
-            // Check if token is still valid
-            if (now < expiryTime) {
-              // Token is valid - try to fetch fresh user data
-              // First set the token in state so the interceptor can use it
-              try {
-                const userData = await authService.getCurrentUser();
-                set({
-                  user: userData,
-                  accessToken: token,
-                  refreshToken: refreshToken || null,
-                  isAuthenticated: true,
-                  isInitialized: true,
-                });
-              } catch (error) {
-                // If fetching user fails, use cached user data
-                if (userStr) {
-                  const user = JSON.parse(userStr);
-                  set({
-                    user,
-                    accessToken: token,
-                    refreshToken: refreshToken || null,
-                    isAuthenticated: true,
-                    isInitialized: true,
-                  });
-                } else {
-                  // No cached user, clear auth
-                  localStorage.removeItem(STORAGE_KEYS.accessToken);
-                  localStorage.removeItem(STORAGE_KEYS.refreshToken);
-                  localStorage.removeItem(STORAGE_KEYS.tokenExpiry);
-                  localStorage.removeItem(STORAGE_KEYS.user);
-                  set({ isInitialized: true });
-                }
-              }
-            } else {
-              // Token expired, clear everything
-              localStorage.removeItem(STORAGE_KEYS.accessToken);
-              localStorage.removeItem(STORAGE_KEYS.refreshToken);
-              localStorage.removeItem(STORAGE_KEYS.tokenExpiry);
-              localStorage.removeItem(STORAGE_KEYS.user);
-              set({ isInitialized: true });
+          if (token && userStr) {
+            // Token exists and user data exists
+            try {
+              const userData = await authService.getCurrentUser();
+              set({
+                user: userData,
+                accessToken: token,
+                isAuthenticated: true,
+                isInitialized: true,
+              });
+            } catch (error) {
+              // If fetching user fails, use cached user data
+              const user = JSON.parse(userStr);
+              set({
+                user,
+                accessToken: token,
+                isAuthenticated: true,
+                isInitialized: true,
+              });
             }
           } else {
+            // No token or user data, user not authenticated
+            localStorage.removeItem(STORAGE_KEYS.accessToken);
+            localStorage.removeItem(STORAGE_KEYS.user);
             set({ isInitialized: true });
           }
         } catch (error) {
@@ -119,48 +95,20 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const response = await authService.login(credentials);
 
-          // Calculate token expiry time (expires_in is in seconds)
-          const expiryTime = Date.now() + response.expires_in * 1000;
-
-          // Store token in localStorage FIRST so the API client can use it
-          localStorage.setItem(STORAGE_KEYS.accessToken, response.access_token);
-          localStorage.setItem(STORAGE_KEYS.tokenExpiry, expiryTime.toString());
-
-          if (response.refresh_token) {
-            localStorage.setItem(STORAGE_KEYS.refreshToken, response.refresh_token);
-          }
-
-          // Now fetch user profile with the token from localStorage
-          let user: User;
-          try {
-            user = await authService.getCurrentUser();
-          } catch (error) {
-            // Fallback if user fetch fails
-            user = {
-              id: '',
-              username: credentials.username,
-              email: '',
-              user_type: 'ADMIN',
-              is_active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            } as User;
-          }
-
-          // Store user data
-          localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
+          // Store token and user data
+          localStorage.setItem(STORAGE_KEYS.accessToken, response.data.token);
+          localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(response.data.user));
 
           set({
-            user,
-            accessToken: response.access_token,
-            refreshToken: response.refresh_token || null,
+            user: response.data.user,
+            accessToken: response.data.token,
             isAuthenticated: true,
             isLoading: false,
             error: null,
           });
         } catch (error: any) {
           const errorMessage =
-            error.response?.data?.detail || 
+            error.response?.data?.message || 
             error.message || 
             'Login failed. Please check your credentials.';
 
@@ -181,49 +129,20 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const response = await authService.register(data);
 
-          // Calculate token expiry time
-          const expiryTime = Date.now() + response.expires_in * 1000;
-
-          // Store token in localStorage FIRST so the API client can use it
-          localStorage.setItem(STORAGE_KEYS.accessToken, response.access_token);
-          localStorage.setItem(STORAGE_KEYS.tokenExpiry, expiryTime.toString());
-
-          if (response.refresh_token) {
-            localStorage.setItem(STORAGE_KEYS.refreshToken, response.refresh_token);
-          }
-
-          // Now fetch user profile with the token from localStorage
-          let user: User;
-          try {
-            user = await authService.getCurrentUser();
-          } catch (error) {
-            console.error('Failed to fetch user profile:', error);
-            // Fallback if user fetch fails
-            user = {
-              id: '',
-              username: data.username,
-              email: data.email,
-              user_type: data.role,
-              is_active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            } as User;
-          }
-
-          // Store user data
-          localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
+          // Store token and user data
+          localStorage.setItem(STORAGE_KEYS.accessToken, response.data.token);
+          localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(response.data.user));
 
           set({
-            user,
-            accessToken: response.access_token,
-            refreshToken: response.refresh_token || null,
+            user: response.data.user,
+            accessToken: response.data.token,
             isAuthenticated: true,
             isLoading: false,
             error: null,
           });
         } catch (error: any) {
           const errorMessage =
-            error.response?.data?.detail ||
+            error.response?.data?.message ||
             error.message ||
             'Registration failed. Please try again.';
 
@@ -249,15 +168,12 @@ export const useAuthStore = create<AuthStore>()(
         } finally {
           // Clear localStorage
           localStorage.removeItem(STORAGE_KEYS.accessToken);
-          localStorage.removeItem(STORAGE_KEYS.refreshToken);
-          localStorage.removeItem(STORAGE_KEYS.tokenExpiry);
           localStorage.removeItem(STORAGE_KEYS.user);
 
           // Reset state
           set({
             user: null,
             accessToken: null,
-            refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
             error: null,
@@ -290,7 +206,6 @@ export const useAuthStore = create<AuthStore>()(
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
         isInitialized: state.isInitialized,
       }),
