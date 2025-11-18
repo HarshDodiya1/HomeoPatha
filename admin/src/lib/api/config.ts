@@ -31,6 +31,21 @@ export const API_ENDPOINTS = {
     appointmentDetail: (id: string) => `/api/doctors/appointments/${id}`,
     updateAppointment: (id: string) => `/api/doctors/appointments/${id}`,
   },
+  admin: {
+    products: {
+      list: '/api/admin/products',
+      detail: (id: string) => `/api/admin/products/${id}`,
+      create: '/api/admin/products',
+      update: (id: string) => `/api/admin/products/${id}`,
+      delete: (id: string) => `/api/admin/products/${id}`,
+    },
+  },
+} as const;
+
+// Cloudinary configuration
+export const CLOUDINARY_CONFIG = {
+  uploadUrl: 'https://api.cloudinary.com/v1_1/dxwdyse9a/image/upload',
+  uploadPreset: 'ml_default', // You may need to set this in Cloudinary dashboard
 } as const;
 
 // Token storage keys

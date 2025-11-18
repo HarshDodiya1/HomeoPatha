@@ -17,16 +17,16 @@ const getAllProducts = async (req, res) => {
       });
     }
 
-    // Pagination
+    // Pagination - Allow fetching all products for admin
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Validate pagination parameters
-    if (page < 1 || limit < 1 || limit > 100) {
+    // Validate pagination parameters - allow higher limits for admin
+    if (page < 1 || limit < 1) {
       return res.status(400).json({
         success: false,
-        message: "Invalid pagination parameters. Page must be >= 1 and limit between 1-100.",
+        message: "Invalid pagination parameters. Page must be >= 1 and limit must be >= 1.",
         code: "INVALID_PAGINATION",
       });
     }

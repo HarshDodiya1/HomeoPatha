@@ -1,5 +1,5 @@
-import { ProductsTable } from "@/components/admin/tables/products-table"
+import { ProductsPage } from "@/components/admin/products-page"
 
-export default function ProductsPage() {
-  return <ProductsTable />
+export default function ProductsPageRoute() {
+  return <ProductsPage />
 }
