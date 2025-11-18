@@ -4,13 +4,12 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import Link from "next/link"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Loader2, Search, Trash2, Edit, Phone, Mail } from "lucide-react"
+import { Loader2, Search, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { useDoctorsStore } from "@/store/doctors.store"
+import { DoctorCard } from "@/components/admin/cards/doctor-card"
+import { AddDoctorDialog } from "@/components/admin/dialogs/add-doctor-dialog"
+import { EditDoctorDialog } from "@/components/admin/dialogs/edit-doctor-dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,11 +21,14 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function DoctorsPage() {
-  const { doctors, isLoadingDoctors, doctorsError, fetchDoctors } = useDoctorsStore()
+  const { doctors, isLoadingDoctors, doctorsError, fetchDoctors, deleteDoctor } = useDoctorsStore()
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredDoctors, setFilteredDoctors] = useState<typeof doctors>([])
   const [deleteDialog, setDeleteDialog] = useState(false)
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null)
+  const [isDeletingDoctor, setIsDeletingDoctor] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -43,8 +45,10 @@ export default function DoctorsPage() {
         doctors.filter(
           (d: any) =>
             d.user?.fullName?.toLowerCase().includes(lowerSearch) ||
+            d.userId?.fullName?.toLowerCase().includes(lowerSearch) ||
             d.specialization?.toLowerCase().includes(lowerSearch) ||
-            d.user?.email?.toLowerCase().includes(lowerSearch)
+            d.user?.email?.toLowerCase().includes(lowerSearch) ||
+            d.userId?.email?.toLowerCase().includes(lowerSearch)
         )
       )
     }
@@ -57,24 +61,33 @@ export default function DoctorsPage() {
 
   const handleDeleteConfirm = async () => {
     try {
-      // TODO: Implement delete API call when backend ready
+      setIsDeletingDoctor(true)
+      const doctorId = selectedDoctor.id || selectedDoctor._id
+      await deleteDoctor(doctorId)
       toast.success("Doctor deleted successfully")
       setDeleteDialog(false)
       setSelectedDoctor(null)
-      await fetchDoctors()
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Failed to delete doctor"
+      const errorMessage = error.response?.data?.message || error.message || "Failed to delete doctor"
       toast.error(errorMessage)
+    } finally {
+      setIsDeletingDoctor(false)
     }
   }
 
-  const getDoctorInitials = (name?: string) => {
-    if (!name) return "DR"
-    return name
-      .split(" ")
-      .map((word: string) => word[0])
-      .join("")
-      .toUpperCase()
+  const handleEditClick = (doctor: any) => {
+    setSelectedDoctor(doctor)
+    setEditDialogOpen(true)
+  }
+
+  const handleAddSuccess = async () => {
+    await fetchDoctors()
+  }
+
+  const handleEditSuccess = async () => {
+    setEditDialogOpen(false)
+    setSelectedDoctor(null)
+    await fetchDoctors()
   }
 
   if (!mounted) {
@@ -96,15 +109,16 @@ export default function DoctorsPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>Doctors Management</CardTitle>
-          <Link href="/admin/doctors/new">
-            <Button>Add Doctor</Button>
-          </Link>
+          <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Doctor
+          </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -115,108 +129,74 @@ export default function DoctorsPage() {
             />
           </div>
 
-          <div className="overflow-x-auto">
-            {isLoadingDoctors ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : filteredDoctors.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                <p>No doctors found</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Doctor</TableHead>
-                    <TableHead>Specialization</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredDoctors.map((doctor: any) => (
-                    <TableRow key={doctor.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs">
-                              {getDoctorInitials(doctor.user?.fullName)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{doctor.user?.fullName || "Unknown"}</p>
-                            <p className="text-xs text-muted-foreground">{doctor.id}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{doctor.specialization || "N/A"}</TableCell>
-                      <TableCell>
-                        <div className="space-y-1 text-sm">
-                          {doctor.user?.phoneNumber && (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Phone className="h-3 w-3" />
-                              {doctor.user.phoneNumber}
-                            </div>
-                          )}
-                          {doctor.user?.email && (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Mail className="h-3 w-3" />
-                              {doctor.user.email}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={doctor.user?.isActive ? "default" : "destructive"}>
-                          {doctor.user?.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Link href={`/admin/doctors/${doctor.id}/edit`}>
-                            <Button size="sm" variant="outline" className="gap-2">
-                              <Edit className="h-4 w-4" />
-                              Edit
-                            </Button>
-                          </Link>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-2 text-red-600 hover:text-red-700"
-                            onClick={() => handleDeleteClick(doctor)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Delete
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </div>
+          {isLoadingDoctors ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : filteredDoctors.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <p className="text-lg font-medium">No doctors found</p>
+              <p className="text-sm mt-1">
+                {searchTerm ? "Try adjusting your search" : "Add your first doctor to get started"}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredDoctors.map((doctor: any) => (
+                <DoctorCard
+                  key={doctor.id || doctor._id}
+                  doctor={doctor}
+                  onEdit={handleEditClick}
+                  onDelete={handleDeleteClick}
+                />
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      <AddDoctorDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onSuccess={handleAddSuccess}
+      />
+
+      {selectedDoctor && (
+        <EditDoctorDialog
+          doctor={selectedDoctor}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={handleEditSuccess}
+        />
+      )}
 
       <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Doctor</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {selectedDoctor?.user?.fullName}? This action cannot be undone.
+              Are you sure you want to delete {selectedDoctor?.userId?.fullName || selectedDoctor?.user?.fullName}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-2 justify-end">
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
-              Delete
+            <AlertDialogCancel disabled={isDeletingDoctor}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeletingDoctor}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeletingDoctor ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

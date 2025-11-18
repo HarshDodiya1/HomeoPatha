@@ -50,21 +50,21 @@ export const authService = {
    * Get current user profile
    */
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<ApiResponse<User>>(
+    const response = await apiClient.get<any>(
       API_ENDPOINTS.auth.me
     );
-    return response.data.data!;
+    return response.data.data.user;
   },
 
   /**
    * Update user profile
    */
   async updateProfile(data: UpdateProfileRequest): Promise<User> {
-    const response = await apiClient.put<ApiResponse<User>>(
+    const response = await apiClient.put<any>(
       API_ENDPOINTS.auth.updateProfile,
       data
     );
-    return response.data.data!;
+    return response.data.data.user;
   },
 
   /**

@@ -42,6 +42,9 @@ interface DoctorsState {
   updateMyProfile: (data: any) => Promise<void>;
   fetchMyAppointments: (page?: number, limit?: number, status?: string) => Promise<void>;
   updateAppointmentStatus: (appointmentId: string, data: any) => Promise<Appointment>;
+  createDoctor: (data: any) => Promise<void>;
+  updateDoctor: (doctorId: string, data: any) => Promise<void>;
+  deleteDoctor: (doctorId: string) => Promise<void>;
   setFilters: (filters: any) => void;
 
   // Error handling
@@ -170,6 +173,64 @@ export const useDoctorsStore = create<DoctorsState>((set, get) => ({
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to update appointment';
       set({ appointmentsError: errorMessage });
+      throw error;
+    }
+  },
+
+  // Delete doctor
+  deleteDoctor: async (doctorId: string) => {
+    set({ isLoadingDoctors: true, doctorsError: null });
+    try {
+      await doctorsService.deleteDoctorById(doctorId);
+      
+      // Remove doctor from list
+      set((state) => ({
+        doctors: state.doctors.filter((d) => (d.id || d._id) !== doctorId),
+        doctorsTotal: state.doctorsTotal - 1,
+        isLoadingDoctors: false,
+      }));
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete doctor';
+      set({ doctorsError: errorMessage, isLoadingDoctors: false });
+      throw error;
+    }
+  },
+
+  // Create doctor (Admin only)
+  createDoctor: async (data: any) => {
+    set({ isLoadingDoctors: true, doctorsError: null });
+    try {
+      const newDoctor = await doctorsService.createDoctor(data);
+      
+      // Add doctor to list
+      set((state) => ({
+        doctors: [newDoctor, ...state.doctors],
+        doctorsTotal: state.doctorsTotal + 1,
+        isLoadingDoctors: false,
+      }));
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create doctor';
+      set({ doctorsError: errorMessage, isLoadingDoctors: false });
+      throw error;
+    }
+  },
+
+  // Update doctor (Admin only)
+  updateDoctor: async (doctorId: string, data: any) => {
+    set({ isLoadingDoctors: true, doctorsError: null });
+    try {
+      const updatedDoctor = await doctorsService.updateDoctorById(doctorId, data);
+      
+      // Update doctor in list
+      set((state) => ({
+        doctors: state.doctors.map((d) => 
+          (d.id || d._id) === doctorId ? updatedDoctor : d
+        ),
+        isLoadingDoctors: false,
+      }));
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update doctor';
+      set({ doctorsError: errorMessage, isLoadingDoctors: false });
       throw error;
     }
   },

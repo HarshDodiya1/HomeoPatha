@@ -240,6 +240,12 @@ const options = {
     "./src/routes/authRoutes.js",
     "./src/routes/userRoutes.js",
     "./src/routes/doctorRoutes.js",
+    "./src/routes/appointmentRoutes.js",
+    "./src/routes/adminRoutes/doctorRoutes.js",
+    "./src/routes/adminRoutes/userRoutes.js",
+    "./src/routes/adminRoutes/productRoutes.js",
+    "./src/routes/adminRoutes/contactRoutes.js",
+    "./src/routes/adminRoutes/appointmentRoutes.js",
   ],
 };
 

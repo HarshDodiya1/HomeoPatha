@@ -49,9 +49,9 @@ export interface User {
   phoneNumber: string;
   role: UserRoleEnum;
   addresses?: Address[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UpdateProfileRequest {

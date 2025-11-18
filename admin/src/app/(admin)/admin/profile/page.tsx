@@ -54,6 +54,8 @@ export default function ProfilePage() {
             email: authUser.email || "",
             phoneNumber: authUser.phoneNumber || ""
           })
+        } else {
+          setProfileError("Failed to load profile data")
         }
       } finally {
         setRefreshing(false)
@@ -77,14 +79,8 @@ export default function ProfilePage() {
     setProfileError("")
     setProfileSuccess("")
     
-    if (!profileForm.fullName || !profileForm.email) {
-      setProfileError("Full name and email are required")
-      return
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(profileForm.email)) {
-      setProfileError("Please enter a valid email address")
+    if (!profileForm.fullName) {
+      setProfileError("Full name is required")
       return
     }
     
@@ -95,25 +91,23 @@ export default function ProfilePage() {
       if (profileForm.fullName !== (user?.fullName || "")) {
         updateData.fullName = profileForm.fullName
       }
-      if (profileForm.email !== (user?.email || "")) {
-        updateData.email = profileForm.email
-      }
       if (profileForm.phoneNumber !== (user?.phoneNumber || "")) {
         updateData.phoneNumber = profileForm.phoneNumber
       }
       
       if (Object.keys(updateData).length === 0) {
         setProfileSuccess("No changes to save")
+        setTimeout(() => setProfileSuccess(""), 3000)
         return
       }
       
-      await authService.updateProfile(updateData)
-      const freshUser = await authService.getCurrentUser()
-      setUser(freshUser)
+      const response = await authService.updateProfile(updateData)
+      
+      setUser(response)
       setProfileForm({
-        fullName: freshUser?.fullName || "",
-        email: freshUser?.email || "",
-        phoneNumber: freshUser?.phoneNumber || ""
+        fullName: response?.fullName || "",
+        email: response?.email || "",
+        phoneNumber: response?.phoneNumber || ""
       })
       setProfileSuccess("Profile updated successfully!")
       toast.success("Profile updated successfully!")
@@ -223,9 +217,11 @@ export default function ProfilePage() {
               <h2 className="text-2xl font-bold">{user.fullName || "User"}</h2>
               <div className="flex flex-wrap gap-2">
                 <Badge className={getUserTypeColor(user.role)}>{getUserRoleDisplay()}</Badge>
-                <Badge variant={user.isActive ? "default" : "destructive"}>
-                  {user.isActive ? "Active" : "Inactive"}
-                </Badge>
+                {user.isActive !== undefined && (
+                  <Badge variant={user.isActive ? "default" : "destructive"}>
+                    {user.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                )}
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -294,10 +290,11 @@ export default function ProfilePage() {
                   id="email"
                   type="email"
                   value={profileForm.email}
-                  onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                  disabled={profileLoading}
+                  disabled={true}
                   placeholder="Enter your email"
+                  className="bg-muted cursor-not-allowed"
                 />
+                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
               </div>
               
               <div className="space-y-2">

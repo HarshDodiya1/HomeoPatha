@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = React.useState("")
   const [phoneNumber, setPhoneNumber] = React.useState("")
   const [isInitialized, setIsInitialized] = React.useState(false)
+  const [validationErrors, setValidationErrors] = React.useState<{ [key: string]: string }>({})
   
   const router = useRouter()
   const { register, isLoading, error, isAuthenticated, isInitialized: storeInitialized } = useAuthStore()
@@ -40,6 +41,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setValidationErrors({})
     
     // Validation
     if (!fullName.trim()) {
@@ -94,8 +96,16 @@ export default function RegisterPage() {
       }, 500)
     } catch (err: any) {
       console.error('Registration error:', err)
-      const errorMessage = err.response?.data?.message || err.message || "Registration failed"
-      toast.error(errorMessage)
+      
+      // Handle validation errors from backend
+      if (err.response?.data?.errors && typeof err.response.data.errors === 'object') {
+        setValidationErrors(err.response.data.errors)
+        const firstError = Object.values(err.response.data.errors)[0]
+        toast.error(firstError as string)
+      } else {
+        const errorMessage = err.response?.data?.message || err.message || "Registration failed"
+        toast.error(errorMessage)
+      }
     }
   }
 
@@ -143,7 +153,11 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 autoComplete="name"
                 required
+                className={validationErrors.fullName ? "border-red-500" : ""}
               />
+              {validationErrors.fullName && (
+                <p className="text-sm text-red-500">{validationErrors.fullName}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -157,7 +171,11 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 autoComplete="email"
                 required
+                className={validationErrors.email ? "border-red-500" : ""}
               />
+              {validationErrors.email && (
+                <p className="text-sm text-red-500">{validationErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -171,7 +189,11 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 autoComplete="tel"
                 required
+                className={validationErrors.phoneNumber ? "border-red-500" : ""}
               />
+              {validationErrors.phoneNumber && (
+                <p className="text-sm text-red-500">{validationErrors.phoneNumber}</p>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -181,11 +203,15 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.currentTarget.value)}
-                placeholder="Enter password (min 6 characters)"
+                placeholder="Enter password (min 8 characters, uppercase, lowercase, number)"
                 disabled={isLoading}
                 autoComplete="new-password"
                 required
+                className={validationErrors.password ? "border-red-500" : ""}
               />
+              {validationErrors.password && (
+                <p className="text-sm text-red-500">{validationErrors.password}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -199,7 +225,11 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 autoComplete="new-password"
                 required
+                className={validationErrors.confirmPassword ? "border-red-500" : ""}
               />
+              {validationErrors.confirmPassword && (
+                <p className="text-sm text-red-500">{validationErrors.confirmPassword}</p>
+              )}
             </div>
 
             <Button 

@@ -9,7 +9,14 @@ import { ApiResponse } from '@/types/auth';
 
 export interface Doctor {
   id: string;
+  _id?: string; // Add MongoDB _id field
   userId: string;
+  user?: {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    addresses?: any[];
+  };
   specialization: string;
   qualification: string;
   experience: number;
@@ -48,6 +55,29 @@ export interface Appointment {
 }
 
 export interface UpdateDoctorProfileRequest {
+  specialization?: string;
+  qualification?: string;
+  experience?: number;
+  consultationFee?: number;
+  about?: string;
+}
+
+export interface CreateDoctorRequest {
+  fullName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  specialization: string;
+  qualification: string;
+  experience: number;
+  consultationFee: number;
+  about?: string;
+}
+
+export interface UpdateDoctorRequest {
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
   specialization?: string;
   qualification?: string;
   experience?: number;
@@ -95,7 +125,7 @@ export const doctorsService = {
       minRating?: number;
     }
   ): Promise<PaginatedResponse<Doctor>> {
-    const response = await apiClient.get<PaginatedResponse<Doctor>>(
+    const response = await apiClient.get<any>(
       API_ENDPOINTS.doctors.list,
       {
         params: {
@@ -105,46 +135,56 @@ export const doctorsService = {
         },
       }
     );
-    // Ensure response data has the expected format
-    const responseData = response.data.data || response.data;
-    if (!responseData.items && responseData.doctors) {
-      responseData.items = responseData.doctors;
-    }
-    if (!responseData.meta && responseData.pagination) {
-      responseData.meta = responseData.pagination;
-    }
-    return response.data;
+    
+    const responseData = response.data.data || {};
+    const doctors = responseData.doctors || [];
+    const pagination = responseData.pagination || {};
+    
+    return {
+      success: response.data.success,
+      message: response.data.message,
+      code: response.data.code,
+      data: {
+        items: doctors,
+        meta: {
+          currentPage: pagination.currentPage || page,
+          totalPages: pagination.totalPages || 1,
+          totalItems: pagination.totalDoctors || 0,
+          itemsPerPage: pagination.itemsPerPage || limit,
+        },
+      },
+    };
   },
 
   /**
    * Get specific doctor details
    */
   async getDoctorDetail(doctorId: string): Promise<DoctorProfile> {
-    const response = await apiClient.get<ApiResponse<DoctorProfile>>(
+    const response = await apiClient.get<any>(
       API_ENDPOINTS.doctors.detail(doctorId)
     );
-    return response.data.data!;
+    return response.data.data.doctor;
   },
 
   /**
    * Get doctor's profile (for logged-in doctor)
    */
   async getDoctorProfile(): Promise<DoctorProfile> {
-    const response = await apiClient.get<ApiResponse<DoctorProfile>>(
+    const response = await apiClient.get<any>(
       API_ENDPOINTS.doctors.profile
     );
-    return response.data.data!;
+    return response.data.data.doctor;
   },
 
   /**
    * Update doctor profile
    */
   async updateDoctorProfile(data: UpdateDoctorProfileRequest): Promise<DoctorProfile> {
-    const response = await apiClient.put<ApiResponse<DoctorProfile>>(
+    const response = await apiClient.put<any>(
       API_ENDPOINTS.doctors.profile,
       data
     );
-    return response.data.data!;
+    return response.data.data.doctor;
   },
 
   /**
@@ -155,7 +195,7 @@ export const doctorsService = {
     limit: number = 10,
     status?: string
   ): Promise<PaginatedResponse<Appointment>> {
-    const response = await apiClient.get<PaginatedResponse<Appointment>>(
+    const response = await apiClient.get<any>(
       API_ENDPOINTS.doctors.appointments,
       {
         params: {
@@ -165,17 +205,35 @@ export const doctorsService = {
         },
       }
     );
-    return response.data;
+    
+    const responseData = response.data.data || {};
+    const appointments = responseData.appointments || [];
+    const pagination = responseData.pagination || {};
+    
+    return {
+      success: response.data.success,
+      message: response.data.message,
+      code: response.data.code,
+      data: {
+        items: appointments,
+        meta: {
+          currentPage: pagination.currentPage || page,
+          totalPages: pagination.totalPages || 1,
+          totalItems: pagination.totalAppointments || 0,
+          itemsPerPage: pagination.itemsPerPage || limit,
+        },
+      },
+    };
   },
 
   /**
    * Get specific doctor appointment details
    */
   async getDoctorAppointmentDetail(appointmentId: string): Promise<Appointment> {
-    const response = await apiClient.get<ApiResponse<Appointment>>(
+    const response = await apiClient.get<any>(
       API_ENDPOINTS.doctors.appointmentDetail(appointmentId)
     );
-    return response.data.data!;
+    return response.data.data.appointment;
   },
 
   /**
@@ -185,10 +243,46 @@ export const doctorsService = {
     appointmentId: string,
     data: UpdateAppointmentStatusRequest
   ): Promise<Appointment> {
-    const response = await apiClient.put<ApiResponse<Appointment>>(
+    const response = await apiClient.put<any>(
       API_ENDPOINTS.doctors.updateAppointment(appointmentId),
       data
     );
-    return response.data.data!;
+    return response.data.data.appointment;
+  },
+
+  /**
+   * Delete a doctor
+   */
+  async deleteDoctor(doctorId: string): Promise<void> {
+    await apiClient.delete(`/api/doctors/${doctorId}`);
+  },
+
+  /**
+   * Create a new doctor (Admin only)
+   */
+  async createDoctor(data: CreateDoctorRequest): Promise<Doctor> {
+    const response = await apiClient.post<any>(
+      '/api/admin/doctors',
+      data
+    );
+    return response.data.data.doctor;
+  },
+
+  /**
+   * Update doctor by ID (Admin only)
+   */
+  async updateDoctorById(doctorId: string, data: UpdateDoctorRequest): Promise<Doctor> {
+    const response = await apiClient.put<any>(
+      `/api/admin/doctors/${doctorId}`,
+      data
+    );
+    return response.data.data.doctor;
+  },
+
+  /**
+   * Delete doctor by ID (Admin only)
+   */
+  async deleteDoctorById(doctorId: string): Promise<void> {
+    await apiClient.delete(`/api/admin/doctors/${doctorId}`);
   },
 };
