@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut, ShoppingCart } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,13 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/auth.store";
+import { useCartStore } from "@/store/cart.store";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 const navItems = [
-  { href: "#", label: "Home" },
-  { href: "#top-doctors", label: "Doctors" },
-  { href: "#shop-essentials", label: "Products" },
+  { href: "/", label: "Home" },
+  { href: "/doctors", label: "Doctors" },
+  { href: "/products", label: "Products" },
   { href: "#about", label: "About Us" },
   { href: "#contact", label: "Contact" },
 ];
@@ -29,6 +30,7 @@ export function Navbar() {
   const [activeItem, setActiveItem] = useState("Home");
   const router = useRouter();
   const { user, isAuthenticated, initialize, logout } = useAuthStore();
+  const { toggleCart, getItemCount, fetchCart } = useCartStore();
 
   useEffect(() => {
     initialize();
@@ -109,6 +111,20 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated && user ? (
             <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={toggleCart}
+                aria-label="Shopping Cart"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {getItemCount() > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+                    {getItemCount()}
+                  </span>
+                )}
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -145,28 +161,26 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Button
-                variant="ghost"
-                aria-label="Login"
-                asChild
-                className="relative overflow-hidden group transition-all duration-300 hover:scale-105"
-              >
-                <Link href="/login">
+              <Link href="/login">
+                <Button
+                  variant="ghost"
+                  aria-label="Login"
+                  className="relative overflow-hidden group transition-all duration-300 hover:scale-105"
+                >
                   <span className="relative z-10">Login</span>
                   <span className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                aria-label="Signup"
-                asChild
-                className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-md"
-              >
-                <Link href="/register">
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button
+                  variant="outline"
+                  aria-label="Signup"
+                  className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-md"
+                >
                   <span className="relative z-10">Signup</span>
                   <span className="absolute inset-0 bg-primary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
-                </Link>
-              </Button>
+                </Button>
+              </Link>
               <Button
                 aria-label="Book Appointment"
                 className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg"
@@ -228,22 +242,24 @@ export function Navbar() {
                   style={{ animation: "fadeInLeft 0.3s ease-out 0.25s both" }}
                 >
                   <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      asChild
-                      className="hover:scale-105 transition-transform duration-200"
-                    >
-                      <Link href="/login">Login</Link>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      asChild
-                      className="hover:scale-105 transition-transform duration-200"
-                    >
-                      <Link href="/register">Signup</Link>
-                    </Button>
+                    <Link href="/login">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="hover:scale-105 transition-transform duration-200 w-full"
+                      >
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="hover:scale-105 transition-transform duration-200 w-full"
+                      >
+                        Signup
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               )}

@@ -5,6 +5,14 @@ const {
   getProductById,
   getProductsByCategory,
 } = require("../controllers/productController.js");
+const authMiddleware = require("../middleware/authMiddleware.js");
+const {
+  getCart,
+  addToCart,
+  updateCartItem,
+  removeFromCart,
+  clearCart,
+} = require("../controllers/cartController.js");
 
 /**
  * @swagger
@@ -376,5 +384,165 @@ router.get("/:id", getProductById);
  *         description: Server error
  */
 router.get("/category/:category", getProductsByCategory);
+
+/**
+ * @swagger
+ * /api/products/cart:
+ *   get:
+ *     summary: Get user's cart
+ *     description: Retrieve current user's shopping cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Cart retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get("/cart", authMiddleware, getCart);
+
+/**
+ * @swagger
+ * /api/products/cart/items:
+ *   post:
+ *     summary: Add item to cart
+ *     description: Add a product to the user's cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - productId
+ *             properties:
+ *               productId:
+ *                 type: string
+ *                 example: "507f1f77bcf86cd799439011"
+ *               quantity:
+ *                 type: number
+ *                 default: 1
+ *                 example: 2
+ *     responses:
+ *       200:
+ *         description: Item added to cart successfully
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
+router.post("/cart/items", authMiddleware, addToCart);
+
+/**
+ * @swagger
+ * /api/products/cart/items/{productId}:
+ *   put:
+ *     summary: Update cart item quantity
+ *     description: Update the quantity of a specific item in cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - quantity
+ *             properties:
+ *               quantity:
+ *                 type: number
+ *                 minimum: 1
+ *                 example: 3
+ *     responses:
+ *       200:
+ *         description: Cart item updated successfully
+ *       400:
+ *         description: Invalid quantity
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Cart or item not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/cart/items/:productId", authMiddleware, updateCartItem);
+
+/**
+ * @swagger
+ * /api/products/cart/items/{productId}:
+ *   delete:
+ *     summary: Remove item from cart
+ *     description: Remove a specific item from the user's cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *     responses:
+ *       200:
+ *         description: Item removed from cart successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Cart or item not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/cart/items/:productId", authMiddleware, removeFromCart);
+
+/**
+ * @swagger
+ * /api/products/cart:
+ *   delete:
+ *     summary: Clear cart
+ *     description: Remove all items from the user's cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Cart cleared successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Cart not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/cart", authMiddleware, clearCart);
 
 module.exports = router;
