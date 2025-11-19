@@ -2,16 +2,17 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware.js");
 const {
-  bookAppointment,
+  createAppointmentOrder,
+  verifyAppointmentPayment,
   getAppointmentDetails,
 } = require("../controllers/appointmentController.js");
 
 /**
  * @swagger
- * /api/appointments:
+ * /api/appointments/create-order:
  *   post:
- *     summary: Book new appointment
- *     description: Patient can book a new appointment with a doctor
+ *     summary: Create Razorpay order for appointment
+ *     description: Patient creates an order for appointment booking. Consultation fee is fetched from server (doctor's profile).
  *     tags:
  *       - Appointments
  *     security:
@@ -28,7 +29,6 @@ const {
  *               - appointmentDate
  *               - appointmentTime
  *               - reason
- *               - consultationFee
  *             properties:
  *               doctorId:
  *                 type: string
@@ -51,42 +51,17 @@ const {
  *                 type: string
  *                 description: Reason for appointment
  *                 example: "Regular checkup and consultation"
- *               consultationFee:
- *                 type: number
- *                 description: Consultation fee amount
- *                 example: 500
  *               notes:
  *                 type: string
  *                 description: Additional notes
  *                 example: "First visit"
  *     responses:
  *       201:
- *         description: Appointment booked successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Appointment booked successfully"
- *                 code:
- *                   type: string
- *                   example: "APPOINTMENT_BOOKED"
- *                 data:
- *                   type: object
- *                   properties:
- *                     appointment:
- *                       $ref: '#/components/schemas/Appointment'
+ *         description: Order created successfully
  *       400:
- *         description: Validation error or invalid data
- *       401:
- *         description: Unauthorized
+ *         description: Validation error
  *       403:
- *         description: Forbidden - Only patients can book appointments
+ *         description: Forbidden
  *       404:
  *         description: Doctor not found
  *       409:
@@ -94,7 +69,56 @@ const {
  *       500:
  *         description: Server error
  */
-router.post("/", authMiddleware, bookAppointment);
+router.post("/create-order", authMiddleware, createAppointmentOrder);
+
+/**
+ * @swagger
+ * /api/appointments/verify-payment:
+ *   post:
+ *     summary: Verify Razorpay payment and confirm appointment
+ *     description: Verify payment signature and update appointment status
+ *     tags:
+ *       - Appointments
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - appointmentId
+ *               - razorpayOrderId
+ *               - razorpayPaymentId
+ *               - razorpaySignature
+ *             properties:
+ *               appointmentId:
+ *                 type: string
+ *                 description: Appointment ID
+ *               razorpayOrderId:
+ *                 type: string
+ *                 description: Razorpay Order ID
+ *               razorpayPaymentId:
+ *                 type: string
+ *                 description: Razorpay Payment ID
+ *               razorpaySignature:
+ *                 type: string
+ *                 description: Razorpay Signature
+ *     responses:
+ *       200:
+ *         description: Payment verified successfully
+ *       400:
+ *         description: Validation error or invalid payment
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Appointment not found
+ *       500:
+ *         description: Server error
+ */
+router.post("/verify-payment", authMiddleware, verifyAppointmentPayment);
 
 /**
  * @swagger
@@ -117,25 +141,6 @@ router.post("/", authMiddleware, bookAppointment);
  *     responses:
  *       200:
  *         description: Appointment details retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Appointment details retrieved successfully"
- *                 code:
- *                   type: string
- *                   example: "APPOINTMENT_DETAILS_RETRIEVED"
- *                 data:
- *                   type: object
- *                   properties:
- *                     appointment:
- *                       $ref: '#/components/schemas/Appointment'
  *       400:
  *         description: Invalid appointment ID format
  *       401:

@@ -7,11 +7,11 @@ import { Doctor } from "@/types/doctor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Star, ArrowLeft, Calendar, User, Mail, Phone, Award } from "lucide-react";
+import { Star, ArrowLeft, User, Mail, Phone, Award } from "lucide-react";
 import Image from "next/image";
-import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { toast } from "sonner";
+import { BookAppointmentDialog } from "@/components/appointment/book-appointment-dialog";
 
 export default function DoctorDetailPage() {
   const params = useParams();
@@ -43,7 +43,6 @@ export default function DoctorDetailPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <main className="min-h-screen pt-20 pb-12 px-4 md:px-8 lg:px-12">
           <div className="max-w-4xl mx-auto">
             <div className="space-y-6">
@@ -64,7 +63,6 @@ export default function DoctorDetailPage() {
 
   return (
     <>
-      <Navbar />
       <main className="min-h-screen pt-20 pb-12 px-4 md:px-8 lg:px-12">
         <div className="max-w-4xl mx-auto">
           <Button
@@ -164,10 +162,7 @@ export default function DoctorDetailPage() {
                   <p className="text-2xl font-bold">₹{doctor.consultationFee}</p>
                 </div>
 
-                <Button size="lg">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Book Appointment
-                </Button>
+                <BookAppointmentDialog doctor={doctor} />
               </div>
             </CardContent>
           </Card>

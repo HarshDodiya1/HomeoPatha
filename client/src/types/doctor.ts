@@ -1,5 +1,6 @@
 export interface Doctor {
   _id: string;
+  id?: string; // Server returns 'id' instead of '_id' in detail response
   userId: {
     _id: string;
     fullName: string;

@@ -65,7 +65,6 @@ export default function DoctorsPage() {
 
   return (
     <>
-      <Navbar />
       <main className="min-h-screen pt-20 pb-12 px-4 md:px-8 lg:px-12">
         <div className="max-w-7xl mx-auto">
           {/* Header */}

@@ -4,20 +4,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import { Loader2, User as UserIcon, Mail, Phone, LogOut } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Loader2, User as UserIcon, Mail, Phone, LogOut, Calendar, Clock, MapPin } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 import { Separator } from "@/components/ui/separator"
+import apiClient from "@/lib/api/client"
+import { Appointment } from "@/types/appointment"
 
 export default function ProfilePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isAuthenticated, isInitialized, initialize, updateProfile, logout, isLoading } = useAuthStore()
 
   const [fullName, setFullName] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [isUpdating, setIsUpdating] = useState(false)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [isLoadingAppointments, setIsLoadingAppointments] = useState(false)
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile')
 
   useEffect(() => {
     initialize()
@@ -35,6 +43,65 @@ export default function ProfilePage() {
       setPhoneNumber(user.phoneNumber || "")
     }
   }, [user])
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    if (activeTab === 'appointments' && isAuthenticated) {
+      fetchAppointments()
+    }
+  }, [activeTab, isAuthenticated])
+
+  const fetchAppointments = async () => {
+    setIsLoadingAppointments(true)
+    try {
+      const response = await apiClient.get<{
+        success: boolean;
+        data: {
+          appointments: Appointment[];
+        };
+      }>('/api/users/appointments')
+      setAppointments(response.data.data.appointments)
+    } catch (error: any) {
+      console.error('Failed to fetch appointments:', error)
+      toast.error('Failed to load appointments')
+    } finally {
+      setIsLoadingAppointments(false)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return 'bg-green-500'
+      case 'pending':
+        return 'bg-yellow-500'
+      case 'completed':
+        return 'bg-blue-500'
+      case 'cancelled':
+        return 'bg-red-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-500'
+      case 'pending':
+        return 'bg-yellow-500'
+      case 'failed':
+        return 'bg-red-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,8 +150,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 pt-20 py-12 px-4">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Profile Header */}
         <Card>
           <CardHeader>
@@ -106,12 +173,20 @@ export default function ProfilePage() {
           </CardHeader>
         </Card>
 
-        {/* Profile Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>Update your personal details here</CardDescription>
-          </CardHeader>
+        {/* Tabs for Profile and Appointments */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="profile">Profile Information</TabsTrigger>
+            <TabsTrigger value="appointments">My Appointments</TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Information</CardTitle>
+                <CardDescription>Update your personal details here</CardDescription>
+              </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -200,27 +275,102 @@ export default function ProfilePage() {
             </form>
           </CardContent>
         </Card>
+          </TabsContent>
 
-        {/* Account Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Account Created:</span>
-              <span className="font-medium">
-                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Last Updated:</span>
-              <span className="font-medium">
-                {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'N/A'}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Appointments Tab */}
+          <TabsContent value="appointments" className="space-y-6">
+            {isLoadingAppointments ? (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </CardContent>
+              </Card>
+            ) : appointments.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <Calendar className="h-16 w-16 text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium text-muted-foreground">No appointments found</p>
+                  <p className="text-sm text-muted-foreground mt-2">Book your first appointment with a doctor</p>
+                  <Button className="mt-4" onClick={() => router.push('/doctors')}>
+                    Browse Doctors
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {appointments.map((appointment) => (
+                  <Card key={appointment._id}>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div className="space-y-3 flex-1">
+                          <div className="flex items-start gap-3">
+                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <UserIcon className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-lg">
+                                {appointment.doctorId?.userId?.fullName || 'Doctor'}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {(appointment.doctorId as any)?.specialization || 'Specialist'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span>
+                                {new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
+                                  weekday: 'short',
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span>{appointment.appointmentTime}</span>
+                            </div>
+                          </div>
+
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">Reason: </span>
+                            <span className="font-medium">{appointment.reason}</span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <Badge className={getStatusColor(appointment.status)}>
+                              {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                            </Badge>
+                            <Badge className={getPaymentStatusColor(appointment.paymentStatus)}>
+                              Payment: {appointment.paymentStatus.charAt(0).toUpperCase() + appointment.paymentStatus.slice(1)}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Consultation Fee</p>
+                            <p className="text-2xl font-bold text-primary">₹{appointment.consultationFee}</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/appointments/${appointment._id}`)}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

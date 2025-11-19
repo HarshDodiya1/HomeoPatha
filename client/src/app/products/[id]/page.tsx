@@ -12,7 +12,6 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Star, ArrowLeft, Plus, Minus } from "lucide-react";
 import Image from "next/image";
-import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { toast } from "sonner";
@@ -68,7 +67,6 @@ export default function ProductDetailPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <main className="min-h-screen pt-20 pb-12 px-4 md:px-8 lg:px-12">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-8">
@@ -102,7 +100,6 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <Navbar />
       <main className="min-h-screen pt-20 pb-12 px-4 md:px-8 lg:px-12">
         <div className="max-w-6xl mx-auto">
           <Button
