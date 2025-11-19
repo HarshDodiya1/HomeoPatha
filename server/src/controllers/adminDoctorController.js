@@ -28,6 +28,7 @@ const createDoctor = async (req, res) => {
       experience,
       consultationFee,
       about,
+      images,
     } = req.body;
 
     // Validation
@@ -115,6 +116,7 @@ const createDoctor = async (req, res) => {
       experience: parseInt(experience),
       consultationFee: parseFloat(consultationFee),
       about: about ? about.trim() : "",
+      images: images || [],
       rating: 0,
       totalRatings: 0,
     });
@@ -169,6 +171,7 @@ const updateDoctor = async (req, res) => {
       experience,
       consultationFee,
       about,
+      images,
     } = req.body;
 
     // Validate doctor ID format
@@ -255,6 +258,9 @@ const updateDoctor = async (req, res) => {
     }
     if (about !== undefined) {
       doctor.about = about.trim();
+    }
+    if (images !== undefined) {
+      doctor.images = images;
     }
 
     // Save doctor updates

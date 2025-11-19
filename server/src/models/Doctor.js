@@ -31,6 +31,7 @@ const doctorSchema = new mongoose.Schema(
     experience: { type: Number, required: true },
     consultationFee: { type: Number, required: true },
     about: { type: String },
+    images: { type: [String], default: [] },
     rating: { type: Number, default: 0 },
     totalRatings: { type: Number, default: 0 },
   },

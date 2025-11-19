@@ -3,14 +3,18 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, User, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
+import { useAuthStore } from "@/store/auth.store";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const navItems = [
   { href: "#", label: "Home" },
@@ -23,6 +27,12 @@ const navItems = [
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
+  const router = useRouter();
+  const { user, isAuthenticated, initialize, logout } = useAuthStore();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +41,16 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("Logged out successfully");
+      router.push("/");
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 transition-all duration-300 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -87,31 +107,77 @@ export function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button
-            variant="ghost"
-            aria-label="Login"
-            className="relative overflow-hidden group transition-all duration-300 hover:scale-105"
-          >
-            <span className="relative z-10">Login</span>
-            <span className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-          </Button>
-          <Button
-            variant="outline"
-            aria-label="Signup"
-            className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-md"
-          >
-            <span className="relative z-10">Signup</span>
-            <span className="absolute inset-0 bg-primary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
-          </Button>
-          <Button
-            aria-label="Book Appointment"
-            className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg"
-          >
-            <span className="relative z-10 transition-transform duration-300 group-hover:scale-110">
-              Book Appointment
-            </span>
-            <span className="absolute inset-0 bg-primary-foreground/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-          </Button>
+          {isAuthenticated && user ? (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative overflow-hidden group transition-all duration-300 hover:scale-105"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    <span className="relative z-10">{user.fullName}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/profile">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                aria-label="Book Appointment"
+                className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              >
+                <span className="relative z-10 transition-transform duration-300 group-hover:scale-110">
+                  Book Appointment
+                </span>
+                <span className="absolute inset-0 bg-primary-foreground/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                aria-label="Login"
+                asChild
+                className="relative overflow-hidden group transition-all duration-300 hover:scale-105"
+              >
+                <Link href="/login">
+                  <span className="relative z-10">Login</span>
+                  <span className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                aria-label="Signup"
+                asChild
+                className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-md"
+              >
+                <Link href="/register">
+                  <span className="relative z-10">Signup</span>
+                  <span className="absolute inset-0 bg-primary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+                </Link>
+              </Button>
+              <Button
+                aria-label="Book Appointment"
+                className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              >
+                <span className="relative z-10 transition-transform duration-300 group-hover:scale-110">
+                  Book Appointment
+                </span>
+                <span className="absolute inset-0 bg-primary-foreground/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="md:hidden">
@@ -142,33 +208,45 @@ export function Navbar() {
                   <Link href={item.href}>{item.label}</Link>
                 </DropdownMenuItem>
               ))}
-              <div
-                className="px-2 py-2"
-                style={{ animation: "fadeInLeft 0.3s ease-out 0.25s both" }}
-              >
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="hover:scale-105 transition-transform duration-200"
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="hover:scale-105 transition-transform duration-200"
-                  >
-                    Signup
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="hover:scale-105 transition-transform duration-200"
-                  >
-                    Book
-                  </Button>
+              {isAuthenticated && user ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/profile">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <div
+                  className="px-2 py-2"
+                  style={{ animation: "fadeInLeft 0.3s ease-out 0.25s both" }}
+                >
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      asChild
+                      className="hover:scale-105 transition-transform duration-200"
+                    >
+                      <Link href="/login">Login</Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      asChild
+                      className="hover:scale-105 transition-transform duration-200"
+                    >
+                      <Link href="/register">Signup</Link>
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

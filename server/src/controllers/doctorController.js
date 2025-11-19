@@ -160,6 +160,7 @@ const updateDoctorProfile = async (req, res) => {
       experience,
       consultationFee,
       about,
+      images,
     } = req.body;
 
     // Input validation
@@ -218,6 +219,9 @@ const updateDoctorProfile = async (req, res) => {
     if (about !== undefined) {
       doctor.about = about.trim();
     }
+    if (images !== undefined) {
+      doctor.images = images;
+    }
 
     await doctor.save();
 
@@ -234,6 +238,7 @@ const updateDoctorProfile = async (req, res) => {
           experience: doctor.experience,
           consultationFee: doctor.consultationFee,
           about: doctor.about,
+          images: doctor.images,
           rating: doctor.rating,
           totalRatings: doctor.totalRatings,
           updatedAt: doctor.updatedAt,

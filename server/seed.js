@@ -21,8 +21,7 @@ const connectDB = async () => {
   }
 };
 
-// Dummy data
-
+// Dummy data definitions
 const dummyAdmin = {
   fullName: "Harsh Dodiya",
   email: "admin@homeopatha.com",
@@ -160,6 +159,7 @@ const dummyDoctors = [
       experience: 12,
       consultationFee: 500,
       about: "Experienced cardiologist with 12 years of practice in treating heart diseases.",
+      images: ["https://yavuzceliker.github.io/sample-images/image-1.jpg"],
     },
   },
   {
@@ -184,6 +184,7 @@ const dummyDoctors = [
       experience: 8,
       consultationFee: 400,
       about: "Dermatologist specializing in skin care and cosmetic treatments.",
+      images: ["https://yavuzceliker.github.io/sample-images/image-2.jpg"],
     },
   },
   {
@@ -208,6 +209,7 @@ const dummyDoctors = [
       experience: 15,
       consultationFee: 600,
       about: "Orthopedic surgeon with expertise in joint replacement and sports medicine.",
+      images: ["https://yavuzceliker.github.io/sample-images/image-3.jpg"],
     },
   },
   {
@@ -232,6 +234,7 @@ const dummyDoctors = [
       experience: 10,
       consultationFee: 350,
       about: "Pediatrician dedicated to child health and developmental care.",
+      images: ["https://yavuzceliker.github.io/sample-images/image-4.jpg"],
     },
   },
   {
@@ -256,6 +259,7 @@ const dummyDoctors = [
       experience: 11,
       consultationFee: 550,
       about: "Neurologist with expertise in treating neurological disorders.",
+      images: ["https://yavuzceliker.github.io/sample-images/image-5.jpg"],
     },
   },
 ];
@@ -269,7 +273,10 @@ const dummyProducts = [
     rating: 4.5,
     oldPrice: 250,
     currentPrice: 199,
-    images: ["https://via.placeholder.com/300x300?text=Arnica+30CH"],
+    images: [
+      "https://yavuzceliker.github.io/sample-images/image-6.jpg",
+      "https://yavuzceliker.github.io/sample-images/image-7.jpg",
+    ],
     tags: ["bruises", "injury", "pain", "relief"],
     isActive: true,
   },
@@ -281,7 +288,9 @@ const dummyProducts = [
     rating: 4.3,
     oldPrice: 220,
     currentPrice: 179,
-    images: ["https://via.placeholder.com/300x300?text=Nux+Vomica"],
+    images: [
+      "https://yavuzceliker.github.io/sample-images/image-8.jpg",
+    ],
     tags: ["digestion", "stress", "constipation"],
     isActive: true,
   },
@@ -293,7 +302,10 @@ const dummyProducts = [
     rating: 4.2,
     oldPrice: 240,
     currentPrice: 189,
-    images: ["https://via.placeholder.com/300x300?text=Calcarea+Carb"],
+    images: [
+      "https://yavuzceliker.github.io/sample-images/image-9.jpg",
+      "https://yavuzceliker.github.io/sample-images/image-10.jpg",
+    ],
     tags: ["immunity", "bones", "health"],
     isActive: true,
   },
@@ -305,7 +317,9 @@ const dummyProducts = [
     rating: 4.6,
     oldPrice: 210,
     currentPrice: 169,
-    images: ["https://via.placeholder.com/300x300?text=Sulphur"],
+    images: [
+      "https://yavuzceliker.github.io/sample-images/image-11.jpg",
+    ],
     tags: ["skin", "itching", "detox"],
     isActive: true,
   },
@@ -317,7 +331,10 @@ const dummyProducts = [
     rating: 4.4,
     oldPrice: 230,
     currentPrice: 179,
-    images: ["https://via.placeholder.com/300x300?text=Pulsatilla"],
+    images: [
+      "https://yavuzceliker.github.io/sample-images/image-12.jpg",
+      "https://yavuzceliker.github.io/sample-images/image-13.jpg",
+    ],
     tags: ["emotions", "womens-health", "balance"],
     isActive: true,
   },
@@ -329,7 +346,9 @@ const dummyProducts = [
     rating: 4.1,
     oldPrice: 220,
     currentPrice: 174,
-    images: ["https://via.placeholder.com/300x300?text=Lycopodium"],
+    images: [
+      "https://yavuzceliker.github.io/sample-images/image-14.jpg",
+    ],
     tags: ["digestion", "anxiety", "confidence"],
     isActive: true,
   },
@@ -341,7 +360,10 @@ const dummyProducts = [
     rating: 4.2,
     oldPrice: 215,
     currentPrice: 169,
-    images: ["https://via.placeholder.com/300x300?text=Hepar+Sulph"],
+    images: [
+      "https://yavuzceliker.github.io/sample-images/image-15.jpg",
+      "https://yavuzceliker.github.io/sample-images/image-16.jpg",
+    ],
     tags: ["respiratory", "skin", "healing"],
     isActive: true,
   },
@@ -353,7 +375,9 @@ const dummyProducts = [
     rating: 4.3,
     oldPrice: 225,
     currentPrice: 179,
-    images: ["https://via.placeholder.com/300x300?text=Belladonna"],
+    images: [
+      "https://yavuzceliker.github.io/sample-images/image-17.jpg",
+    ],
     tags: ["fever", "inflammation", "acute"],
     isActive: true,
   },
@@ -383,20 +407,10 @@ const dummyContactMessages = [
 // Seeding function
 const seedDatabase = async () => {
   try {
-    console.log("🌱 Starting database seeding...\n");
+    console.log("🌱 Starting database seeding (Add Mode)...\n");
 
-    // Clear existing data (commented out for now)
-    // console.log("🧹 Clearing existing data...");
-    // await User.deleteMany({});
-    // await Doctor.deleteMany({});
-    // await Product.deleteMany({});
-    // await Order.deleteMany({});
-    // await Appointment.deleteMany({});
-    // await ContactMessage.deleteMany({});
-    // console.log("✅ Cleared existing data\n");
-
-    // Seed admin
-    console.log("👑 Seeding admin user...");
+    // --- Admin ---
+    console.log("👑 Checking/Seeding admin user...");
     const adminExists = await User.findOne({ email: dummyAdmin.email });
     let createdAdmin;
     if (!adminExists) {
@@ -410,199 +424,225 @@ const seedDatabase = async () => {
         role: dummyAdmin.role,
         addresses: dummyAdmin.addresses,
       });
-      console.log(`✅ Created admin user\n`);
+      console.log(`✅ Created admin user`);
     } else {
-      console.log(`⏭️  Admin user already exists\n`);
+      console.log(`⏭️  Admin user already exists`);
       createdAdmin = adminExists;
     }
+    console.log("");
 
-    // Seed patients
-    console.log("👥 Seeding patients...");
-    const hashedPatients = await Promise.all(
-      dummyPatients.map(async (patient) => {
+    // --- Patients ---
+    console.log("👥 Checking/Seeding patients...");
+    let newPatientsCount = 0;
+    for (const patient of dummyPatients) {
+      const exists = await User.findOne({ email: patient.email });
+      if (!exists) {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(patient.password, salt);
-        return { ...patient, password: hashedPassword };
-      }),
+        await User.create({ ...patient, password: hashedPassword });
+        newPatientsCount++;
+      }
+    }
+    // Fetch ALL patients (new and existing) to allow order creation
+    const allPatients = await User.find({ role: "patient" });
+    console.log(
+      `✅ Added ${newPatientsCount} new patients. Total available: ${allPatients.length}\n`
     );
-    const createdPatients = await User.insertMany(hashedPatients, { ordered: false }).catch(() => []);
-    console.log(`✅ Created ${createdPatients.length} patient users\n`);
 
-    // Seed doctors
-    console.log("👨‍⚕️ Seeding doctors...");
-    const hashedDoctors = await Promise.all(
-      dummyDoctors.map(async (doctor) => {
+    // --- Doctors ---
+    console.log("👨‍⚕️ Checking/Seeding doctors...");
+    let newDoctorsCount = 0;
+    for (const doctor of dummyDoctors) {
+      const userExists = await User.findOne({ email: doctor.email });
+      let doctorUserId;
+
+      if (!userExists) {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(doctor.password, salt);
-        return { ...doctor, password: hashedPassword };
-      }),
+        const newUser = await User.create({
+          fullName: doctor.fullName,
+          email: doctor.email,
+          password: hashedPassword,
+          phoneNumber: doctor.phoneNumber,
+          role: doctor.role,
+          addresses: doctor.addresses,
+        });
+        doctorUserId = newUser._id;
+      } else {
+        doctorUserId = userExists._id;
+      }
+
+      // Check if Doctor profile exists for this User
+      const doctorProfileExists = await Doctor.findOne({ userId: doctorUserId });
+      if (!doctorProfileExists) {
+        await Doctor.create({
+          userId: doctorUserId,
+          specialization: doctor.doctorDetails.specialization,
+          qualification: doctor.doctorDetails.qualification,
+          experience: doctor.doctorDetails.experience,
+          consultationFee: doctor.doctorDetails.consultationFee,
+          about: doctor.doctorDetails.about,
+          images: doctor.doctorDetails.images || [],
+          rating: Math.floor(Math.random() * 2) + 4,
+          totalRatings: Math.floor(Math.random() * 100) + 10,
+        });
+        newDoctorsCount++;
+      }
+    }
+    // Fetch ALL doctor profiles
+    const allDoctors = await Doctor.find({});
+    console.log(
+      `✅ Added ${newDoctorsCount} new doctor profiles. Total available: ${allDoctors.length}\n`
     );
-    const createdDoctorUsers = await User.insertMany(
-      hashedDoctors.map((doc) => ({
-        fullName: doc.fullName,
-        email: doc.email,
-        password: doc.password,
-        phoneNumber: doc.phoneNumber,
-        role: doc.role,
-        addresses: doc.addresses,
-      })),
-      { ordered: false },
-    ).catch(() => []);
 
-    const createdDoctors = await Promise.all(
-      dummyDoctors.map(async (doctor, index) => {
-        if (createdDoctorUsers[index]) {
-          return Doctor.create({
-            userId: createdDoctorUsers[index]._id,
-            specialization: doctor.doctorDetails.specialization,
-            qualification: doctor.doctorDetails.qualification,
-            experience: doctor.doctorDetails.experience,
-            consultationFee: doctor.doctorDetails.consultationFee,
-            about: doctor.doctorDetails.about,
-            rating: Math.floor(Math.random() * 2) + 4,
-            totalRatings: Math.floor(Math.random() * 100) + 10,
-          }).catch(() => null);
+    // --- Products ---
+    // Note: We allow appending products even if duplicates exist, based on prompt "add dummy data"
+    // However, usually duplicate products are bad. Let's check title to be safe, or remove check if you want duplicates.
+    console.log("💊 Seeding products (Appending)...");
+    const createdProducts = await Product.insertMany(dummyProducts, {
+      ordered: false,
+    }).catch(() => []);
+    console.log(`✅ Added ${createdProducts.length} products\n`);
+
+    // Re-fetch all products to use for orders
+    const allProducts = await Product.find({});
+
+    if (allPatients.length > 0 && allProducts.length > 0) {
+      // --- Orders ---
+      console.log("📦 Seeding orders (For all patients)...");
+      const orders = [];
+      for (const patient of allPatients) {
+        // Create random orders for every patient found
+        const numOrders = Math.floor(Math.random() * 2) + 1; // 1 to 2 orders per run
+
+        for (let j = 0; j < numOrders; j++) {
+          const numItems = Math.floor(Math.random() * 3) + 1;
+          const selectedProducts = allProducts
+            .sort(() => Math.random() - 0.5)
+            .slice(0, numItems);
+
+          const orderItems = selectedProducts.map((product) => ({
+            productId: product._id,
+            title: product.title,
+            quantity: Math.floor(Math.random() * 3) + 1,
+            price: product.currentPrice,
+            image:
+              product.images && product.images.length > 0
+                ? product.images[0]
+                : "",
+          }));
+
+          const totalAmount = orderItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          );
+
+          orders.push({
+            userId: patient._id,
+            orderItems,
+            shippingAddress:
+              patient.addresses && patient.addresses.length > 0
+                ? patient.addresses[0]
+                : {
+                    addressLine1: "Dummy Address",
+                    city: "City",
+                    state: "State",
+                    pincode: "000000",
+                  },
+            paymentMethod: Math.random() > 0.5 ? "razorpay" : "cod",
+            paymentStatus: ["pending", "completed", "failed"][
+              Math.floor(Math.random() * 3)
+            ],
+            totalAmount,
+            orderStatus: ["pending", "confirmed", "processing", "shipped"][
+              Math.floor(Math.random() * 4)
+            ],
+            estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          });
         }
-      }),
-    ).then(docs => docs.filter(doc => doc !== null));
-    console.log(`✅ Created ${createdDoctors.length} doctors\n`);
-
-    // Seed products
-    console.log("💊 Seeding products...");
-    const createdProducts = await Product.insertMany(dummyProducts, { ordered: false }).catch(() => []);
-    console.log(`✅ Created ${createdProducts.length} products\n`);
-
-    // Seed orders
-    console.log("📦 Seeding orders...");
-    const orders = [];
-    for (let i = 0; i < createdPatients.length; i++) {
-      const patient = createdPatients[i];
-      const numOrders = Math.floor(Math.random() * 3) + 1;
-
-      for (let j = 0; j < numOrders; j++) {
-        const numItems = Math.floor(Math.random() * 3) + 1;
-        const selectedProducts = createdProducts
-          .sort(() => Math.random() - 0.5)
-          .slice(0, numItems);
-
-        const orderItems = selectedProducts.map((product) => ({
-          productId: product._id,
-          title: product.title,
-          quantity: Math.floor(Math.random() * 3) + 1,
-          price: product.currentPrice,
-          image: product.images[0],
-        }));
-
-        const totalAmount = orderItems.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0,
-        );
-
-        orders.push({
-          userId: patient._id,
-          orderItems,
-          shippingAddress: patient.addresses[0],
-          paymentMethod: Math.random() > 0.5 ? "razorpay" : "cod",
-          paymentStatus: ["pending", "completed", "failed"][
-            Math.floor(Math.random() * 3)
-          ],
-          totalAmount,
-          orderStatus: ["pending", "confirmed", "processing", "shipped"][
-            Math.floor(Math.random() * 4)
-          ],
-          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        });
       }
+      const createdOrders = await Order.insertMany(orders, {
+        ordered: false,
+      }).catch((err) => {
+        console.error("Order seed error:", err.message);
+        return [];
+      });
+      console.log(`✅ Added ${createdOrders.length} orders\n`);
     }
-    const createdOrders = await Order.insertMany(orders, { ordered: false }).catch(() => []);
-    console.log(`✅ Created ${createdOrders.length} orders\n`);
 
-    // Seed appointments
-    console.log("📅 Seeding appointments...");
-    const appointments = [];
-    for (let i = 0; i < createdPatients.length; i++) {
-      const patient = createdPatients[i];
-      const numAppointments = Math.floor(Math.random() * 3) + 1;
+    if (allPatients.length > 0 && allDoctors.length > 0) {
+      // --- Appointments ---
+      console.log("📅 Seeding appointments (For all patients)...");
+      const appointments = [];
+      for (const patient of allPatients) {
+        const numAppointments = Math.floor(Math.random() * 2) + 1;
 
-      for (let j = 0; j < numAppointments; j++) {
-        const doctor =
-          createdDoctors[Math.floor(Math.random() * createdDoctors.length)];
-        const appointmentDate = new Date(
-          Date.now() + Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000,
-        );
+        for (let j = 0; j < numAppointments; j++) {
+          const doctor =
+            allDoctors[Math.floor(Math.random() * allDoctors.length)];
+          const appointmentDate = new Date(
+            Date.now() + Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000
+          );
 
-        appointments.push({
-          patientId: patient._id,
-          doctorId: doctor._id,
-          appointmentDate,
-          appointmentTime: [
-            "09:00",
-            "10:00",
-            "11:00",
-            "14:00",
-            "15:00",
-            "16:00",
-          ][Math.floor(Math.random() * 6)],
-          duration: 30,
-          reason: [
-            "General Checkup",
-            "Follow-up Consultation",
-            "Specific Problem",
-            "Annual Checkup",
-          ][Math.floor(Math.random() * 4)],
-          status: [
-            "pending",
-            "confirmed",
-            "completed",
-            "cancelled",
-            "rescheduled",
-          ][Math.floor(Math.random() * 5)],
-          consultationFee: doctor.consultationFee,
-          paymentStatus: ["pending", "completed"][
-            Math.floor(Math.random() * 2)
-          ],
-          notes:
-            Math.random() > 0.5
-              ? "Patient responded well to treatment"
-              : undefined,
-          prescription:
-            Math.random() > 0.5 ? "Take 3 times daily with water" : undefined,
-        });
+          appointments.push({
+            patientId: patient._id,
+            doctorId: doctor._id,
+            appointmentDate,
+            appointmentTime: [
+              "09:00",
+              "10:00",
+              "11:00",
+              "14:00",
+              "15:00",
+              "16:00",
+            ][Math.floor(Math.random() * 6)],
+            duration: 30,
+            reason: [
+              "General Checkup",
+              "Follow-up Consultation",
+              "Specific Problem",
+              "Annual Checkup",
+            ][Math.floor(Math.random() * 4)],
+            status: [
+              "pending",
+              "confirmed",
+              "completed",
+              "cancelled",
+              "rescheduled",
+            ][Math.floor(Math.random() * 5)],
+            consultationFee: doctor.consultationFee,
+            paymentStatus: ["pending", "completed"][
+              Math.floor(Math.random() * 2)
+            ],
+            notes:
+              Math.random() > 0.5
+                ? "Patient responded well to treatment"
+                : undefined,
+            prescription:
+              Math.random() > 0.5
+                ? "Take 3 times daily with water"
+                : undefined,
+          });
+        }
       }
+      const createdAppointments = await Appointment.insertMany(appointments, {
+        ordered: false,
+      }).catch((err) => {
+        console.error("Appointment seed error:", err.message);
+        return [];
+      });
+      console.log(`✅ Added ${createdAppointments.length} appointments\n`);
     }
-    const createdAppointments = await Appointment.insertMany(appointments, { ordered: false }).catch(() => []);
-    console.log(`✅ Created ${createdAppointments.length} appointments\n`);
 
-    // Seed contact messages
-    console.log("💬 Seeding contact messages...");
+    // --- Contact Messages ---
+    console.log("💬 Seeding contact messages (Appending)...");
     const createdContacts = await ContactMessage.insertMany(
       dummyContactMessages,
       { ordered: false }
     ).catch(() => []);
-    console.log(`✅ Created ${createdContacts.length} contact messages\n`);
+    console.log(`✅ Added ${createdContacts.length} contact messages\n`);
 
-    console.log("✨ Database seeding completed successfully!\n");
-    console.log("📊 Summary:");
-    console.log(`   - Admin: 1`);
-    console.log(`   - Patients: ${createdPatients.length}`);
-    console.log(`   - Doctors: ${createdDoctors.length}`);
-    console.log(`   - Products: ${createdProducts.length}`);
-    console.log(`   - Orders: ${createdOrders.length}`);
-    console.log(`   - Appointments: ${createdAppointments.length}`);
-    console.log(`   - Contact Messages: ${createdContacts.length}\n`);
-
-    console.log("🔐 Test Credentials:");
-    console.log("   Admin:");
-    console.log(`     ${createdAdmin.email} / Admin@123`);
-    console.log("   Patients:");
-    createdPatients.slice(0, 2).forEach((patient, index) => {
-      console.log(`     ${index + 1}. ${patient.email} / Patient@123`);
-    });
-    console.log("   Doctors:");
-    createdDoctorUsers.slice(0, 2).forEach((doctor, index) => {
-      console.log(`     ${index + 1}. ${doctor.email} / Doctor@123`);
-    });
-
+    console.log("✨ Database population completed successfully!\n");
     process.exit(0);
   } catch (error) {
     console.error("❌ Seeding failed:", error);

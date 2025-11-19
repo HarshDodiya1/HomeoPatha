@@ -4,8 +4,14 @@
  */
 
 import apiClient from '../api/client';
-import { API_ENDPOINTS } from '../api/config';
+import { API_ENDPOINTS, CLOUDINARY_CONFIG } from '../api/config';
 import { ApiResponse } from '@/types/auth';
+
+interface CloudinaryUploadResponse {
+  secure_url: string;
+  public_id: string;
+  [key: string]: any;
+}
 
 export interface Doctor {
   id: string;
@@ -22,6 +28,7 @@ export interface Doctor {
   experience: number;
   consultationFee: number;
   about?: string;
+  images?: string[];
   rating: number;
   totalRatings: number;
   createdAt: string;
@@ -60,6 +67,7 @@ export interface UpdateDoctorProfileRequest {
   experience?: number;
   consultationFee?: number;
   about?: string;
+  images?: string[];
 }
 
 export interface CreateDoctorRequest {
@@ -72,6 +80,7 @@ export interface CreateDoctorRequest {
   experience: number;
   consultationFee: number;
   about?: string;
+  images?: string[];
 }
 
 export interface UpdateDoctorRequest {
@@ -83,6 +92,7 @@ export interface UpdateDoctorRequest {
   experience?: number;
   consultationFee?: number;
   about?: string;
+  images?: string[];
 }
 
 export interface UpdateAppointmentStatusRequest {
@@ -284,5 +294,34 @@ export const doctorsService = {
    */
   async deleteDoctorById(doctorId: string): Promise<void> {
     await apiClient.delete(`/api/admin/doctors/${doctorId}`);
+  },
+
+  /**
+   * Upload image to Cloudinary
+   */
+  async uploadImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'ml_default');
+
+    const response = await fetch(CLOUDINARY_CONFIG.uploadUrl, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload image');
+    }
+
+    const data: CloudinaryUploadResponse = await response.json();
+    return data.secure_url;
+  },
+
+  /**
+   * Upload multiple images to Cloudinary
+   */
+  async uploadMultipleImages(files: File[]): Promise<string[]> {
+    const uploadPromises = files.map(file => this.uploadImage(file));
+    return Promise.all(uploadPromises);
   },
 };

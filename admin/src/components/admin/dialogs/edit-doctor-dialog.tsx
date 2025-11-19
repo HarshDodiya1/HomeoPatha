@@ -16,6 +16,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
+import { ImageUpload } from "@/components/ui/image-upload"
+import { doctorsService } from "@/lib/services/doctors.service"
 
 interface EditDoctorDialogProps {
   open: boolean
@@ -27,6 +29,7 @@ interface EditDoctorDialogProps {
 export function EditDoctorDialog({ open, onOpenChange, doctor, onSuccess }: EditDoctorDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [images, setImages] = useState<string[]>([])
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -50,6 +53,7 @@ export function EditDoctorDialog({ open, onOpenChange, doctor, onSuccess }: Edit
         consultationFee: doctor.consultationFee?.toString() || "",
         about: doctor.about || "",
       })
+      setImages(doctor.images || [])
       setError("")
     }
   }, [doctor, open])
@@ -134,6 +138,7 @@ export function EditDoctorDialog({ open, onOpenChange, doctor, onSuccess }: Edit
         experience: parseInt(formData.experience),
         consultationFee: parseFloat(formData.consultationFee),
         about: formData.about.trim(),
+        images,
       })
       
       toast.success("Doctor updated successfully")
@@ -267,6 +272,18 @@ export function EditDoctorDialog({ open, onOpenChange, doctor, onSuccess }: Edit
                 placeholder="Brief description about the doctor"
                 disabled={isLoading}
                 rows={3}
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <ImageUpload
+                images={images}
+                onImagesChange={setImages}
+                uploadFunction={(files) => doctorsService.uploadMultipleImages(files)}
+                label="Doctor Profile Image"
+                maxImages={1}
+                disabled={isLoading}
               />
             </div>
           </div>

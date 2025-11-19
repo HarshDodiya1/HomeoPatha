@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Edit, Trash2, Star, Briefcase, DollarSign, Mail, Phone } from "lucide-react"
 
 interface DoctorCardProps {
@@ -26,6 +26,7 @@ export function DoctorCard({ doctor, onEdit, onDelete }: DoctorCardProps) {
   const fullName = doctor.userId?.fullName || doctor.user?.fullName || "Unknown"
   const email = doctor.userId?.email || doctor.user?.email || ""
   const phoneNumber = doctor.userId?.phoneNumber || doctor.user?.phoneNumber || ""
+  const profileImage = doctor.images && doctor.images.length > 0 ? doctor.images[0] : undefined
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
@@ -33,6 +34,7 @@ export function DoctorCard({ doctor, onEdit, onDelete }: DoctorCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
+              {profileImage && <AvatarImage src={profileImage} alt={fullName} />}
               <AvatarFallback className="bg-blue-100 text-blue-700 text-lg font-semibold">
                 {getDoctorInitials(fullName)}
               </AvatarFallback>

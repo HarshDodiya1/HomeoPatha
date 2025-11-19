@@ -16,6 +16,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
+import { ImageUpload } from "@/components/ui/image-upload"
+import { doctorsService } from "@/lib/services/doctors.service"
 
 interface AddDoctorDialogProps {
   open: boolean
@@ -38,6 +40,7 @@ interface FormData {
 export function AddDoctorDialog({ open, onOpenChange, onSuccess }: AddDoctorDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [images, setImages] = useState<string[]>([])
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     email: "",
@@ -70,6 +73,7 @@ export function AddDoctorDialog({ open, onOpenChange, onSuccess }: AddDoctorDial
       consultationFee: "",
       about: "",
     })
+    setImages([])
     setError("")
   }
 
@@ -137,6 +141,7 @@ export function AddDoctorDialog({ open, onOpenChange, onSuccess }: AddDoctorDial
         experience: parseInt(formData.experience),
         consultationFee: parseFloat(formData.consultationFee),
         about: formData.about.trim(),
+        images,
       })
       
       toast.success("Doctor created successfully")
@@ -301,6 +306,18 @@ export function AddDoctorDialog({ open, onOpenChange, onSuccess }: AddDoctorDial
                   placeholder="Brief description about the doctor"
                   disabled={isLoading}
                   rows={3}
+                />
+              </div>
+
+              {/* Image Upload */}
+              <div className="space-y-2">
+                <ImageUpload
+                  images={images}
+                  onImagesChange={setImages}
+                  uploadFunction={(files) => doctorsService.uploadMultipleImages(files)}
+                  label="Doctor Profile Image"
+                  maxImages={1}
+                  disabled={isLoading}
                 />
               </div>
             </div>

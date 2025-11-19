@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -15,13 +15,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Loader2, AlertCircle, Upload, X, Image as ImageIcon } from "lucide-react"
+import { Loader2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import { useProductsStore } from "@/store/products.store"
 import { productService } from "@/lib/services/products.service"
 import { Product } from "@/types/product"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 interface ProductDialogProps {
   open: boolean
@@ -45,9 +45,7 @@ interface FormData {
 export function ProductDialog({ open, onOpenChange, product, onSuccess }: ProductDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [uploadingImages, setUploadingImages] = useState(false)
   const [images, setImages] = useState<string[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const { createProduct, updateProduct } = useProductsStore()
   
@@ -104,53 +102,6 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
     })
     setImages([])
     setError("")
-  }
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-
-    try {
-      setUploadingImages(true)
-      setError("")
-
-      const fileArray = Array.from(files)
-      
-      // Validate file types
-      const validFiles = fileArray.filter(file => {
-        if (!file.type.startsWith('image/')) {
-          toast.error(`${file.name} is not an image file`)
-          return false
-        }
-        return true
-      })
-
-      if (validFiles.length === 0) {
-        setUploadingImages(false)
-        return
-      }
-
-      toast.info(`Uploading ${validFiles.length} image(s)...`)
-      const uploadedUrls = await productService.uploadMultipleImages(validFiles)
-      
-      setImages(prev => [...prev, ...uploadedUrls])
-      toast.success(`${validFiles.length} image(s) uploaded successfully`)
-      
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-    } catch (err: any) {
-      const errorMessage = err.message || "Failed to upload images"
-      setError(errorMessage)
-      toast.error(errorMessage)
-    } finally {
-      setUploadingImages(false)
-    }
-  }
-
-  const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index))
   }
 
   const validateForm = (): string | null => {
@@ -247,80 +198,13 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
             )}
 
             {/* Image Upload Section */}
-            <div className="space-y-3">
-              <Label>Product Images</Label>
-              
-              {/* Image Upload Button */}
-              <div className="flex items-center gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploadingImages}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingImages}
-                  className="w-full sm:w-auto"
-                >
-                  {uploadingImages ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 size-4" />
-                      Upload Images
-                    </>
-                  )}
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  {images.length} image(s)
-                </span>
-              </div>
-
-              {/* Image Preview Grid */}
-              {images.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                  {images.map((url, index) => (
-                    <div key={index} className="group relative aspect-square overflow-hidden rounded-lg border bg-muted">
-                      <img
-                        src={url}
-                        alt={`Product ${index + 1}`}
-                        className="size-full object-cover"
-                      />
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="destructive"
-                        className="absolute right-1 top-1 size-6 opacity-0 transition-opacity group-hover:opacity-100"
-                        onClick={() => removeImage(index)}
-                      >
-                        <X className="size-3" />
-                      </Button>
-                      {index === 0 && (
-                        <Badge className="absolute bottom-1 left-1 text-xs">Primary</Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {images.length === 0 && (
-                <div className="flex aspect-video items-center justify-center rounded-lg border-2 border-dashed bg-muted/50">
-                  <div className="text-center">
-                    <ImageIcon className="mx-auto size-12 text-muted-foreground" />
-                    <p className="mt-2 text-sm text-muted-foreground">No images uploaded</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <ImageUpload
+              images={images}
+              onImagesChange={setImages}
+              uploadFunction={(files) => productService.uploadMultipleImages(files)}
+              label="Product Images"
+              disabled={isLoading}
+            />
 
             {/* Product Details */}
             <div className="grid gap-4 sm:grid-cols-2">
@@ -441,13 +325,13 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isLoading || uploadingImages}
+            disabled={isLoading}
           >
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isLoading || uploadingImages}
+            disabled={isLoading}
           >
             {isLoading ? (
               <>
