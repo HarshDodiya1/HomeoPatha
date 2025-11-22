@@ -8,14 +8,14 @@ const Product = require("../models/Product.js");
  */
 const getCart = async (req, res) => {
   try {
-    let cart = await Cart.findOne({ user: req.user._id }).populate({
+    let cart = await Cart.findOne({ user: req.user.id }).populate({
       path: "items.product",
       select: "title images currentPrice oldPrice isActive category",
     });
 
     if (!cart) {
       cart = await Cart.create({
-        user: req.user._id,
+        user: req.user.id,
         items: [],
         totalAmount: 0,
       });
@@ -85,10 +85,10 @@ const addToCart = async (req, res) => {
     }
 
     // Find or create cart
-    let cart = await Cart.findOne({ user: req.user._id });
+    let cart = await Cart.findOne({ user: req.user.id });
     if (!cart) {
       cart = await Cart.create({
-        user: req.user._id,
+        user: req.user.id,
         items: [],
       });
     }
@@ -153,7 +153,7 @@ const updateCartItem = async (req, res) => {
       });
     }
 
-    const cart = await Cart.findOne({ user: req.user._id });
+    const cart = await Cart.findOne({ user: req.user.id });
     if (!cart) {
       return res.status(404).json({
         success: false,
@@ -207,7 +207,7 @@ const removeFromCart = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    const cart = await Cart.findOne({ user: req.user._id });
+    const cart = await Cart.findOne({ user: req.user.id });
     if (!cart) {
       return res.status(404).json({
         success: false,
@@ -259,7 +259,7 @@ const removeFromCart = async (req, res) => {
  */
 const clearCart = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user._id });
+    const cart = await Cart.findOne({ user: req.user.id });
     if (!cart) {
       return res.status(404).json({
         success: false,

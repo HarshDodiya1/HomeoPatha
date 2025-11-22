@@ -19,6 +19,11 @@ export interface Appointment {
       phoneNumber: string;
     };
     specialization: string;
+    qualification?: string;
+    experience?: number;
+    rating?: number;
+    images?: string[];
+    about?: string;
     consultationFee: number;
   };
   appointmentDate: string;
@@ -28,6 +33,9 @@ export interface Appointment {
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
   consultationFee: number;
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
   paymentDetails?: {
     razorpayOrderId?: string;
     razorpayPaymentId?: string;

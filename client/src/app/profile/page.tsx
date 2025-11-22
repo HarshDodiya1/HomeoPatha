@@ -207,7 +207,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email (Read-only)</Label>
+                  <Label htmlFor="email">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -237,7 +237,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="role">Role (Read-only)</Label>
+                  <Label htmlFor="role">Role</Label>
                   <Input
                     id="role"
                     value={user.role.charAt(0).toUpperCase() + user.role.slice(1)}

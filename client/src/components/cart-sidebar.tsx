@@ -156,11 +156,16 @@ export function CartSidebar() {
             <Separator />
 
             <div className="space-y-2">
-              <Link href="/checkout" className="block">
-                <Button className="w-full" size="lg">
-                  Proceed to Checkout
-                </Button>
-              </Link>
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => {
+                  closeCart();
+                  window.location.href = '/checkout';
+                }}
+              >
+                Proceed to Checkout
+              </Button>
               <Button
                 variant="outline"
                 className="w-full"

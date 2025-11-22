@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { CalendarDays, CreditCard, LayoutDashboard, LogOut, Package, Users, User, Stethoscope } from "lucide-react"
+import { CalendarDays, CreditCard, LayoutDashboard, LogOut, Package, Users, User, Stethoscope, ShoppingBag } from "lucide-react"
 import type * as React from "react"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ProtectedRoute } from "@/components/auth/protected-route"
@@ -43,6 +43,7 @@ const routes = [
   { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
   { href: "/admin/appointments", label: "Appointments", icon: CalendarDays },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/profile", label: "Profile", icon: User },
 ]
@@ -57,6 +58,7 @@ function usePageTitle(pathname: string) {
     patients: "Patients",
     appointments: "Appointments",
     products: "Products",
+    orders: "Orders",
     payments: "Payments",
     profile: "Profile",
   }

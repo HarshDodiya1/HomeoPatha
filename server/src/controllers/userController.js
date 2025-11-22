@@ -283,7 +283,14 @@ const getUserAppointments = async (req, res) => {
       .sort({ appointmentDate: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("doctorId", "fullName specialization image");
+      .populate({
+        path: "doctorId",
+        select: "specialization qualification consultationFee experience rating images",
+        populate: {
+          path: "userId",
+          select: "fullName email phoneNumber"
+        }
+      });
 
     // Calculate total pages
     const totalPages = Math.ceil(totalAppointments / limit);
@@ -335,7 +342,14 @@ const getAppointmentDetails = async (req, res) => {
     const appointment = await Appointment.findOne({
       _id: appointmentId,
       patientId: userId,
-    }).populate("doctorId", "fullName specialization image email phoneNumber");
+    }).populate({
+      path: "doctorId",
+      select: "specialization qualification consultationFee experience rating images about",
+      populate: {
+        path: "userId",
+        select: "fullName email phoneNumber"
+      }
+    });
 
     if (!appointment) {
       return res.status(404).json({

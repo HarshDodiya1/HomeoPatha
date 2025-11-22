@@ -42,11 +42,13 @@ const userRoutes = require("./routes/userRoutes.js");
 const doctorRoutes = require("./routes/doctorRoutes.js");
 const appointmentRoutes = require("./routes/appointmentRoutes.js");
 const productRoutes = require("./routes/productRoutes.js");
+const orderRoutes = require("./routes/orderRoutes.js");
 const adminDoctorRoutes = require("./routes/adminRoutes/doctorRoutes.js");
 const adminUserRoutes = require("./routes/adminRoutes/userRoutes.js");
 const adminProductRoutes = require("./routes/adminRoutes/productRoutes.js");
 const adminContactRoutes = require("./routes/adminRoutes/contactRoutes.js");
 const adminAppointmentRoutes = require("./routes/adminRoutes/appointmentRoutes.js");
+const adminOrderRoutes = require("./routes/adminRoutes/orderRoutes.js");
 
 // Swagger Documentation Route
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
@@ -87,12 +89,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
-app.use("/api/products", productRoutes);
+app.use("/api/products", productRoutes); // Contains cart routes at /api/products/cart
+app.use("/api/orders", orderRoutes);
 app.use("/api/admin/doctors", adminDoctorRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/products", adminProductRoutes);
 app.use("/api/admin/contacts", adminContactRoutes);
 app.use("/api/admin/appointments", adminAppointmentRoutes);
+app.use("/api/admin/orders", adminOrderRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

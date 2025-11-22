@@ -12,7 +12,7 @@ import { Footer } from "@/components/footer"
 export default function HomePage() {
   return (
     <main className="min-h-dvh flex flex-col">
-      <Navbar />
+      {/* <Navbar /> */}
       <section aria-labelledby="hero" className="relative">
         <Hero />
         <div className="pointer-events-none absolute inset-x-0 -bottom-8 mx-4 md:mx-auto md:max-w-5xl">
