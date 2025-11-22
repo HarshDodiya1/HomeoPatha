@@ -8,12 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import { Loader2, User as UserIcon, Mail, Phone, LogOut, Calendar, Clock, MapPin } from "lucide-react"
+import { Loader2, User as UserIcon, Mail, Phone, LogOut, Calendar, Clock, MapPin, Package, ShoppingBag } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 import { Separator } from "@/components/ui/separator"
 import apiClient from "@/lib/api/client"
 import { Appointment } from "@/types/appointment"
+import { Order } from "@/types/order"
+import Image from "next/image"
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -25,6 +27,8 @@ export default function ProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(false)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false)
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile')
 
   useEffect(() => {
@@ -54,6 +58,8 @@ export default function ProfilePage() {
   useEffect(() => {
     if (activeTab === 'appointments' && isAuthenticated) {
       fetchAppointments()
+    } else if (activeTab === 'orders' && isAuthenticated) {
+      fetchOrders()
     }
   }, [activeTab, isAuthenticated])
 
@@ -75,13 +81,34 @@ export default function ProfilePage() {
     }
   }
 
+  const fetchOrders = async () => {
+    setIsLoadingOrders(true)
+    try {
+      const response = await apiClient.get<{
+        success: boolean;
+        data: {
+          orders: Order[];
+        };
+      }>('/api/orders')
+      setOrders(response.data.data.orders)
+    } catch (error: any) {
+      console.error('Failed to fetch orders:', error)
+      toast.error('Failed to load orders')
+    } finally {
+      setIsLoadingOrders(false)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
+      case 'completed':
+      case 'delivered':
         return 'bg-green-500'
       case 'pending':
+      case 'processing':
         return 'bg-yellow-500'
-      case 'completed':
+      case 'shipped':
         return 'bg-blue-500'
       case 'cancelled':
         return 'bg-red-500'
@@ -175,9 +202,10 @@ export default function ProfilePage() {
 
         {/* Tabs for Profile and Appointments */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">Profile Information</TabsTrigger>
             <TabsTrigger value="appointments">My Appointments</TabsTrigger>
+            <TabsTrigger value="orders">My Orders</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -359,6 +387,123 @@ export default function ProfilePage() {
                             variant="outline"
                             size="sm"
                             onClick={() => router.push(`/appointments/${appointment._id}`)}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Orders Tab */}
+          <TabsContent value="orders" className="space-y-6">
+            {isLoadingOrders ? (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </CardContent>
+              </Card>
+            ) : orders.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <Package className="h-16 w-16 text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium text-muted-foreground">No orders found</p>
+                  <p className="text-sm text-muted-foreground mt-2">Start shopping to see your orders here</p>
+                  <Button className="mt-4" onClick={() => router.push('/products')}>
+                    Browse Products
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <Card key={order._id}>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        {/* Order Header */}
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <ShoppingBag className="h-5 w-5 text-primary" />
+                              <h3 className="font-semibold text-lg">
+                                Order #{order._id.slice(-8).toUpperCase()}
+                              </h3>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge className={getStatusColor(order.orderStatus)}>
+                              {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                            </Badge>
+                            <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                              {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                            </Badge>
+                            <Badge variant="outline">
+                              {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Order Items */}
+                        <div className="space-y-3">
+                          {order.orderItems.map((item) => (
+                            <div key={item._id} className="flex gap-3">
+                              <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                                {item.image && (
+                                  <Image
+                                    src={item.image}
+                                    alt={item.title}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm">{item.title}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  Qty: {item.quantity} × ₹{item.price.toFixed(2)}
+                                </p>
+                                <p className="text-sm font-semibold">₹{(item.price * item.quantity).toFixed(2)}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Shipping Address */}
+                        <div className="pt-3 border-t">
+                          <div className="flex items-start gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                            <div className="text-sm">
+                              <p className="font-medium mb-1">Shipping Address</p>
+                              <p className="text-muted-foreground">
+                                {order.shippingAddress.addressLine1}
+                                {order.shippingAddress.addressLine2 && `, ${order.shippingAddress.addressLine2}`}
+                                <br />
+                                {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Order Footer */}
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-3 border-t">
+                          <div className="text-right md:text-left">
+                            <p className="text-sm text-muted-foreground">Total Amount</p>
+                            <p className="text-2xl font-bold text-primary">₹{order.totalAmount.toFixed(2)}</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={() => router.push(`/orders/${order._id}`)}
                           >
                             View Details
                           </Button>

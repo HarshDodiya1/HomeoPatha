@@ -49,6 +49,7 @@ const adminProductRoutes = require("./routes/adminRoutes/productRoutes.js");
 const adminContactRoutes = require("./routes/adminRoutes/contactRoutes.js");
 const adminAppointmentRoutes = require("./routes/adminRoutes/appointmentRoutes.js");
 const adminOrderRoutes = require("./routes/adminRoutes/orderRoutes.js");
+const adminAnalyticsRoutes = require("./routes/adminRoutes/analyticsRoutes.js");
 
 // Swagger Documentation Route
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
@@ -97,6 +98,7 @@ app.use("/api/admin/products", adminProductRoutes);
 app.use("/api/admin/contacts", adminContactRoutes);
 app.use("/api/admin/appointments", adminAppointmentRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

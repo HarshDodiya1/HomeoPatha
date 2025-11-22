@@ -148,6 +148,7 @@ const createOrderForCheckout = async (req, res) => {
         razorpayOrderId: razorpayOrder.id,
         amount: totalAmount,
         currency: razorpayOrder.currency,
+        keyId: config.razorpay.keyId, // Send only key ID, never secret
       },
     });
   } catch (error) {

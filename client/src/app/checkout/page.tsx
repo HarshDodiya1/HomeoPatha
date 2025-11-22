@@ -27,7 +27,7 @@ interface ShippingAddress {
 export default function CheckoutPage() {
   const router = useRouter()
   const { user, isAuthenticated, isInitialized, initialize } = useAuthStore()
-  const { cart, fetchCart } = useCartStore()
+  const { cart, fetchCart, closeCart } = useCartStore()
   
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay')
@@ -89,12 +89,14 @@ export default function CheckoutPage() {
       // For COD, order is complete
       if (paymentMethod === 'cod') {
         toast.success('Order placed successfully!')
+        await fetchCart() // Refresh cart state
+        closeCart() // Close cart sidebar
         router.push(`/orders/${responseData.orderId}`)
         return
       }
 
       // For Razorpay, continue with payment
-      const { orderId, razorpayOrderId, amount } = responseData
+      const { orderId, razorpayOrderId, amount, currency, keyId } = responseData
 
       // Load Razorpay script
       const scriptLoaded = await loadRazorpayScript()
@@ -106,9 +108,9 @@ export default function CheckoutPage() {
 
       // Configure Razorpay options
       const razorpayOptions = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+        key: keyId, // Use key from server response
         amount: amount * 100, // Convert to paise
-        currency: 'INR',
+        currency: currency || 'INR',
         name: 'HomeoPatha',
         description: 'Product Purchase',
         order_id: razorpayOrderId,
@@ -123,6 +125,8 @@ export default function CheckoutPage() {
             })
 
             toast.success('Payment successful! Order confirmed.')
+            await fetchCart() // Refresh cart state
+            closeCart() // Close cart sidebar
             router.push(`/orders/${orderId}`)
           } catch (error: any) {
             console.error('Payment verification error:', error)

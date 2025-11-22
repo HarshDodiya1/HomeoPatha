@@ -62,7 +62,7 @@ export function Navbar() {
         }`}
       >
         <Link
-          href="#"
+          href="/"
           className="flex items-center gap-2 group"
           aria-label="The HomeoPatha Home"
         >
