@@ -39,7 +39,6 @@ import { toast } from "sonner"
 
 const routes = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Users Management", icon: Users },
   { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
   { href: "/admin/appointments", label: "Appointments", icon: CalendarDays },
   { href: "/admin/products", label: "Products", icon: Package },
@@ -53,7 +52,6 @@ function usePageTitle(pathname: string) {
   if (parts[0] !== "admin") return "Admin"
   if (parts.length === 1) return "Dashboard"
   const map: Record<string, string> = {
-    users: "Users Management",
     doctors: "Doctors",
     patients: "Patients",
     appointments: "Appointments",
