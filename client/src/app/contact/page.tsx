@@ -270,9 +270,9 @@ export default function ContactPage() {
               <p className="text-muted-foreground mb-4">
                 Before reaching out, you might find answers to common questions in our FAQ section.
               </p>
-              <Button variant="outline" asChild>
-                <a href="/#about">Learn More About Us</a>
-              </Button>
+              <a href="/#about">
+                <Button variant="outline">Learn More About Us</Button>
+              </a>
             </div>
           </CardContent>
         </Card>
