@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { toast } from "sonner"
 import { Loader2, User as UserIcon, Mail, Phone, LogOut, Calendar, Clock, MapPin, Package, ShoppingBag } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -17,7 +17,7 @@ import { Appointment } from "@/types/appointment"
 import { Order } from "@/types/order"
 import Image from "next/image"
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isAuthenticated, isInitialized, initialize, updateProfile, logout, isLoading } = useAuthStore()
@@ -518,5 +518,17 @@ export default function ProfilePage() {
         </Tabs>
       </div>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <ProfilePageContent />
+    </Suspense>
   )
 }

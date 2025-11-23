@@ -97,7 +97,7 @@ export function UserTable({
                 </Badge>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {format(new Date(user.createdAt), 'MMM dd, yyyy')}
+                {user.createdAt ? format(new Date(user.createdAt), 'MMM dd, yyyy') : '—'}
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>

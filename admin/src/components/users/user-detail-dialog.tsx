@@ -60,14 +60,14 @@ export function UserDetailDialog({
           <div>
             <p className="text-sm font-medium text-muted-foreground">Created</p>
             <p className="text-sm">
-              {format(new Date(user.createdAt), 'PPP pp')}
+              {user.createdAt ? format(new Date(user.createdAt), 'PPP pp') : '—'}
             </p>
           </div>
 
           <div>
             <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
             <p className="text-sm">
-              {format(new Date(user.updatedAt), 'PPP pp')}
+              {user.updatedAt ? format(new Date(user.updatedAt), 'PPP pp') : '—'}
             </p>
           </div>
         </div>
