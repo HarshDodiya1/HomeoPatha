@@ -22,7 +22,7 @@ const navItems = [
   { href: "/doctors", label: "Doctors" },
   { href: "/products", label: "Products" },
   { href: "#about", label: "About Us" },
-  { href: "#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Navbar() {

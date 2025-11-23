@@ -43,6 +43,7 @@ const doctorRoutes = require("./routes/doctorRoutes.js");
 const appointmentRoutes = require("./routes/appointmentRoutes.js");
 const productRoutes = require("./routes/productRoutes.js");
 const orderRoutes = require("./routes/orderRoutes.js");
+const contactRoutes = require("./routes/contactRoutes.js");
 const adminDoctorRoutes = require("./routes/adminRoutes/doctorRoutes.js");
 const adminUserRoutes = require("./routes/adminRoutes/userRoutes.js");
 const adminProductRoutes = require("./routes/adminRoutes/productRoutes.js");
@@ -93,6 +94,7 @@ app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/products", productRoutes); // Contains cart routes at /api/products/cart
 app.use("/api/orders", orderRoutes);
+app.use("/api/contact", contactRoutes);
 app.use("/api/admin/doctors", adminDoctorRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/products", adminProductRoutes);
