@@ -44,6 +44,7 @@
           with:
             context: ./server
             file: ./server/Dockerfile
+            platforms: linux/amd64,linux/arm64
             push: true
             tags: |
               ${{ env.IMAGE }}:latest
@@ -81,10 +82,10 @@
               cd "$COMPOSE_DIR"
 
               echo "Pulling service images via docker-compose..."
-              docker-compose pull backend  || true
+              docker compose pull backend  || true
 
               echo "Bringing up backend service..."
-              docker-compose up -d --no-deps --force-recreate backend
+              docker compose up -d --no-deps --force-recreate backend
 
               echo "Prune unused images..."
               docker image prune -f || true
