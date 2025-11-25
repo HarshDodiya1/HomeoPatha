@@ -106,7 +106,7 @@ app.use("/api/admin/payments", adminPaymentRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
-    message: "Welcome to the Backend APIs of HomeoPatha",
+    message: "Welcome to the Backend APIs of HomeoPathaa",
     creator: "Harsh Dodiya | Het Saraiya",
     GitHub: config.github1 || "Harsh Dodiya",
     Github: config.github2 || "Het Saraiya",
