@@ -5,7 +5,7 @@
       branches:
         - main
       paths:
-        - "backend/**"
+        - "server/**"
         - ".github/workflows/backend-cicd.yml"
 
   permissions:
