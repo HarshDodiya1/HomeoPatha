@@ -112,8 +112,7 @@ app.get("/", (req, res) => {
     Github: config.github2 || "Het Saraiya",
     apiDocs: "/api",
     status: "Running",
-    timestamp: new Date().toISOString(),
-    lastUpdated: "8:50 AM"
+    timestamp: new Date().toISOString()
   });
 });
 
