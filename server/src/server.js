@@ -113,6 +113,7 @@ app.get("/", (req, res) => {
     apiDocs: "/api",
     status: "Running",
     timestamp: new Date().toISOString(),
+    lastUpdated: "8:50 AM"
   });
 });
 
