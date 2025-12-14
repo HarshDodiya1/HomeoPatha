@@ -23,7 +23,7 @@ export const appointmentsService = {
     search?: string;
     status?: string;
     paymentStatus?: string;
-    doctorId?: string;
+    specializationId?: string;
     patientId?: string;
     startDate?: string;
     endDate?: string;

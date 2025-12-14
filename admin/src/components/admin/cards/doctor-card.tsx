@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit, Trash2, Star, Briefcase, DollarSign, Mail, Phone } from "lucide-react"
+import { Edit, Trash2, Star, Briefcase, Mail, Phone } from "lucide-react"
 
 interface DoctorCardProps {
   doctor: any
@@ -94,10 +94,10 @@ export function DoctorCard({ doctor, onEdit, onDelete }: DoctorCardProps) {
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <Star className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Consultation Fee</p>
-              <p className="font-medium">₹{doctor.consultationFee || 0}</p>
+              <p className="text-xs text-muted-foreground">Rating</p>
+              <p className="font-medium">{doctor.rating?.toFixed(1) || 'N/A'}</p>
             </div>
           </div>
         </div>
@@ -107,19 +107,6 @@ export function DoctorCard({ doctor, onEdit, onDelete }: DoctorCardProps) {
           <div className="pt-2">
             <p className="text-xs text-muted-foreground">Qualification</p>
             <p className="text-sm font-medium">{doctor.qualification}</p>
-          </div>
-        )}
-
-        {/* Rating */}
-        {doctor.rating > 0 && (
-          <div className="flex items-center gap-2 pt-2">
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium text-sm">{doctor.rating.toFixed(1)}</span>
-            </div>
-            <span className="text-xs text-muted-foreground">
-              ({doctor.totalRatings || 0} reviews)
-            </span>
           </div>
         )}
 

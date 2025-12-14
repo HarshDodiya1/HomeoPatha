@@ -1,4 +1,5 @@
 const Appointment = require("../models/Appointment.js");
+const Specialization = require("../models/Specialization.js");
 const mongoose = require("mongoose");
 
 /**
@@ -45,16 +46,16 @@ const getAllAppointments = async (req, res) => {
       filters.paymentStatus = req.query.paymentStatus;
     }
 
-    // Filter by doctor
-    if (req.query.doctorId) {
-      if (!mongoose.Types.ObjectId.isValid(req.query.doctorId)) {
+    // Filter by specialization
+    if (req.query.specializationId) {
+      if (!mongoose.Types.ObjectId.isValid(req.query.specializationId)) {
         return res.status(400).json({
           success: false,
-          message: "Invalid doctor ID format",
-          code: "INVALID_DOCTOR_ID",
+          message: "Invalid specialization ID format",
+          code: "INVALID_SPECIALIZATION_ID",
         });
       }
-      filters.doctorId = req.query.doctorId;
+      filters.specializationId = req.query.specializationId;
     }
 
     // Filter by patient
@@ -71,21 +72,20 @@ const getAllAppointments = async (req, res) => {
 
     // Filter by date range
     if (req.query.startDate || req.query.endDate) {
-      filters.appointmentDate = {};
+      filters.createdAt = {};
       if (req.query.startDate) {
-        filters.appointmentDate.$gte = new Date(req.query.startDate);
+        filters.createdAt.$gte = new Date(req.query.startDate);
       }
       if (req.query.endDate) {
-        filters.appointmentDate.$lte = new Date(req.query.endDate);
+        filters.createdAt.$lte = new Date(req.query.endDate);
       }
     }
 
-    // Search by patient name or doctor
+    // Search by patient name or email
     if (req.query.search) {
-      // We'll need to do a more complex query with populate
       const searchRegex = { $regex: req.query.search, $options: "i" };
 
-      // First find matching patients and doctors
+      // Find matching patients
       const patients = await require("../models/User.js")
         .find({
           role: "patient",
@@ -98,39 +98,30 @@ const getAllAppointments = async (req, res) => {
         .select("_id")
         .lean();
 
-      const doctors = await require("../models/Doctor.js")
-        .find()
-        .populate({
-          path: "userId",
-          match: {
-            $or: [
-              { fullName: searchRegex },
-              { email: searchRegex },
-              { phoneNumber: searchRegex },
-            ],
-          },
-        })
+      // Find matching specializations
+      const specializations = await Specialization.find({
+        name: searchRegex,
+      })
+        .select("_id")
         .lean();
 
       const patientIds = patients.map((p) => p._id);
-      const doctorIds = doctors
-        .filter((d) => d.userId)
-        .map((d) => d._id);
+      const specializationIds = specializations.map((s) => s._id);
 
-      if (patientIds.length > 0 || doctorIds.length > 0) {
+      if (patientIds.length > 0 || specializationIds.length > 0) {
         filters.$or = [];
         if (patientIds.length > 0) {
           filters.$or.push({ patientId: { $in: patientIds } });
         }
-        if (doctorIds.length > 0) {
-          filters.$or.push({ doctorId: { $in: doctorIds } });
+        if (specializationIds.length > 0) {
+          filters.$or.push({ specializationId: { $in: specializationIds } });
         }
       }
     }
 
     // Sort options
     let sortOption = {};
-    const sortBy = req.query.sortBy || "appointmentDate";
+    const sortBy = req.query.sortBy || "createdAt";
     const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
     sortOption[sortBy] = sortOrder;
 
@@ -140,13 +131,7 @@ const getAllAppointments = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .populate("patientId", "fullName email phoneNumber")
-      .populate({
-        path: "doctorId",
-        populate: {
-          path: "userId",
-          select: "fullName email phoneNumber",
-        },
-      })
+      .populate("specializationId", "name description consultationFee")
       .lean();
 
     // Get total count for pagination
@@ -260,13 +245,7 @@ const getAppointmentById = async (req, res) => {
     // Find appointment with full details
     const appointment = await Appointment.findById(id)
       .populate("patientId", "fullName email phoneNumber addresses")
-      .populate({
-        path: "doctorId",
-        populate: {
-          path: "userId",
-          select: "fullName email phoneNumber",
-        },
-      })
+      .populate("specializationId", "name description consultationFee imageUrl tags")
       .lean();
 
     if (!appointment) {
@@ -314,14 +293,10 @@ const updateAppointment = async (req, res) => {
 
     const { id } = req.params;
     const {
-      appointmentDate,
-      appointmentTime,
-      duration,
-      reason,
       status,
       consultationFee,
       paymentStatus,
-      notes,
+      adminNotes,
       prescription,
     } = req.body;
 
@@ -346,7 +321,7 @@ const updateAppointment = async (req, res) => {
     }
 
     // Validate status if provided
-    if (status && !["pending", "confirmed", "completed", "cancelled", "rescheduled"].includes(status)) {
+    if (status && !["pending", "confirmed", "completed", "cancelled"].includes(status)) {
       return res.status(400).json({
         success: false,
         message: "Invalid status value",
@@ -372,39 +347,11 @@ const updateAppointment = async (req, res) => {
       });
     }
 
-    // If rescheduling (date or time changed), check for conflicts
-    if (appointmentDate || appointmentTime) {
-      const newDate = appointmentDate ? new Date(appointmentDate) : appointment.appointmentDate;
-      const newTime = appointmentTime || appointment.appointmentTime;
-
-      const conflictingAppointment = await Appointment.findOne({
-        _id: { $ne: id },
-        doctorId: appointment.doctorId,
-        appointmentDate: newDate,
-        appointmentTime: newTime,
-        status: { $in: ["pending", "confirmed"] },
-      });
-
-      if (conflictingAppointment) {
-        return res.status(409).json({
-          success: false,
-          message: "This time slot is already booked",
-          code: "TIME_SLOT_UNAVAILABLE",
-        });
-      }
-    }
-
     // Update fields
-    if (appointmentDate !== undefined) {
-      appointment.appointmentDate = new Date(appointmentDate);
-    }
-    if (appointmentTime !== undefined) appointment.appointmentTime = appointmentTime;
-    if (duration !== undefined) appointment.duration = duration;
-    if (reason !== undefined) appointment.reason = reason.trim();
     if (status !== undefined) appointment.status = status;
     if (consultationFee !== undefined) appointment.consultationFee = consultationFee;
     if (paymentStatus !== undefined) appointment.paymentStatus = paymentStatus;
-    if (notes !== undefined) appointment.notes = notes?.trim() || undefined;
+    if (adminNotes !== undefined) appointment.adminNotes = adminNotes?.trim() || undefined;
     if (prescription !== undefined) appointment.prescription = prescription?.trim() || undefined;
 
     await appointment.save();
@@ -412,13 +359,7 @@ const updateAppointment = async (req, res) => {
     // Populate and return updated appointment
     const updatedAppointment = await Appointment.findById(id)
       .populate("patientId", "fullName email phoneNumber")
-      .populate({
-        path: "doctorId",
-        populate: {
-          path: "userId",
-          select: "fullName email phoneNumber",
-        },
-      })
+      .populate("specializationId", "name description consultationFee")
       .lean();
 
     return res.status(200).json({
@@ -477,10 +418,10 @@ const updateAppointmentStatus = async (req, res) => {
       });
     }
 
-    if (!["pending", "confirmed", "completed", "cancelled", "rescheduled"].includes(status)) {
+    if (!["pending", "confirmed", "completed", "cancelled"].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid status value. Must be one of: pending, confirmed, completed, cancelled, rescheduled",
+        message: "Invalid status value. Must be one of: pending, confirmed, completed, cancelled",
         code: "INVALID_STATUS",
       });
     }
@@ -512,13 +453,7 @@ const updateAppointmentStatus = async (req, res) => {
     // Populate and return updated appointment
     const updatedAppointment = await Appointment.findById(id)
       .populate("patientId", "fullName email phoneNumber")
-      .populate({
-        path: "doctorId",
-        populate: {
-          path: "userId",
-          select: "fullName email phoneNumber",
-        },
-      })
+      .populate("specializationId", "name description consultationFee")
       .lean();
 
     return res.status(200).json({
@@ -586,8 +521,7 @@ const deleteAppointment = async (req, res) => {
         deletedAppointment: {
           id: appointment._id,
           patientId: appointment.patientId,
-          doctorId: appointment.doctorId,
-          appointmentDate: appointment.appointmentDate,
+          specializationId: appointment.specializationId,
           status: appointment.status,
         },
       },

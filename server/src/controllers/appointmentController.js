@@ -1,5 +1,6 @@
 const Appointment = require("../models/Appointment.js");
-const Doctor = require("../models/Doctor.js");
+const Specialization = require("../models/Specialization.js");
+const AppointmentQuestion = require("../models/AppointmentQuestion.js");
 const User = require("../models/User.js");
 const mongoose = require("mongoose");
 const {
@@ -25,109 +26,95 @@ const createAppointmentOrder = async (req, res) => {
       });
     }
 
-    const {
-      doctorId,
-      appointmentDate,
-      appointmentTime,
-      duration,
-      reason,
-      notes,
-    } = req.body;
+    const { specializationId, questionResponses } = req.body;
 
     // Validation
-    if (!doctorId) {
+    if (!specializationId) {
       return res.status(400).json({
         success: false,
-        message: "Doctor ID is required",
-        code: "DOCTOR_ID_REQUIRED",
+        message: "Specialization ID is required",
+        code: "SPECIALIZATION_ID_REQUIRED",
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+    if (!mongoose.Types.ObjectId.isValid(specializationId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid doctor ID format",
-        code: "INVALID_DOCTOR_ID",
+        message: "Invalid specialization ID format",
+        code: "INVALID_SPECIALIZATION_ID",
       });
     }
 
-    if (!appointmentDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Appointment date is required",
-        code: "APPOINTMENT_DATE_REQUIRED",
-      });
-    }
-
-    if (!appointmentTime) {
-      return res.status(400).json({
-        success: false,
-        message: "Appointment time is required",
-        code: "APPOINTMENT_TIME_REQUIRED",
-      });
-    }
-
-    if (!reason || !reason.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Reason for appointment is required",
-        code: "REASON_REQUIRED",
-      });
-    }
-
-    // Verify doctor exists and get consultation fee from server
-    const doctor = await Doctor.findById(doctorId).populate("userId");
-
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-        message: "Doctor not found",
-        code: "DOCTOR_NOT_FOUND",
-      });
-    }
-
-    // Get consultation fee from doctor's profile (NEVER from client)
-    const consultationFee = doctor.consultationFee || 500;
-
-    // Validate appointment date is not in the past
-    const appointmentDateTime = new Date(appointmentDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (appointmentDateTime < today) {
-      return res.status(400).json({
-        success: false,
-        message: "Appointment date cannot be in the past",
-        code: "INVALID_DATE",
-      });
-    }
-
-    // Check for conflicting appointments for the same doctor
-    const conflictingAppointment = await Appointment.findOne({
-      doctorId,
-      appointmentDate: appointmentDateTime,
-      appointmentTime,
-      status: { $in: ["pending", "confirmed"] },
+    // Verify specialization exists and is active
+    const specialization = await Specialization.findOne({
+      _id: specializationId,
+      isActive: true,
     });
 
-    if (conflictingAppointment) {
-      return res.status(409).json({
+    if (!specialization) {
+      return res.status(404).json({
         success: false,
-        message: "This time slot is already booked",
-        code: "TIME_SLOT_UNAVAILABLE",
+        message: "Specialization not found or inactive",
+        code: "SPECIALIZATION_NOT_FOUND",
       });
+    }
+
+    // Get consultation fee from specialization (NEVER from client)
+    const consultationFee = specialization.consultationFee;
+
+    // Validate question responses
+    const requiredQuestions = await AppointmentQuestion.find({
+      $or: [{ specializationId: specializationId }, { specializationId: null }],
+      isActive: true,
+      isRequired: true,
+    }).lean();
+
+    // Check if all required questions are answered
+    const responseMap = {};
+    if (questionResponses && Array.isArray(questionResponses)) {
+      questionResponses.forEach((r) => {
+        responseMap[r.questionId] = r;
+      });
+    }
+
+    const missingQuestions = [];
+    for (const q of requiredQuestions) {
+      const response = responseMap[q._id.toString()];
+      if (!response || !response.answer || (typeof response.answer === "string" && !response.answer.trim())) {
+        missingQuestions.push(q.question);
+      }
+    }
+
+    if (missingQuestions.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please answer all required questions",
+        code: "MISSING_REQUIRED_ANSWERS",
+        data: { missingQuestions },
+      });
+    }
+
+    // Format question responses with question text
+    const formattedResponses = [];
+    if (questionResponses && Array.isArray(questionResponses)) {
+      for (const response of questionResponses) {
+        const question = await AppointmentQuestion.findById(response.questionId);
+        if (question) {
+          formattedResponses.push({
+            questionId: question._id,
+            question: question.question,
+            answer: response.answer,
+          });
+        }
+      }
     }
 
     // Create appointment with pending status
     const newAppointment = new Appointment({
       patientId: req.user.id,
-      doctorId,
-      appointmentDate: appointmentDateTime,
-      appointmentTime,
-      duration: duration || 30,
-      reason: reason.trim(),
-      consultationFee, // Server-side fee, not from client
-      notes: notes?.trim() || undefined,
+      specializationId,
+      consultationFee,
+      questionResponses: formattedResponses,
       status: "pending",
       paymentStatus: "pending",
     });
@@ -138,7 +125,7 @@ const createAppointmentOrder = async (req, res) => {
     const orderResult = await createOrder(
       consultationFee,
       newAppointment._id,
-      req.user.email,
+      req.user.email
     );
 
     if (!orderResult.success) {
@@ -168,7 +155,7 @@ const createAppointmentOrder = async (req, res) => {
         orderId: orderResult.order.id,
         amount: consultationFee,
         currency: orderResult.order.currency,
-        keyId: config.razorpay.keyId, // Send only key ID, never secret
+        keyId: config.razorpay.keyId,
       },
     });
   } catch (error) {
@@ -327,13 +314,7 @@ const verifyAppointmentPayment = async (req, res) => {
     // Populate appointment details for response
     const populatedAppointment = await Appointment.findById(appointment._id)
       .populate("patientId", "fullName email phoneNumber")
-      .populate({
-        path: "doctorId",
-        populate: {
-          path: "userId",
-          select: "fullName email phoneNumber",
-        },
-      })
+      .populate("specializationId", "name description consultationFee")
       .lean();
 
     return res.status(200).json({
@@ -376,13 +357,7 @@ const getAppointmentDetails = async (req, res) => {
     // Find appointment
     const appointment = await Appointment.findById(id)
       .populate("patientId", "fullName email phoneNumber addresses")
-      .populate({
-        path: "doctorId",
-        populate: {
-          path: "userId",
-          select: "fullName email phoneNumber",
-        },
-      })
+      .populate("specializationId", "name description consultationFee imageUrl tags")
       .lean();
 
     if (!appointment) {
@@ -424,8 +399,164 @@ const getAppointmentDetails = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Get patient's appointments
+ * @route   GET /api/appointments
+ * @access  Patient
+ */
+const getPatientAppointments = async (req, res) => {
+  try {
+    if (req.user.role !== "patient") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+        code: "FORBIDDEN",
+      });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filters = { patientId: req.user.id };
+
+    if (req.query.status) {
+      filters.status = req.query.status;
+    }
+
+    if (req.query.paymentStatus) {
+      filters.paymentStatus = req.query.paymentStatus;
+    }
+
+    const appointments = await Appointment.find(filters)
+      .populate("specializationId", "name description consultationFee imageUrl")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Appointment.countDocuments(filters);
+    const totalPages = Math.ceil(total / limit);
+
+    return res.status(200).json({
+      success: true,
+      message: "Appointments retrieved successfully",
+      code: "APPOINTMENTS_RETRIEVED",
+      data: {
+        appointments,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalItems: total,
+          itemsPerPage: limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching patient appointments:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve appointments",
+      code: "SERVER_ERROR",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Cancel appointment
+ * @route   PUT /api/appointments/:id/cancel
+ * @access  Patient
+ */
+const cancelAppointment = async (req, res) => {
+  try {
+    if (req.user.role !== "patient") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+        code: "FORBIDDEN",
+      });
+    }
+
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid appointment ID format",
+        code: "INVALID_APPOINTMENT_ID",
+      });
+    }
+
+    const appointment = await Appointment.findById(id);
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+        code: "APPOINTMENT_NOT_FOUND",
+      });
+    }
+
+    if (appointment.patientId.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to cancel this appointment",
+        code: "FORBIDDEN",
+      });
+    }
+
+    if (appointment.status === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Appointment is already cancelled",
+        code: "ALREADY_CANCELLED",
+      });
+    }
+
+    if (appointment.status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot cancel a completed appointment",
+        code: "CANNOT_CANCEL_COMPLETED",
+      });
+    }
+
+    appointment.status = "cancelled";
+    appointment.cancelledBy = "patient";
+    appointment.cancelReason = reason || "Cancelled by patient";
+    await appointment.save();
+
+    const populatedAppointment = await Appointment.findById(id)
+      .populate("specializationId", "name")
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      message: "Appointment cancelled successfully",
+      code: "APPOINTMENT_CANCELLED",
+      data: {
+        appointment: populatedAppointment,
+      },
+    });
+  } catch (error) {
+    console.error("Error cancelling appointment:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to cancel appointment",
+      code: "SERVER_ERROR",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createAppointmentOrder,
   verifyAppointmentPayment,
   getAppointmentDetails,
+  getPatientAppointments,
+  cancelAppointment,
 };

@@ -2,6 +2,21 @@
  * Appointment Types
  */
 
+export interface QuestionResponseData {
+  questionId: string;
+  question: string;
+  answer: string | string[] | number;
+}
+
+export interface PopulatedSpecialization {
+  _id: string;
+  name: string;
+  description: string;
+  consultationFee: number;
+  imageUrl?: string | null;
+  tags?: string[];
+}
+
 export interface Appointment {
   _id: string;
   patientId: {
@@ -10,52 +25,30 @@ export interface Appointment {
     email: string;
     phoneNumber: string;
   };
-  doctorId: {
-    _id: string;
-    userId: {
-      _id: string;
-      fullName: string;
-      email: string;
-      phoneNumber: string;
-    };
-    specialization: string;
-    qualification?: string;
-    experience?: number;
-    rating?: number;
-    images?: string[];
-    about?: string;
-    consultationFee: number;
-  };
-  appointmentDate: string;
-  appointmentTime: string;
-  duration: number;
-  reason: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
+  specializationId: PopulatedSpecialization;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   consultationFee: number;
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
-  razorpayOrderId?: string;
-  razorpayPaymentId?: string;
-  razorpaySignature?: string;
   paymentDetails?: {
     razorpayOrderId?: string;
     razorpayPaymentId?: string;
     razorpaySignature?: string;
   };
-  notes?: string;
+  questionResponses: QuestionResponseData[];
   prescription?: string;
-  cancelledBy?: 'patient' | 'doctor' | 'admin';
+  adminNotes?: string;
+  cancelledBy?: 'patient' | 'admin';
   cancelReason?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateAppointmentOrderRequest {
-  doctorId: string;
-  appointmentDate: string;
-  appointmentTime: string;
-  duration?: number;
-  reason: string;
-  notes?: string;
+  specializationId: string;
+  questionResponses: {
+    questionId: string;
+    answer: string | string[] | number;
+  }[];
 }
 
 export interface CreateAppointmentOrderResponse {

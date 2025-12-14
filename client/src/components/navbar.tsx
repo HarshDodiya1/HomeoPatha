@@ -19,9 +19,9 @@ import { toast } from "sonner";
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/doctors", label: "Doctors" },
+  { href: "/appointments", label: "Book Appointment" },
   { href: "/products", label: "Products" },
-  { href: "#about", label: "About Us" },
+  { href: "/doctors", label: "About Us" },
   { href: "/contact", label: "Contact" },
 ];
 

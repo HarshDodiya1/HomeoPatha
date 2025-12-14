@@ -278,18 +278,14 @@ const getUserAppointments = async (req, res) => {
       patientId: userId,
     });
 
-    // Get appointments with pagination and doctor details
+    // Get appointments with pagination and specialization details
     const appointments = await Appointment.find({ patientId: userId })
-      .sort({ appointmentDate: -1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate({
-        path: "doctorId",
-        select: "specialization qualification consultationFee experience rating images",
-        populate: {
-          path: "userId",
-          select: "fullName email phoneNumber"
-        }
+        path: "specializationId",
+        select: "name description consultationFee imageUrl tags"
       });
 
     // Calculate total pages
@@ -343,12 +339,8 @@ const getAppointmentDetails = async (req, res) => {
       _id: appointmentId,
       patientId: userId,
     }).populate({
-      path: "doctorId",
-      select: "specialization qualification consultationFee experience rating images about",
-      populate: {
-        path: "userId",
-        select: "fullName email phoneNumber"
-      }
+      path: "specializationId",
+      select: "name description consultationFee imageUrl tags"
     });
 
     if (!appointment) {

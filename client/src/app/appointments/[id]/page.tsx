@@ -14,12 +14,11 @@ import {
   User, 
   Mail, 
   Phone, 
-  MapPin,
   FileText,
-  DollarSign,
   Stethoscope,
-  Award,
-  Briefcase
+  MessageSquare,
+  IndianRupee,
+  ClipboardList,
 } from "lucide-react"
 import { toast } from "sonner"
 import apiClient from "@/lib/api/client"
@@ -78,8 +77,6 @@ export default function AppointmentDetailsPage() {
         return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
       case 'cancelled':
         return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
-      case 'rescheduled':
-        return 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'
       default:
         return 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400'
     }
@@ -112,7 +109,7 @@ export default function AppointmentDetailsPage() {
     return null
   }
 
-  const doctor = appointment.doctorId
+  const specialization = appointment.specializationId
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -142,109 +139,67 @@ export default function AppointmentDetailsPage() {
                     {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                   </Badge>
                   <Badge className={getPaymentStatusColor(appointment.paymentStatus)}>
-                    {appointment.paymentStatus.charAt(0).toUpperCase() + appointment.paymentStatus.slice(1)}
+                    Payment: {appointment.paymentStatus.charAt(0).toUpperCase() + appointment.paymentStatus.slice(1)}
                   </Badge>
                 </div>
               </div>
             </CardHeader>
           </Card>
 
-          {/* Doctor Information */}
+          {/* Specialization Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Doctor Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Stethoscope className="h-5 w-5" />
+                Consultation Type
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {doctor?.images && doctor.images.length > 0 && (
-                <div className="flex justify-center mb-4">
+            <CardContent>
+              <div className="flex items-start gap-4">
+                {specialization?.imageUrl ? (
                   <img
-                    src={doctor.images[0]}
-                    alt={doctor?.userId?.fullName || 'Doctor'}
-                    className="h-24 w-24 rounded-full object-cover border-4 border-primary/20"
+                    src={specialization.imageUrl}
+                    alt={specialization.name}
+                    className="h-20 w-20 rounded-lg object-cover"
                   />
-                </div>
-              )}
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3">
-                  <User className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Doctor Name</p>
-                    <p className="font-medium">{doctor?.userId?.fullName || 'N/A'}</p>
+                ) : (
+                  <div className="h-20 w-20 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Stethoscope className="h-10 w-10 text-primary" />
                   </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Stethoscope className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Specialization</p>
-                    <p className="font-medium">{(doctor as any)?.specialization || 'N/A'}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Qualification</p>
-                    <p className="font-medium">{(doctor as any)?.qualification || 'N/A'}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Briefcase className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Experience</p>
-                    <p className="font-medium">{(doctor as any)?.experience || 0} years</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{doctor?.userId?.email || 'N/A'}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Contact Number</p>
-                    <a 
-                      href={`tel:${doctor?.userId?.phoneNumber}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {doctor?.userId?.phoneNumber || 'N/A'}
-                    </a>
-                  </div>
+                )}
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">{specialization?.name || 'Consultation'}</h3>
+                  <p className="text-muted-foreground mt-1">{specialization?.description}</p>
+                  {specialization?.tags && specialization.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {specialization.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {(doctor as any)?.about && (
-                <>
-                  <Separator className="my-4" />
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">About Doctor</p>
-                    <p className="text-sm">{(doctor as any).about}</p>
-                  </div>
-                </>
-              )}
             </CardContent>
           </Card>
 
-          {/* Appointment Information */}
+          {/* Booking Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Appointment Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Booking Information
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Date</p>
+                    <p className="text-sm text-muted-foreground">Booked On</p>
                     <p className="font-medium">
-                      {new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
+                      {new Date(appointment.createdAt).toLocaleDateString('en-US', {
                         weekday: 'long',
                         year: 'numeric',
                         month: 'long',
@@ -258,61 +213,81 @@ export default function AppointmentDetailsPage() {
                   <Clock className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">Time</p>
-                    <p className="font-medium">{appointment.appointmentTime}</p>
+                    <p className="font-medium">
+                      {new Date(appointment.createdAt).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Duration</p>
-                    <p className="font-medium">{appointment.duration} minutes</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <DollarSign className="h-5 w-5 text-muted-foreground" />
+                  <IndianRupee className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">Consultation Fee</p>
                     <p className="font-medium text-lg text-primary">₹{appointment.consultationFee}</p>
                   </div>
                 </div>
               </div>
-
-              <Separator className="my-4" />
-
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Reason for Visit</p>
-                  <p className="font-medium">{appointment.reason}</p>
-                </div>
-
-                {appointment.notes && (
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Additional Notes</p>
-                    <p className="text-sm">{appointment.notes}</p>
-                  </div>
-                )}
-
-                {appointment.prescription && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Prescription</p>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg">
-                      <p className="text-sm whitespace-pre-wrap">{appointment.prescription}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
+
+          {/* Question Responses */}
+          {appointment.questionResponses && appointment.questionResponses.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5" />
+                  Your Responses
+                </CardTitle>
+                <CardDescription>
+                  Information you provided during booking
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {appointment.questionResponses.map((response, index) => (
+                    <div key={response.questionId} className="border-b last:border-0 pb-4 last:pb-0">
+                      <p className="font-medium text-sm mb-1">
+                        {index + 1}. {response.question}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {Array.isArray(response.answer) 
+                          ? response.answer.join(', ') 
+                          : response.answer.toString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Prescription */}
+          {appointment.prescription && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Prescription
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted p-4 rounded-lg">
+                  <p className="whitespace-pre-wrap">{appointment.prescription}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Payment Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Payment Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <IndianRupee className="h-5 w-5" />
+                Payment Information
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -326,37 +301,42 @@ export default function AppointmentDetailsPage() {
                   <p className="text-sm text-muted-foreground">Amount Paid</p>
                   <p className="text-2xl font-bold text-primary mt-1">₹{appointment.consultationFee}</p>
                 </div>
-                {appointment.razorpayOrderId && (
+                {appointment.paymentDetails?.razorpayOrderId && (
                   <div>
                     <p className="text-sm text-muted-foreground">Order ID</p>
-                    <p className="font-mono text-xs mt-1">{appointment.razorpayOrderId}</p>
+                    <p className="font-mono text-xs mt-1">{appointment.paymentDetails.razorpayOrderId}</p>
                   </div>
                 )}
-                {appointment.razorpayPaymentId && (
+                {appointment.paymentDetails?.razorpayPaymentId && (
                   <div>
                     <p className="text-sm text-muted-foreground">Payment ID</p>
-                    <p className="font-mono text-xs mt-1">{appointment.razorpayPaymentId}</p>
+                    <p className="font-mono text-xs mt-1">{appointment.paymentDetails.razorpayPaymentId}</p>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Contact Doctor Button */}
-          {doctor?.userId?.phoneNumber && (
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-semibold mb-1">Need to contact the doctor?</h3>
-                    <p className="text-sm text-muted-foreground">
-                      You can call the doctor directly for any queries or concerns.
+          {/* Cancellation Info */}
+          {appointment.status === 'cancelled' && (
+            <Card className="border-red-200 dark:border-red-800">
+              <CardHeader>
+                <CardTitle className="text-red-600 dark:text-red-400">Cancellation Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {appointment.cancelledBy && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">Cancelled by: </span>
+                      <span className="font-medium capitalize">{appointment.cancelledBy}</span>
                     </p>
-                  </div>
-                  <Button size="lg" onClick={() => window.location.href = `tel:${doctor.userId.phoneNumber}`}>
-                    <Phone className="mr-2 h-4 w-4" />
-                    Call Doctor
-                  </Button>
+                  )}
+                  {appointment.cancelReason && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">Reason: </span>
+                      <span>{appointment.cancelReason}</span>
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

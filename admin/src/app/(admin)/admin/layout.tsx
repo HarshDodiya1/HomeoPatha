@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { CalendarDays, CreditCard, LayoutDashboard, LogOut, Package, Users, User, Stethoscope, ShoppingBag, MessageSquare } from "lucide-react"
+import { CalendarDays, CreditCard, LayoutDashboard, LogOut, Package, Users, User, Stethoscope, ShoppingBag, MessageSquare, FolderHeart } from "lucide-react"
 import type * as React from "react"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ProtectedRoute } from "@/components/auth/protected-route"
@@ -39,8 +39,9 @@ import { toast } from "sonner"
 
 const routes = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
+  { href: "/admin/specializations", label: "Specializations", icon: FolderHeart },
   { href: "/admin/appointments", label: "Appointments", icon: CalendarDays },
+  { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
@@ -53,6 +54,7 @@ function usePageTitle(pathname: string) {
   if (parts[0] !== "admin") return "Admin"
   if (parts.length === 1) return "Dashboard"
   const map: Record<string, string> = {
+    specializations: "Specializations",
     doctors: "Doctors",
     patients: "Patients",
     appointments: "Appointments",

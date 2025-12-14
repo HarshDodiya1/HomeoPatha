@@ -2,6 +2,12 @@
  * Appointment Types for Admin Panel
  */
 
+export interface QuestionResponse {
+  questionId: string;
+  question: string;
+  answer: string;
+}
+
 export interface Appointment {
   _id: string;
   patientId: {
@@ -10,32 +16,22 @@ export interface Appointment {
     email: string;
     phoneNumber: string;
   };
-  doctorId: {
+  specializationId: {
     _id: string;
-    userId: {
-      _id: string;
-      fullName: string;
-      email: string;
-      phoneNumber: string;
-    };
-    specialization: string;
+    name: string;
+    description: string;
+    icon: string;
     consultationFee: number;
   };
-  appointmentDate: string;
-  appointmentTime: string;
-  duration: number;
-  reason: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
+  questionResponses: QuestionResponse[];
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   consultationFee: number;
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
-  paymentDetails?: {
-    razorpayOrderId?: string;
-    razorpayPaymentId?: string;
-    razorpaySignature?: string;
-  };
-  notes?: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
   prescription?: string;
-  cancelledBy?: 'patient' | 'doctor' | 'admin';
+  cancelledBy?: 'patient' | 'admin';
   cancelReason?: string;
   createdAt: string;
   updatedAt: string;
@@ -79,18 +75,12 @@ export interface AppointmentDetailResponse {
 }
 
 export interface UpdateAppointmentRequest {
-  appointmentDate?: string;
-  appointmentTime?: string;
-  duration?: number;
-  reason?: string;
-  status?: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
-  consultationFee?: number;
+  status?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   paymentStatus?: 'pending' | 'completed' | 'failed' | 'refunded';
-  notes?: string;
   prescription?: string;
 }
 
 export interface UpdateAppointmentStatusRequest {
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   cancelReason?: string;
 }

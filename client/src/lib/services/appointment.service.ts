@@ -17,6 +17,7 @@ const APPOINTMENT_BASE_URL = '/api/appointments';
 export const appointmentService = {
   /**
    * Create Razorpay order for appointment booking
+   * Now accepts specializationId and questionResponses
    */
   createAppointmentOrder: async (
     data: CreateAppointmentOrderRequest
@@ -50,5 +51,28 @@ export const appointmentService = {
       data: { appointment: Appointment };
     }>(`${APPOINTMENT_BASE_URL}/${appointmentId}`);
     return response.data.data.appointment;
+  },
+
+  /**
+   * Get user's appointments
+   */
+  getUserAppointments: async (): Promise<Appointment[]> => {
+    const response = await apiClient.get<{
+      success: boolean;
+      data: { appointments: Appointment[] };
+    }>('/api/users/appointments');
+    return response.data.data.appointments;
+  },
+
+  /**
+   * Cancel appointment
+   */
+  cancelAppointment: async (
+    appointmentId: string,
+    reason?: string
+  ): Promise<void> => {
+    await apiClient.post(`${APPOINTMENT_BASE_URL}/${appointmentId}/cancel`, {
+      reason,
+    });
   },
 };

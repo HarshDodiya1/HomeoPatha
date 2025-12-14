@@ -1,5 +1,24 @@
 const mongoose = require("mongoose");
 
+const questionResponseSchema = new mongoose.Schema(
+  {
+    questionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AppointmentQuestion",
+      required: true,
+    },
+    question: {
+      type: String,
+      required: true,
+    },
+    answer: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const appointmentSchema = new mongoose.Schema(
   {
     patientId: {
@@ -7,18 +26,14 @@ const appointmentSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    doctorId: {
+    specializationId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor",
+      ref: "Specialization",
       required: true,
     },
-    appointmentDate: { type: Date, required: true },
-    appointmentTime: { type: String, required: true },
-    duration: { type: Number, default: 30 },
-    reason: { type: String, required: true },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "completed", "cancelled", "rescheduled"],
+      enum: ["pending", "confirmed", "completed", "cancelled"],
       default: "pending",
     },
     consultationFee: { type: Number, required: true },
@@ -32,15 +47,21 @@ const appointmentSchema = new mongoose.Schema(
       razorpayPaymentId: { type: String },
       razorpaySignature: { type: String },
     },
-    notes: { type: String },
+    questionResponses: {
+      type: [questionResponseSchema],
+      default: [],
+    },
     prescription: { type: String },
-    cancelledBy: { type: String, enum: ["patient", "doctor", "admin"] },
+    adminNotes: { type: String },
+    cancelledBy: { type: String, enum: ["patient", "admin"] },
     cancelReason: { type: String },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-appointmentSchema.index({ doctorId: 1, appointmentDate: 1 });
-appointmentSchema.index({ patientId: 1, appointmentDate: -1 });
+appointmentSchema.index({ specializationId: 1, createdAt: -1 });
+appointmentSchema.index({ patientId: 1, createdAt: -1 });
+appointmentSchema.index({ status: 1 });
+appointmentSchema.index({ paymentStatus: 1 });
 
 module.exports = mongoose.model("Appointment", appointmentSchema);

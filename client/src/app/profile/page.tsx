@@ -318,9 +318,9 @@ function ProfilePageContent() {
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Calendar className="h-16 w-16 text-muted-foreground mb-4" />
                   <p className="text-lg font-medium text-muted-foreground">No appointments found</p>
-                  <p className="text-sm text-muted-foreground mt-2">Book your first appointment with a doctor</p>
-                  <Button className="mt-4" onClick={() => router.push('/doctors')}>
-                    Browse Doctors
+                  <p className="text-sm text-muted-foreground mt-2">Book your first consultation appointment</p>
+                  <Button className="mt-4" onClick={() => router.push('/appointments')}>
+                    Book Appointment
                   </Button>
                 </CardContent>
               </Card>
@@ -332,15 +332,27 @@ function ProfilePageContent() {
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="space-y-3 flex-1">
                           <div className="flex items-start gap-3">
-                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <UserIcon className="h-6 w-6 text-primary" />
-                            </div>
+                            {appointment.specializationId?.imageUrl ? (
+                              <div className="h-12 w-12 rounded-full overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={appointment.specializationId.imageUrl}
+                                  alt={appointment.specializationId?.name || 'Specialization'}
+                                  width={48}
+                                  height={48}
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                            ) : (
+                              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <Calendar className="h-6 w-6 text-primary" />
+                              </div>
+                            )}
                             <div>
                               <h3 className="font-semibold text-lg">
-                                {appointment.doctorId?.userId?.fullName || 'Doctor'}
+                                {appointment.specializationId?.name || 'Consultation'}
                               </h3>
                               <p className="text-sm text-muted-foreground">
-                                {(appointment.doctorId as any)?.specialization || 'Specialist'}
+                                ₹{appointment.specializationId?.consultationFee || appointment.consultationFee} consultation
                               </p>
                             </div>
                           </div>
@@ -349,7 +361,7 @@ function ProfilePageContent() {
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
                               <span>
-                                {new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
+                                Booked on {new Date(appointment.createdAt).toLocaleDateString('en-US', {
                                   weekday: 'short',
                                   year: 'numeric',
                                   month: 'short',
@@ -357,15 +369,12 @@ function ProfilePageContent() {
                                 })}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span>{appointment.appointmentTime}</span>
-                            </div>
-                          </div>
-
-                          <div className="text-sm">
-                            <span className="text-muted-foreground">Reason: </span>
-                            <span className="font-medium">{appointment.reason}</span>
+                            {appointment.questionResponses && appointment.questionResponses.length > 0 && (
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <span>{appointment.questionResponses.length} responses provided</span>
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex flex-wrap gap-2">

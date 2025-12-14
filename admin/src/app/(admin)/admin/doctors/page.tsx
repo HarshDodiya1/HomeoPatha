@@ -112,7 +112,12 @@ export default function DoctorsPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle>Doctors Management</CardTitle>
+          <div>
+            <CardTitle>Team Members</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Manage doctors displayed on the About Us page
+            </p>
+          </div>
           <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             Add Doctor

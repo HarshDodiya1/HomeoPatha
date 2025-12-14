@@ -17,7 +17,9 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Eye, Edit, Trash2, Calendar, User, DollarSign } from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Loader2, Eye, Edit, Trash2, Calendar, User, DollarSign, MessageSquare } from "lucide-react"
 import { appointmentsService } from "@/lib/services/appointments.service"
 import { Appointment } from "@/types/appointment"
 import { toast } from "sonner"
@@ -32,8 +34,6 @@ function getStatusColor(status: string) {
       return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
     case 'cancelled':
       return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
-    case 'rescheduled':
-      return 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'
     default:
       return 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400'
   }
@@ -73,7 +73,6 @@ export function AppointmentsTable() {
   // Edit form
   const [editStatus, setEditStatus] = useState("")
   const [editPaymentStatus, setEditPaymentStatus] = useState("")
-  const [editNotes, setEditNotes] = useState("")
   const [editPrescription, setEditPrescription] = useState("")
 
   // Stats
@@ -120,7 +119,6 @@ export function AppointmentsTable() {
     setSelectedAppointment(appointment)
     setEditStatus(appointment.status)
     setEditPaymentStatus(appointment.paymentStatus)
-    setEditNotes(appointment.notes || "")
     setEditPrescription(appointment.prescription || "")
     setIsEditDialogOpen(true)
   }
@@ -133,7 +131,6 @@ export function AppointmentsTable() {
       await appointmentsService.updateAppointment(selectedAppointment._id, {
         status: editStatus as any,
         paymentStatus: editPaymentStatus as any,
-        notes: editNotes,
         prescription: editPrescription,
       })
       toast.success('Appointment updated successfully')
@@ -175,9 +172,9 @@ export function AppointmentsTable() {
     return appointments.filter((appointment) => {
       const searchLower = search.toLowerCase()
       return (
-        appointment.patientId.fullName.toLowerCase().includes(searchLower) ||
-        appointment.patientId.email.toLowerCase().includes(searchLower) ||
-        appointment.doctorId.userId.fullName.toLowerCase().includes(searchLower) ||
+        appointment.patientId?.fullName?.toLowerCase().includes(searchLower) ||
+        appointment.patientId?.email?.toLowerCase().includes(searchLower) ||
+        appointment.specializationId?.name?.toLowerCase().includes(searchLower) ||
         appointment._id.toLowerCase().includes(searchLower)
       )
     })
@@ -231,7 +228,7 @@ export function AppointmentsTable() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
             <Input
-              placeholder="Search patients, doctors..."
+              placeholder="Search patients, specializations..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -257,7 +254,6 @@ export function AppointmentsTable() {
                 <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
-                <SelectItem value="rescheduled">Rescheduled</SelectItem>
               </SelectContent>
             </Select>
             <Select value={paymentStatus || undefined} onValueChange={(val) => setPaymentStatus(val === "all" ? "" : val)}>
@@ -285,8 +281,8 @@ export function AppointmentsTable() {
                   <TableRow>
                     <TableHead>Patient</TableHead>
                     <TableHead>Mobile</TableHead>
-                    <TableHead>Doctor</TableHead>
-                    <TableHead>Date/Time</TableHead>
+                    <TableHead>Specialization</TableHead>
+                    <TableHead>Booked On</TableHead>
                     <TableHead>Fee</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Payment</TableHead>
@@ -305,23 +301,27 @@ export function AppointmentsTable() {
                       <TableRow key={appointment._id}>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{appointment.patientId.fullName}</div>
-                            <div className="text-xs text-muted-foreground">{appointment.patientId.email}</div>
+                            <div className="font-medium">{appointment.patientId?.fullName || 'N/A'}</div>
+                            <div className="text-xs text-muted-foreground">{appointment.patientId?.email || ''}</div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">{appointment.patientId.phoneNumber}</div>
+                          <div className="font-medium">{appointment.patientId?.phoneNumber || 'N/A'}</div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{appointment.doctorId.userId.fullName}</div>
-                            <div className="text-xs text-muted-foreground">{appointment.doctorId.specialization}</div>
+                            <div className="font-medium">{appointment.specializationId?.name || 'N/A'}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {appointment.questionResponses?.length || 0} responses
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div>{new Date(appointment.appointmentDate).toLocaleDateString()}</div>
-                            <div className="text-xs text-muted-foreground">{appointment.appointmentTime}</div>
+                            <div>{new Date(appointment.createdAt).toLocaleDateString()}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(appointment.createdAt).toLocaleTimeString()}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>₹{appointment.consultationFee}</TableCell>
@@ -372,88 +372,109 @@ export function AppointmentsTable() {
 
       {/* View Details Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Appointment Details</DialogTitle>
             <DialogDescription>Complete information about the appointment</DialogDescription>
           </DialogHeader>
           {selectedAppointment && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground">Patient Name</Label>
-                  <p className="font-medium">{selectedAppointment.patientId.fullName}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Patient Email</Label>
-                  <p className="font-medium">{selectedAppointment.patientId.email}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Patient Mobile</Label>
-                  <p className="font-medium">{selectedAppointment.patientId.phoneNumber}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Doctor Name</Label>
-                  <p className="font-medium">{selectedAppointment.doctorId.userId.fullName}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Specialization</Label>
-                  <p className="font-medium">{selectedAppointment.doctorId.specialization}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Date</Label>
-                  <p className="font-medium">
-                    {new Date(selectedAppointment.appointmentDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Time</Label>
-                  <p className="font-medium">{selectedAppointment.appointmentTime}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Consultation Fee</Label>
-                  <p className="font-medium">₹{selectedAppointment.consultationFee}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Duration</Label>
-                  <p className="font-medium">{selectedAppointment.duration} minutes</p>
-                </div>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Reason</Label>
-                <p className="font-medium">{selectedAppointment.reason}</p>
-              </div>
-              {selectedAppointment.notes && (
-                <div>
-                  <Label className="text-muted-foreground">Notes</Label>
-                  <p className="font-medium">{selectedAppointment.notes}</p>
-                </div>
-              )}
-              {selectedAppointment.prescription && (
-                <div>
-                  <Label className="text-muted-foreground">Prescription</Label>
-                  <p className="font-medium">{selectedAppointment.prescription}</p>
-                </div>
-              )}
-              <div className="flex gap-4">
-                <div>
-                  <Label className="text-muted-foreground">Status</Label>
-                  <div className="mt-1">
-                    <Badge className={getStatusColor(selectedAppointment.status)}>
-                      {selectedAppointment.status.charAt(0).toUpperCase() + selectedAppointment.status.slice(1)}
-                    </Badge>
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <div className="space-y-6">
+                {/* Patient & Specialization Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Patient Name</Label>
+                    <p className="font-medium">{selectedAppointment.patientId?.fullName || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Patient Email</Label>
+                    <p className="font-medium">{selectedAppointment.patientId?.email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Patient Mobile</Label>
+                    <p className="font-medium">{selectedAppointment.patientId?.phoneNumber || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Specialization</Label>
+                    <p className="font-medium">{selectedAppointment.specializationId?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Consultation Fee</Label>
+                    <p className="font-medium">₹{selectedAppointment.consultationFee}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Booked On</Label>
+                    <p className="font-medium">
+                      {new Date(selectedAppointment.createdAt).toLocaleString()}
+                    </p>
                   </div>
                 </div>
+
+                <Separator />
+
+                {/* Question Responses */}
                 <div>
-                  <Label className="text-muted-foreground">Payment Status</Label>
-                  <div className="mt-1">
-                    <Badge className={getPaymentStatusColor(selectedAppointment.paymentStatus)}>
-                      {selectedAppointment.paymentStatus.charAt(0).toUpperCase() + selectedAppointment.paymentStatus.slice(1)}
-                    </Badge>
+                  <div className="flex items-center gap-2 mb-3">
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-base font-semibold">Patient Responses</Label>
+                  </div>
+                  {selectedAppointment.questionResponses && selectedAppointment.questionResponses.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedAppointment.questionResponses.map((response, index) => (
+                        <div key={response.questionId || index} className="bg-muted/50 rounded-lg p-3">
+                          <p className="text-sm font-medium text-muted-foreground mb-1">
+                            {response.question}
+                          </p>
+                          <p className="font-medium">{response.answer}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No responses recorded</p>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Prescription */}
+                {selectedAppointment.prescription && (
+                  <div>
+                    <Label className="text-muted-foreground">Prescription</Label>
+                    <p className="font-medium mt-1">{selectedAppointment.prescription}</p>
+                  </div>
+                )}
+
+                {/* Status Badges */}
+                <div className="flex gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Status</Label>
+                    <div className="mt-1">
+                      <Badge className={getStatusColor(selectedAppointment.status)}>
+                        {selectedAppointment.status.charAt(0).toUpperCase() + selectedAppointment.status.slice(1)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Payment Status</Label>
+                    <div className="mt-1">
+                      <Badge className={getPaymentStatusColor(selectedAppointment.paymentStatus)}>
+                        {selectedAppointment.paymentStatus.charAt(0).toUpperCase() + selectedAppointment.paymentStatus.slice(1)}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
+
+                {/* Payment IDs */}
+                {selectedAppointment.razorpayOrderId && (
+                  <div className="text-xs text-muted-foreground">
+                    <p>Order ID: {selectedAppointment.razorpayOrderId}</p>
+                    {selectedAppointment.razorpayPaymentId && (
+                      <p>Payment ID: {selectedAppointment.razorpayPaymentId}</p>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
+            </ScrollArea>
           )}
         </DialogContent>
       </Dialog>
@@ -477,7 +498,6 @@ export function AppointmentsTable() {
                   <SelectItem value="confirmed">Confirmed</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
-                  <SelectItem value="rescheduled">Rescheduled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -494,14 +514,6 @@ export function AppointmentsTable() {
                   <SelectItem value="refunded">Refunded</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div>
-              <Label>Notes</Label>
-              <Textarea
-                value={editNotes}
-                onChange={(e) => setEditNotes(e.target.value)}
-                placeholder="Add notes..."
-              />
             </div>
             <div>
               <Label>Prescription</Label>

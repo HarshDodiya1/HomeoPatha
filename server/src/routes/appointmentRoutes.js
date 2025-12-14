@@ -5,6 +5,8 @@ const {
   createAppointmentOrder,
   verifyAppointmentPayment,
   getAppointmentDetails,
+  getPatientAppointments,
+  cancelAppointment,
 } = require("../controllers/appointmentController.js");
 
 /**
@@ -12,7 +14,7 @@ const {
  * /api/appointments/create-order:
  *   post:
  *     summary: Create Razorpay order for appointment
- *     description: Patient creates an order for appointment booking. Consultation fee is fetched from server (doctor's profile).
+ *     description: Patient creates an order for appointment booking by specialization
  *     tags:
  *       - Appointments
  *     security:
@@ -25,36 +27,22 @@ const {
  *           schema:
  *             type: object
  *             required:
- *               - doctorId
- *               - appointmentDate
- *               - appointmentTime
- *               - reason
+ *               - specializationId
  *             properties:
- *               doctorId:
+ *               specializationId:
  *                 type: string
- *                 description: ID of the doctor
+ *                 description: ID of the specialization
  *                 example: "6475a9b8c1234567890abcde"
- *               appointmentDate:
- *                 type: string
- *                 format: date
- *                 description: Date of appointment
- *                 example: "2025-11-25"
- *               appointmentTime:
- *                 type: string
- *                 description: Time of appointment
- *                 example: "10:00 AM"
- *               duration:
- *                 type: number
- *                 description: Duration in minutes
- *                 example: 30
- *               reason:
- *                 type: string
- *                 description: Reason for appointment
- *                 example: "Regular checkup and consultation"
- *               notes:
- *                 type: string
- *                 description: Additional notes
- *                 example: "First visit"
+ *               questionResponses:
+ *                 type: array
+ *                 description: Answers to appointment questions
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     questionId:
+ *                       type: string
+ *                     answer:
+ *                       type: string
  *     responses:
  *       201:
  *         description: Order created successfully
@@ -63,9 +51,7 @@ const {
  *       403:
  *         description: Forbidden
  *       404:
- *         description: Doctor not found
- *       409:
- *         description: Time slot already booked
+ *         description: Specialization not found
  *       500:
  *         description: Server error
  */
@@ -122,10 +108,56 @@ router.post("/verify-payment", authMiddleware, verifyAppointmentPayment);
 
 /**
  * @swagger
+ * /api/appointments:
+ *   get:
+ *     summary: Get patient's appointments
+ *     description: Retrieve all appointments for the logged-in patient
+ *     tags:
+ *       - Appointments
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Items per page
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, confirmed, completed, cancelled]
+ *         description: Filter by status
+ *       - in: query
+ *         name: paymentStatus
+ *         schema:
+ *           type: string
+ *           enum: [pending, completed, failed, refunded]
+ *         description: Filter by payment status
+ *     responses:
+ *       200:
+ *         description: Appointments retrieved successfully
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Server error
+ */
+router.get("/", authMiddleware, getPatientAppointments);
+
+/**
+ * @swagger
  * /api/appointments/{id}:
  *   get:
  *     summary: Get appointment details
- *     description: Retrieve details of a specific appointment. Patients can only view their own appointments, admins can view all.
+ *     description: Retrieve details of a specific appointment
  *     tags:
  *       - Appointments
  *     security:
@@ -153,5 +185,46 @@ router.post("/verify-payment", authMiddleware, verifyAppointmentPayment);
  *         description: Server error
  */
 router.get("/:id", authMiddleware, getAppointmentDetails);
+
+/**
+ * @swagger
+ * /api/appointments/{id}/cancel:
+ *   put:
+ *     summary: Cancel appointment
+ *     description: Patient cancels their appointment
+ *     tags:
+ *       - Appointments
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Appointment ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 description: Cancellation reason
+ *     responses:
+ *       200:
+ *         description: Appointment cancelled successfully
+ *       400:
+ *         description: Invalid ID or already cancelled
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Appointment not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/:id/cancel", authMiddleware, cancelAppointment);
 
 module.exports = router;

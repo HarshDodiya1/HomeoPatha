@@ -9,6 +9,8 @@ const Product = require("./src/models/Product.js");
 const Order = require("./src/models/Order.js");
 const Appointment = require("./src/models/Appointment.js");
 const ContactMessage = require("./src/models/ContactMessage.js");
+const Specialization = require("./src/models/Specialization.js");
+const AppointmentQuestion = require("./src/models/AppointmentQuestion.js");
 
 // Connect to database
 const connectDB = async () => {
@@ -264,6 +266,128 @@ const dummyDoctors = [
   },
 ];
 
+// Specializations for appointment booking
+const dummySpecializations = [
+  {
+    name: "Cardiology",
+    description: "Consultation for heart and cardiovascular system related issues including chest pain, palpitations, and blood pressure problems.",
+    imageUrl: null,
+    consultationFee: 500,
+    isActive: true,
+    tags: ["heart", "cardiovascular", "chest pain", "blood pressure", "palpitations"],
+  },
+  {
+    name: "Dermatology",
+    description: "Skin care consultation for acne, eczema, psoriasis, and other skin conditions.",
+    imageUrl: null,
+    consultationFee: 400,
+    isActive: true,
+    tags: ["skin", "acne", "eczema", "psoriasis", "hair loss"],
+  },
+  {
+    name: "Orthopedics",
+    description: "Bone and joint consultation for arthritis, back pain, sports injuries, and fractures.",
+    imageUrl: null,
+    consultationFee: 600,
+    isActive: true,
+    tags: ["bones", "joints", "arthritis", "back pain", "sports injury"],
+  },
+  {
+    name: "Pediatrics",
+    description: "Child health consultation for growth, development, and childhood illnesses.",
+    imageUrl: null,
+    consultationFee: 350,
+    isActive: true,
+    tags: ["child", "baby", "growth", "development", "vaccination"],
+  },
+  {
+    name: "Neurology",
+    description: "Consultation for neurological conditions including headaches, migraines, and nerve disorders.",
+    imageUrl: null,
+    consultationFee: 550,
+    isActive: true,
+    tags: ["brain", "nerves", "headache", "migraine", "seizures"],
+  },
+  {
+    name: "Psychology",
+    description: "Mental health consultation for anxiety, depression, stress, and behavioral issues.",
+    imageUrl: null,
+    consultationFee: 450,
+    isActive: true,
+    tags: ["mental health", "anxiety", "depression", "stress", "counseling"],
+  },
+  {
+    name: "General Medicine",
+    description: "General health consultation for fever, cold, cough, and other common ailments.",
+    imageUrl: null,
+    consultationFee: 300,
+    isActive: true,
+    tags: ["general", "fever", "cold", "cough", "wellness"],
+  },
+  {
+    name: "Gastroenterology",
+    description: "Digestive system consultation for stomach issues, acidity, and digestive disorders.",
+    imageUrl: null,
+    consultationFee: 500,
+    isActive: true,
+    tags: ["stomach", "digestion", "acidity", "liver", "intestine"],
+  },
+];
+
+// Global questions (apply to all specializations)
+const dummyGlobalQuestions = [
+  {
+    question: "What symptoms are you currently experiencing?",
+    questionType: "textarea",
+    options: [],
+    isRequired: true,
+    specializationId: null,
+    order: 1,
+    placeholder: "Please describe your symptoms in detail...",
+    isActive: true,
+  },
+  {
+    question: "How long have you been experiencing these symptoms?",
+    questionType: "select",
+    options: ["Less than a week", "1-2 weeks", "2-4 weeks", "1-3 months", "More than 3 months"],
+    isRequired: true,
+    specializationId: null,
+    order: 2,
+    placeholder: "",
+    isActive: true,
+  },
+  {
+    question: "Have you consulted a doctor for this issue before?",
+    questionType: "radio",
+    options: ["Yes", "No"],
+    isRequired: true,
+    specializationId: null,
+    order: 3,
+    placeholder: "",
+    isActive: true,
+  },
+  {
+    question: "Are you currently taking any medications?",
+    questionType: "textarea",
+    options: [],
+    isRequired: false,
+    specializationId: null,
+    order: 4,
+    placeholder: "List any medications you are currently taking...",
+    isActive: true,
+  },
+  {
+    question: "Do you have any known allergies?",
+    questionType: "text",
+    options: [],
+    isRequired: false,
+    specializationId: null,
+    order: 5,
+    placeholder: "e.g., Penicillin, Peanuts, etc.",
+    isActive: true,
+  },
+];
+
 const dummyProducts = [
   {
     title: "Arnica Montana 30CH",
@@ -404,6 +528,130 @@ const dummyContactMessages = [
   },
 ];
 
+// Specialization-specific questions (will be linked after specializations are created)
+const dummySpecializationQuestions = {
+  "Cardiology": [
+    {
+      question: "Do you experience chest pain or discomfort?",
+      questionType: "radio",
+      options: ["Yes, frequently", "Sometimes", "Rarely", "Never"],
+      isRequired: true,
+      order: 10,
+      placeholder: "",
+      isActive: true,
+    },
+    {
+      question: "Do you have a family history of heart disease?",
+      questionType: "radio",
+      options: ["Yes", "No", "Not sure"],
+      isRequired: true,
+      order: 11,
+      placeholder: "",
+      isActive: true,
+    },
+  ],
+  "Dermatology": [
+    {
+      question: "Where is the affected skin area?",
+      questionType: "checkbox",
+      options: ["Face", "Arms", "Legs", "Back", "Chest", "Scalp", "Other"],
+      isRequired: true,
+      order: 10,
+      placeholder: "",
+      isActive: true,
+    },
+    {
+      question: "Is the affected area itchy or painful?",
+      questionType: "radio",
+      options: ["Itchy", "Painful", "Both", "Neither"],
+      isRequired: true,
+      order: 11,
+      placeholder: "",
+      isActive: true,
+    },
+  ],
+  "Orthopedics": [
+    {
+      question: "Which area is causing you pain?",
+      questionType: "checkbox",
+      options: ["Neck", "Back", "Shoulder", "Elbow", "Wrist", "Hip", "Knee", "Ankle", "Other"],
+      isRequired: true,
+      order: 10,
+      placeholder: "",
+      isActive: true,
+    },
+    {
+      question: "Rate your pain level on a scale of 1-10",
+      questionType: "select",
+      options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+      isRequired: true,
+      order: 11,
+      placeholder: "",
+      isActive: true,
+    },
+  ],
+  "Psychology": [
+    {
+      question: "How would you describe your current mood?",
+      questionType: "select",
+      options: ["Happy", "Neutral", "Sad", "Anxious", "Stressed", "Angry", "Confused"],
+      isRequired: true,
+      order: 10,
+      placeholder: "",
+      isActive: true,
+    },
+    {
+      question: "How are your sleep patterns?",
+      questionType: "radio",
+      options: ["Good (7-8 hours)", "Too much (>9 hours)", "Too little (<6 hours)", "Irregular"],
+      isRequired: true,
+      order: 11,
+      placeholder: "",
+      isActive: true,
+    },
+  ],
+  "Pediatrics": [
+    {
+      question: "What is the child's age?",
+      questionType: "text",
+      options: [],
+      isRequired: true,
+      order: 10,
+      placeholder: "e.g., 5 years",
+      isActive: true,
+    },
+    {
+      question: "Is the child's vaccination up to date?",
+      questionType: "radio",
+      options: ["Yes", "No", "Partially"],
+      isRequired: true,
+      order: 11,
+      placeholder: "",
+      isActive: true,
+    },
+  ],
+  "Gastroenterology": [
+    {
+      question: "What digestive symptoms are you experiencing?",
+      questionType: "checkbox",
+      options: ["Acidity", "Bloating", "Constipation", "Diarrhea", "Nausea", "Vomiting", "Abdominal pain"],
+      isRequired: true,
+      order: 10,
+      placeholder: "",
+      isActive: true,
+    },
+    {
+      question: "How often do you experience these symptoms?",
+      questionType: "select",
+      options: ["Daily", "Several times a week", "Once a week", "Occasionally"],
+      isRequired: true,
+      order: 11,
+      placeholder: "",
+      isActive: true,
+    },
+  ],
+};
+
 // Seeding function
 const seedDatabase = async () => {
   try {
@@ -495,9 +743,67 @@ const seedDatabase = async () => {
       `✅ Added ${newDoctorsCount} new doctor profiles. Total available: ${allDoctors.length}\n`
     );
 
+    // --- Specializations ---
+    console.log("🏥 Checking/Seeding specializations...");
+    let newSpecializationsCount = 0;
+    const createdSpecializations = [];
+    for (const spec of dummySpecializations) {
+      const exists = await Specialization.findOne({ name: spec.name });
+      if (!exists) {
+        const created = await Specialization.create(spec);
+        createdSpecializations.push(created);
+        newSpecializationsCount++;
+      } else {
+        createdSpecializations.push(exists);
+      }
+    }
+    const allSpecializations = await Specialization.find({});
+    console.log(
+      `✅ Added ${newSpecializationsCount} new specializations. Total available: ${allSpecializations.length}\n`
+    );
+
+    // --- Appointment Questions (Global) ---
+    console.log("❓ Checking/Seeding global appointment questions...");
+    let newGlobalQuestionsCount = 0;
+    for (const question of dummyGlobalQuestions) {
+      const exists = await AppointmentQuestion.findOne({
+        question: question.question,
+        specializationId: null,
+      });
+      if (!exists) {
+        await AppointmentQuestion.create(question);
+        newGlobalQuestionsCount++;
+      }
+    }
+    console.log(`✅ Added ${newGlobalQuestionsCount} new global questions\n`);
+
+    // --- Appointment Questions (Specialization-specific) ---
+    console.log("❓ Checking/Seeding specialization-specific questions...");
+    let newSpecQuestionsCount = 0;
+    for (const [specName, questions] of Object.entries(dummySpecializationQuestions)) {
+      const specialization = allSpecializations.find(s => s.name === specName);
+      if (specialization) {
+        for (const question of questions) {
+          const exists = await AppointmentQuestion.findOne({
+            question: question.question,
+            specializationId: specialization._id,
+          });
+          if (!exists) {
+            await AppointmentQuestion.create({
+              ...question,
+              specializationId: specialization._id,
+            });
+            newSpecQuestionsCount++;
+          }
+        }
+      }
+    }
+    const allQuestions = await AppointmentQuestion.find({});
+    console.log(
+      `✅ Added ${newSpecQuestionsCount} new specialization-specific questions. Total questions: ${allQuestions.length}\n`
+    );
+
     // --- Products ---
-    // Note: We allow appending products even if duplicates exist, based on prompt "add dummy data"
-    // However, usually duplicate products are bad. Let's check title to be safe, or remove check if you want duplicates.
     console.log("💊 Seeding products (Appending)...");
     const createdProducts = await Product.insertMany(dummyProducts, {
       ordered: false,
@@ -570,54 +876,70 @@ const seedDatabase = async () => {
       console.log(`✅ Added ${createdOrders.length} orders\n`);
     }
 
-    if (allPatients.length > 0 && allDoctors.length > 0) {
-      // --- Appointments ---
-      console.log("📅 Seeding appointments (For all patients)...");
+    if (allPatients.length > 0 && allSpecializations.length > 0) {
+      // --- Appointments (Now based on Specializations) ---
+      console.log("📅 Seeding appointments (For all patients with specializations)...");
       const appointments = [];
+
       for (const patient of allPatients) {
         const numAppointments = Math.floor(Math.random() * 2) + 1;
 
         for (let j = 0; j < numAppointments; j++) {
-          const doctor =
-            allDoctors[Math.floor(Math.random() * allDoctors.length)];
-          const appointmentDate = new Date(
-            Date.now() + Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000
+          // Pick a random specialization
+          const specialization = allSpecializations[Math.floor(Math.random() * allSpecializations.length)];
+
+          // Get questions for this specialization (global + specialization-specific)
+          const questionsForSpec = allQuestions.filter(
+            q => q.specializationId === null || 
+                 (q.specializationId && q.specializationId.toString() === specialization._id.toString())
           );
+
+          // Generate dummy responses for all required questions
+          const questionResponses = questionsForSpec
+            .filter(q => q.isRequired)
+            .map(q => {
+              let answer = "";
+              switch (q.questionType) {
+                case "text":
+                case "textarea":
+                  answer = "Sample response for " + q.question.substring(0, 20);
+                  break;
+                case "select":
+                case "radio":
+                  answer = q.options.length > 0 ? q.options[0] : "Yes";
+                  break;
+                case "checkbox":
+                  answer = q.options.length > 0 ? q.options.slice(0, 2).join(", ") : "Option 1, Option 2";
+                  break;
+                case "number":
+                  answer = "5";
+                  break;
+                case "date":
+                  answer = new Date().toISOString().split('T')[0];
+                  break;
+                default:
+                  answer = "Sample answer";
+              }
+              return {
+                questionId: q._id,
+                question: q.question,
+                answer: answer,
+              };
+            });
 
           appointments.push({
             patientId: patient._id,
-            doctorId: doctor._id,
-            appointmentDate,
-            appointmentTime: [
-              "09:00",
-              "10:00",
-              "11:00",
-              "14:00",
-              "15:00",
-              "16:00",
-            ][Math.floor(Math.random() * 6)],
-            duration: 30,
-            reason: [
-              "General Checkup",
-              "Follow-up Consultation",
-              "Specific Problem",
-              "Annual Checkup",
-            ][Math.floor(Math.random() * 4)],
-            status: [
-              "pending",
-              "confirmed",
-              "completed",
-              "cancelled",
-              "rescheduled",
-            ][Math.floor(Math.random() * 5)],
-            consultationFee: doctor.consultationFee,
+            specializationId: specialization._id,
+            questionResponses: questionResponses,
+            status: ["pending", "confirmed", "completed", "cancelled"][
+              Math.floor(Math.random() * 4)
+            ],
+            consultationFee: specialization.consultationFee,
             paymentStatus: ["pending", "completed"][
               Math.floor(Math.random() * 2)
             ],
-            notes:
-              Math.random() > 0.5
-                ? "Patient responded well to treatment"
-                : undefined,
+            razorpayOrderId: "order_" + Math.random().toString(36).substring(7),
+            razorpayPaymentId: Math.random() > 0.5 ? "pay_" + Math.random().toString(36).substring(7) : undefined,
             prescription:
               Math.random() > 0.5
                 ? "Take 3 times daily with water"
@@ -625,6 +947,7 @@ const seedDatabase = async () => {
           });
         }
       }
+
       const createdAppointments = await Appointment.insertMany(appointments, {
         ordered: false,
       }).catch((err) => {
