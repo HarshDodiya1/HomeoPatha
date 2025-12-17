@@ -78,12 +78,12 @@ export default function AboutPage() {
               Your trusted partner in natural healing. We combine ancient homeopathic wisdom with modern healthcare practices to provide you with the best possible care.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" asChild>
-                <Link href="/appointments">Book a Consultation</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/contact">Contact Us</Link>
-              </Button>
+              <Link href="/appointments">
+                <Button size="lg">Book a Consultation</Button>
+              </Link>
+              <Link href="/contact">
+                <Button size="lg" variant="outline">Contact Us</Button>
+              </Link>
             </div>
           </div>
         </section>
@@ -274,12 +274,12 @@ export default function AboutPage() {
               Book a consultation with one of our expert homeopathic practitioners today and take the first step towards natural wellness.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/appointments">Book Appointment</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="bg-transparent border-white hover:bg-white/10" asChild>
-                <Link href="/products">Browse Products</Link>
-              </Button>
+              <Link href="/appointments">
+                <Button size="lg" variant="secondary">Book Appointment</Button>
+              </Link>
+              <Link href="/products">
+                <Button size="lg" variant="outline" className="bg-transparent border-white hover:bg-white/10">Browse Products</Button>
+              </Link>
             </div>
           </div>
         </section>

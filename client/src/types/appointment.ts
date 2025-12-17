@@ -44,11 +44,17 @@ export interface Appointment {
 }
 
 export interface CreateAppointmentOrderRequest {
-  specializationId: string;
-  questionResponses: {
+  specializationId?: string;
+  questionResponses?: {
     questionId: string;
     answer: string | string[] | number;
   }[];
+  // Alternative doctor-based booking flow
+  doctorId?: string;
+  appointmentDate?: string;
+  appointmentTime?: string;
+  reason?: string;
+  notes?: string;
 }
 
 export interface CreateAppointmentOrderResponse {
