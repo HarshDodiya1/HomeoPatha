@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut, ShoppingCart } from "lucide-react";
+import { User, LogOut, ShoppingCart } from "lucide-react";
+import { IconMenu2, IconX } from "@tabler/icons-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,35 +15,45 @@ import {
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/appointments", label: "Book Appointment" },
+  { href: "/appointments", label: "Book" },
   { href: "/products", label: "Products" },
-  { href: "/doctors", label: "About Us" },
+  { href: "/doctors", label: "Doctors" },
   { href: "/contact", label: "Contact" },
 ];
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [activeItem, setActiveItem] = useState("Home");
+  const [visible, setVisible] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, initialize, logout } = useAuthStore();
-  const { toggleCart, getItemCount, fetchCart } = useCartStore();
+  const { toggleCart, getItemCount } = useCartStore();
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (latest > 100) {
+      setVisible(true);
+    } else {
+      setVisible(false);
+    }
+  });
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
+  // Close mobile menu on route change
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -54,243 +65,321 @@ export function Navbar() {
     }
   };
 
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
+  };
+
   return (
-    <header className="sticky top-0 z-50 transition-all duration-300 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-      <nav
-        className={`mx-auto max-w-7xl px-4 flex items-center justify-between transition-all duration-300 ${
-          isScrolled ? "py-2 md:py-2.5" : "py-3 md:py-3"
-        }`}
+    <>
+      {/* Desktop Navbar */}
+      <motion.header
+        className="fixed inset-x-0 top-8 z-50 mx-auto hidden w-full max-w-6xl px-4 lg:block"
       >
-        <Link
-          href="/"
-          className="flex items-center gap-2 group"
-          aria-label="The HomeoPatha Home"
+        <motion.nav
+          animate={{
+            backdropFilter: visible ? "blur(16px)" : "blur(0px)",
+            boxShadow: visible
+              ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
+              : "none",
+            width: visible ? "85%" : "100%",
+            y: visible ? 4 : 0,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 50,
+          }}
+          className={cn(
+            "relative mx-auto flex items-center justify-between rounded-full px-8 py-5 transition-colors duration-300",
+            visible ? "bg-white/90 dark:bg-neutral-950/90" : "bg-white/60 dark:bg-neutral-950/60"
+          )}
         >
-          <div className="relative">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="relative z-20 flex items-center gap-2.5 group"
+            aria-label="The HomeoPatha Home"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 3 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <Image
+                src="/logo.png"
+                alt="The HomeoPatha Logo"
+                width={36}
+                height={36}
+                className="w-9 h-9 object-contain"
+              />
+            </motion.div>
+            <span className="font-semibold text-base tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
+              HomeoPatha
+            </span>
+          </Link>
+
+          {/* Center Navigation */}
+          <motion.div
+            onMouseLeave={() => setHoveredIndex(null)}
+            className="absolute inset-0 flex flex-1 items-center justify-center"
+          >
+            <div className="flex items-center gap-1">
+              {navItems.map((item, idx) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onMouseEnter={() => setHoveredIndex(idx)}
+                  className="relative px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+                >
+                  {hoveredIndex === idx && (
+                    <motion.div
+                      layoutId="navbar-hover"
+                      className="absolute inset-0 h-full w-full rounded-full bg-muted/60"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className={cn(
+                    "relative z-20",
+                    isActive(item.href) && "text-primary font-semibold"
+                  )}>
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Right Actions */}
+          <div className="relative z-20 flex items-center gap-2">
+            {isAuthenticated && user ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative rounded-full hover:bg-muted/60"
+                  onClick={toggleCart}
+                  aria-label="Shopping Cart"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {getItemCount() > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium"
+                    >
+                      {getItemCount()}
+                    </motion.span>
+                  )}
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="gap-2 px-3 rounded-full hover:bg-muted/60"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="font-medium text-sm max-w-[100px] truncate">
+                        {user.fullName}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl">
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                      <Link href="/profile" className="flex items-center gap-2 py-2">
+                        <User className="h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                      <Link href="/orders" className="flex items-center gap-2 py-2">
+                        <ShoppingCart className="h-4 w-4" />
+                        My Orders
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer text-destructive focus:text-destructive rounded-lg"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button
+                    variant="ghost"
+                    className="text-sm font-medium rounded-full hover:bg-muted/60"
+                  >
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button className="text-sm font-medium rounded-full px-5 shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] hover:-translate-y-0.5 transition-all duration-200">
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </motion.nav>
+      </motion.header>
+
+      {/* Mobile Navbar */}
+      <motion.header
+        animate={{
+          backdropFilter: visible ? "blur(16px)" : "blur(0px)",
+          boxShadow: visible
+            ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
+            : "none",
+          width: visible ? "95%" : "100%",
+          borderRadius: visible ? "16px" : "0px",
+          y: visible ? 8 : 0,
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 200,
+          damping: 50,
+        }}
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 mx-auto flex flex-col lg:hidden",
+          visible ? "bg-white/90 dark:bg-neutral-950/90" : "bg-white/70 dark:bg-neutral-950/70"
+        )}
+        style={{ maxWidth: visible ? "calc(100% - 2rem)" : "100%", marginTop: visible ? "16px" : "0px" }}
+      >
+        <div className="flex items-center justify-between px-5 py-5">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 group"
+            aria-label="The HomeoPatha Home"
+          >
             <Image
               src="/logo.png"
               alt="The HomeoPatha Logo"
               width={32}
               height={32}
-              className="h-8 w-8 object-contain transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
+              className="w-8 h-8 object-contain"
             />
-            <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </div>
-          <span className="font-semibold tracking-tight text-pretty transition-colors duration-300 group-hover:text-primary">
-            The HomeoPatha
-          </span>
-        </Link>
+            <span className="font-semibold text-base tracking-tight text-foreground">
+              HomeoPatha
+            </span>
+          </Link>
 
-        <div className="hidden md:flex items-center gap-6">
-          {navItems.map((item, index) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={() => setActiveItem(item.label)}
-              className={`text-sm relative group transition-colors duration-300 ${
-                activeItem === item.label
-                  ? "text-primary"
-                  : "text-foreground/80 hover:text-foreground"
-              }`}
-              style={{
-                animation: `fadeInDown 0.5s ease-out ${index * 0.1}s both`,
-              }}
-            >
-              {item.label}
-              <span
-                className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${
-                  activeItem === item.label
-                    ? "w-full"
-                    : "w-0 group-hover:w-full"
-                }`}
-              />
-            </Link>
-          ))}
-        </div>
-
-        <div className="hidden md:flex items-center gap-3">
-          {isAuthenticated && user ? (
-            <>
+          {/* Right Actions */}
+          <div className="flex items-center gap-2">
+            {isAuthenticated && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative"
+                className="relative rounded-full"
                 onClick={toggleCart}
-                aria-label="Shopping Cart"
               >
                 <ShoppingCart className="h-5 w-5" />
                 {getItemCount() > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
                     {getItemCount()}
                   </span>
                 )}
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative overflow-hidden group transition-all duration-300 hover:scale-105"
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    <span className="relative z-10">{user.fullName}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/profile">
-                      <User className="h-4 w-4 mr-2" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button
-                aria-label="Book Appointment"
-                className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              >
-                <span className="relative z-10 transition-transform duration-300 group-hover:scale-110">
-                  Book Appointment
-                </span>
-                <span className="absolute inset-0 bg-primary-foreground/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-              </Button>
-            </>
-          ) : (
-            <>
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  aria-label="Login"
-                  className="relative overflow-hidden group transition-all duration-300 hover:scale-105"
-                >
-                  <span className="relative z-10">Login</span>
-                  <span className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button
-                  variant="outline"
-                  aria-label="Signup"
-                  className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-md"
-                >
-                  <span className="relative z-10">Signup</span>
-                  <span className="absolute inset-0 bg-primary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
-                </Button>
-              </Link>
-              <Button
-                aria-label="Book Appointment"
-                className="relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              >
-                <span className="relative z-10 transition-transform duration-300 group-hover:scale-110">
-                  Book Appointment
-                </span>
-                <span className="absolute inset-0 bg-primary-foreground/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-              </Button>
-            </>
-          )}
-        </div>
-
-        <div className="md:hidden">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                variant="outline"
-                aria-label="Open menu"
-                className="relative overflow-hidden group hover:scale-105 transition-transform duration-300"
-              >
-                <Menu className="h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="min-w-52 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-300"
+            )}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-full hover:bg-muted/60 transition-colors"
+              aria-label="Toggle menu"
             >
-              {navItems.map((item, index) => (
-                <DropdownMenuItem
-                  key={item.label}
-                  asChild
-                  className="cursor-pointer transition-colors duration-200"
-                  style={{
-                    animation: `fadeInLeft 0.3s ease-out ${index * 0.05}s both`,
-                  }}
-                >
-                  <Link href={item.href}>{item.label}</Link>
-                </DropdownMenuItem>
-              ))}
-              {isAuthenticated && user ? (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/profile">
-                      <User className="h-4 w-4 mr-2" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </DropdownMenuItem>
-                </>
+              {isMobileMenuOpen ? (
+                <IconX className="h-5 w-5 text-foreground" />
               ) : (
-                <div
-                  className="px-2 py-2"
-                  style={{ animation: "fadeInLeft 0.3s ease-out 0.25s both" }}
-                >
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link href="/login">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="hover:scale-105 transition-transform duration-200 w-full"
-                      >
-                        Login
-                      </Button>
-                    </Link>
-                    <Link href="/register">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="hover:scale-105 transition-transform duration-200 w-full"
-                      >
-                        Signup
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+                <IconMenu2 className="h-5 w-5 text-foreground" />
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </button>
+          </div>
         </div>
-      </nav>
 
-      <style jsx>{`
-        @keyframes fadeInDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden border-t border-border/50"
+            >
+              <div className="px-4 py-4 space-y-1">
+                {navItems.map((item, index) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "block px-4 py-3 rounded-xl text-base font-medium transition-colors",
+                        isActive(item.href)
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted/60"
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                ))}
 
-        @keyframes fadeInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
-    </header>
+                <div className="pt-4 mt-4 border-t border-border/50 space-y-2">
+                  {isAuthenticated && user ? (
+                    <>
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/60 transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-medium">{user.fullName}</div>
+                          <div className="text-sm text-muted-foreground">View Profile</div>
+                        </div>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        onClick={handleLogout}
+                        className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Link href="/login" className="flex-1">
+                        <Button variant="outline" className="w-full rounded-full">
+                          Login
+                        </Button>
+                      </Link>
+                      <Link href="/register" className="flex-1">
+                        <Button className="w-full rounded-full">Sign Up</Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+
+      {/* Spacer for content below (only needed on mobile when not visible) */}
+      <div className="h-16 lg:h-0" />
+    </>
   );
 }

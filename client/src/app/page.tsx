@@ -1,51 +1,87 @@
-import { Navbar } from "@/components/navbar"
+"use client"
+
+import { useState, useEffect } from "react"
+import { LogoLoader } from "@/components/logo-loader"
 import { Hero } from "@/components/hero"
-import { SearchBar } from "@/components/search-bar"
+import { TrustIndicators } from "@/components/sections/trust-indicators"
 import { FeaturedDoctors } from "@/components/sections/featured-doctors"
-import { FeaturedProducts } from "@/components/sections/featured-products"
 import { HowItWorks } from "@/components/sections/how-it-works"
+import { FeaturedProducts } from "@/components/sections/featured-products"
 import { WhyChooseUs } from "@/components/sections/why-choose-us"
 import { Testimonials } from "@/components/sections/testimonials"
+import { CTABanner } from "@/components/sections/cta-banner"
 import { Newsletter } from "@/components/sections/newsletter"
 import { Footer } from "@/components/footer"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function HomePage() {
+  const [isLoading, setIsLoading] = useState(true)
+  const [showContent, setShowContent] = useState(false)
+
+  useEffect(() => {
+    // Check if user has visited before (session)
+    const hasVisited = sessionStorage.getItem("hasVisitedHome")
+    if (hasVisited) {
+      setIsLoading(false)
+      setShowContent(true)
+    }
+  }, [])
+
+  const handleLoaderComplete = () => {
+    sessionStorage.setItem("hasVisitedHome", "true")
+    setIsLoading(false)
+    setTimeout(() => setShowContent(true), 100)
+  }
+
   return (
-    <main className="min-h-dvh flex flex-col">
-      {/* <Navbar /> */}
-      <section aria-labelledby="hero" className="relative">
-        <Hero />
-        <div className="pointer-events-none absolute inset-x-0 -bottom-8 mx-4 md:mx-auto md:max-w-5xl">
-          <SearchBar />
-        </div>
-      </section>
+    <>
+      {/* Logo Loader */}
+      <AnimatePresence>
+        {isLoading && <LogoLoader onComplete={handleLoaderComplete} duration={1500} />}
+      </AnimatePresence>
 
-      <section aria-labelledby="top-doctors" className="mt-20 md:mt-28 px-4 md:px-8 lg:px-12">
-        <FeaturedDoctors />
-      </section>
+      {/* Main Content */}
+      <AnimatePresence>
+        {showContent && (
+          <motion.main
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="min-h-dvh flex flex-col overflow-hidden"
+          >
+            {/* Hero Section */}
+            <Hero />
 
-      <section aria-labelledby="shop-essentials" className="px-4 md:px-8 lg:px-12">
-        <FeaturedProducts />
-      </section>
+            {/* Trust Indicators */}
+            <TrustIndicators />
 
-      <section aria-labelledby="how-it-works" className="px-4 md:px-8 lg:px-12">
-        <HowItWorks />
-      </section>
+            {/* How It Works */}
+            <HowItWorks />
 
-      <section aria-labelledby="why-choose-us" className="px-4 md:px-8 lg:px-12">
-        <WhyChooseUs />
-      </section>
+            {/* Featured Doctors / Specializations */}
+            <FeaturedDoctors />
 
-      <section aria-labelledby="testimonials" className="px-4 md:px-8 lg:px-12">
-        <Testimonials />
-      </section>
+            {/* Featured Products */}
+            <FeaturedProducts />
 
-      <section aria-labelledby="newsletter" className="px-4 md:px-8 lg:px-12">
-        <Newsletter />
-      </section>
+            {/* Why Choose Us */}
+            <WhyChooseUs />
 
-      <Footer />
-    </main>
+            {/* Testimonials */}
+            <Testimonials />
+
+            {/* CTA Banner */}
+            <CTABanner />
+
+            {/* Newsletter */}
+            <Newsletter />
+
+            {/* Footer */}
+            <Footer />
+          </motion.main>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 
