@@ -37,7 +37,7 @@ export default function HomePage() {
     <>
       {/* Logo Loader */}
       <AnimatePresence>
-        {isLoading && <LogoLoader onComplete={handleLoaderComplete} duration={1500} />}
+        {isLoading && <LogoLoader onComplete={handleLoaderComplete} duration={2500} />}
       </AnimatePresence>
 
       {/* Main Content */}
