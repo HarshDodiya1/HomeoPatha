@@ -4,7 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "sonner";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { Navbar } from "@/components/navbar";
-import { PromoBanner } from "@/components/promo-banner";
+import { Footer } from "@/components/footer";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 import "./globals.css";
 
 const ubuntu = Ubuntu({
@@ -41,9 +42,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${ubuntu.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
-        {/* <PromoBanner /> */}
+        <ScrollProgress height={4} color="bg-primary" position="top" />
         <Navbar />
         {children}
+        <Footer />
         <CartSidebar />
         <Toaster 
           position="top-center" 

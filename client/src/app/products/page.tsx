@@ -20,7 +20,6 @@ import {
 import { Search, ShoppingCart, Star, Filter } from "lucide-react";
 import Image from "next/image";
 import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { toast } from "sonner";
 
@@ -276,7 +275,6 @@ export default function ProductsPage() {
           )}
         </div>
       </main>
-      <Footer />
       <CartSidebar />
     </>
   );

@@ -12,7 +12,6 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Star, ArrowLeft, Plus, Minus } from "lucide-react";
 import Image from "next/image";
-import { Footer } from "@/components/footer";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { toast } from "sonner";
 
@@ -89,7 +88,6 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </main>
-        <Footer />
       </>
     );
   }
@@ -254,7 +252,6 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </main>
-      <Footer />
       <CartSidebar />
     </>
   );

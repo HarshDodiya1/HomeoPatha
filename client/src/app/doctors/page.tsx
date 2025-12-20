@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, User, Heart, Award, Users, Clock, CheckCircle, Mail, Phone, MapPin } from "lucide-react";
 import Image from "next/image";
-import { Footer } from "@/components/footer";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -313,7 +312,6 @@ export default function AboutPage() {
           </div>
         </section>
       </main>
-      <Footer />
     </>
   );
 }

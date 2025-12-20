@@ -29,7 +29,6 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { toast } from "sonner"
-import { Footer } from "@/components/footer"
 import { useAuthStore } from "@/store/auth.store"
 import { specializationService } from "@/lib/services/specialization.service"
 import { appointmentService } from "@/lib/services/appointment.service"
@@ -729,7 +728,6 @@ export default function AppointmentsPage() {
           )}
         </div>
       </main>
-      <Footer />
     </>
   )
 }

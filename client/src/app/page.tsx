@@ -11,7 +11,6 @@ import { WhyChooseUs } from "@/components/sections/why-choose-us"
 import { Testimonials } from "@/components/sections/testimonials"
 import { CTABanner } from "@/components/sections/cta-banner"
 // import { Newsletter } from "@/components/sections/newsletter"
-import { Footer } from "@/components/footer"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function HomePage() {
@@ -75,9 +74,6 @@ export default function HomePage() {
 
             {/* Newsletter - Removed */}
             {/* <Newsletter /> */}
-
-            {/* Footer */}
-            <Footer />
           </motion.main>
         )}
       </AnimatePresence>
