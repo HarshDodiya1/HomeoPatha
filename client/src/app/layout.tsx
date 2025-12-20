@@ -1,12 +1,24 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
+import { Ubuntu, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "sonner";
 import { CartSidebar } from "@/components/cart-sidebar";
 import { Navbar } from "@/components/navbar";
 import { PromoBanner } from "@/components/promo-banner";
 import "./globals.css";
+
+const ubuntu = Ubuntu({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-ubuntu",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "The HomeoPatha - Your Trusted Homeopathy Partner",
@@ -28,8 +40,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <PromoBanner />
+      <body className={`${ubuntu.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
+        {/* <PromoBanner /> */}
         <Navbar />
         {children}
         <CartSidebar />

@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, ShoppingCart } from "lucide-react";
-import { IconMenu2, IconX } from "@tabler/icons-react";
+import { User, LogOut, ShoppingCart, Menu, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +11,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
 import { useRouter, usePathname } from "next/navigation";
@@ -28,10 +27,167 @@ const navItems = [
   { href: "/contact", label: "Contact" },
 ];
 
+// Magnetic link component with hover effect
+interface MagneticLinkProps {
+  href: string;
+  children: React.ReactNode;
+  isActive?: boolean;
+  onClick?: () => void;
+}
+
+const MagneticLink = ({ href, children, isActive, onClick }: MagneticLinkProps) => {
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!linkRef.current) return;
+
+    const rect = linkRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const distanceX = e.clientX - centerX;
+    const distanceY = e.clientY - centerY;
+
+    const maxDistance = 20;
+    const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
+
+    if (distance < maxDistance * 3) {
+      const strength = Math.min(1, (maxDistance * 3 - distance) / (maxDistance * 3));
+      setPosition({
+        x: distanceX * strength * 0.3,
+        y: distanceY * strength * 0.3,
+      });
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
+  return (
+    <Link href={href} legacyBehavior passHref>
+      <motion.a
+        ref={linkRef}
+        onClick={onClick}
+        className={cn(
+          "relative px-5 py-2.5 text-base font-semibold transition-colors duration-300",
+          isActive 
+            ? "text-green-600 dark:text-green-400" 
+            : "text-gray-800 hover:text-green-600 dark:text-white dark:hover:text-green-400"
+        )}
+        style={{
+          x: position.x,
+          y: position.y,
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+        }}
+      >
+        <span className="relative z-10">{children}</span>
+        {isActive && (
+          <motion.div
+            layoutId="active-nav-indicator"
+            className="absolute inset-0 rounded-full bg-green-100 dark:bg-green-900/30"
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          />
+        )}
+        <motion.div
+          className="absolute bottom-0 left-1/2 h-0.5 bg-gradient-to-r from-green-500 to-green-600 rounded-full"
+          initial={{ width: 0, x: "-50%" }}
+          whileHover={{ width: "60%", x: "-50%" }}
+          transition={{ duration: 0.3 }}
+        />
+      </motion.a>
+    </Link>
+  );
+};
+
+// Shimmer button with gradient
+interface ShimmerButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+  asChild?: boolean;
+}
+
+const ShimmerButton = ({ children, onClick, className }: ShimmerButtonProps) => {
+  return (
+    <motion.button
+      onClick={onClick}
+      className={cn(
+        "relative overflow-hidden px-7 py-3 rounded-full text-base font-bold text-white",
+        "bg-gradient-to-r from-green-600 via-green-500 to-green-600 bg-[length:200%_100%]",
+        "shadow-lg shadow-green-500/30",
+        "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
+        "before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700",
+        className
+      )}
+      whileHover={{
+        y: -2,
+        backgroundPosition: "100% 0",
+        boxShadow: "0 20px 40px rgba(34, 197, 94, 0.35)",
+      }}
+      whileTap={{ scale: 0.98 }}
+      transition={{
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
+      }}
+    >
+      {children}
+    </motion.button>
+  );
+};
+
+// Mobile nav link with stagger animation
+const MobileNavLink = ({
+  href,
+  children,
+  delay,
+  onClick,
+  isActive,
+}: {
+  href: string;
+  children: React.ReactNode;
+  delay: number;
+  onClick?: () => void;
+  isActive?: boolean;
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -50 }}
+      transition={{
+        delay,
+        duration: 0.4,
+        ease: [0.23, 1, 0.32, 1],
+      }}
+    >
+      <Link
+        href={href}
+        onClick={onClick}
+        className={cn(
+          "block text-2xl md:text-3xl font-bold transition-colors",
+          isActive
+            ? "text-green-500"
+            : "text-foreground hover:text-green-500 dark:text-white dark:hover:text-green-400"
+        )}
+      >
+        {children}
+      </Link>
+    </motion.div>
+  );
+};
+
 export function Navbar() {
-  const [visible, setVisible] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, initialize, logout } = useAuthStore();
@@ -39,11 +195,7 @@ export function Navbar() {
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 100) {
-      setVisible(true);
-    } else {
-      setVisible(false);
-    }
+    setIsScrolled(latest > 100);
   });
 
   useEffect(() => {
@@ -54,6 +206,29 @@ export function Navbar() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  // Close mobile menu on resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Prevent scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
 
   const handleLogout = async () => {
     try {
@@ -72,139 +247,151 @@ export function Navbar() {
 
   return (
     <>
-      {/* Desktop Navbar */}
+      {/* Desktop Floating Navbar */}
       <motion.header
-        className="fixed inset-x-0 top-8 z-50 mx-auto hidden w-full max-w-6xl px-4 lg:block"
+        className="fixed top-0 left-0 right-0 z-50 hidden lg:flex justify-center px-4 md:px-6"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{
+          delay: 0.3,
+          duration: 0.6,
+          ease: [0.23, 1, 0.32, 1],
+        }}
       >
         <motion.nav
+          className={cn(
+            "mt-5 flex items-center justify-between px-8 md:px-10",
+            "rounded-full border backdrop-blur-xl"
+          )}
           animate={{
-            backdropFilter: visible ? "blur(16px)" : "blur(0px)",
-            boxShadow: visible
-              ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
-              : "none",
-            width: visible ? "85%" : "100%",
-            y: visible ? 4 : 0,
+            height: isScrolled ? 68 : 80,
+            width: isScrolled ? "90%" : "100%",
+            maxWidth: isScrolled ? "1100px" : "1400px",
+            backgroundColor: isScrolled
+              ? "rgba(255, 255, 255, 0.98)"
+              : "rgba(255, 255, 255, 0.85)",
+            borderColor: isScrolled
+              ? "rgba(209, 250, 229, 0.8)"
+              : "rgba(209, 250, 229, 0.4)",
+            boxShadow: isScrolled
+              ? "0 8px 32px rgba(34, 197, 94, 0.15), 0 0 0 1px rgba(34, 197, 94, 0.08)"
+              : "0 4px 24px rgba(0, 0, 0, 0.05)",
           }}
           transition={{
             type: "spring",
-            stiffness: 200,
-            damping: 50,
+            stiffness: 300,
+            damping: 25,
           }}
-          className={cn(
-            "relative mx-auto flex items-center justify-between rounded-full px-8 py-5 transition-colors duration-300",
-            visible ? "bg-white/90 dark:bg-neutral-950/90" : "bg-white/60 dark:bg-neutral-950/60"
-          )}
         >
           {/* Logo */}
-          <Link
-            href="/"
-            className="relative z-20 flex items-center gap-2.5 group"
-            aria-label="The HomeoPatha Home"
-          >
+          <Link href="/" className="relative z-20 flex items-center gap-3 group">
             <motion.div
-              whileHover={{ scale: 1.05, rotate: 3 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="relative"
             >
+              {/* Glow effect on hover */}
+              <motion.div
+                className="absolute inset-0 rounded-full bg-green-400/30 blur-lg"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileHover={{ opacity: 1, scale: 1.5 }}
+                transition={{ duration: 0.3 }}
+              />
               <Image
                 src="/logo.png"
                 alt="The HomeoPatha Logo"
-                width={36}
-                height={36}
-                className="w-9 h-9 object-contain"
+                width={48}
+                height={48}
+                className="relative w-12 h-12 object-contain"
               />
             </motion.div>
-            <span className="font-semibold text-base tracking-tight text-foreground group-hover:text-primary transition-colors duration-300">
+            <motion.span
+              className="font-bold text-xl tracking-tight"
+              style={{
+                background: "linear-gradient(135deg, #166534 0%, #22c55e 50%, #16a34a 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
               HomeoPatha
-            </span>
+            </motion.span>
           </Link>
 
           {/* Center Navigation */}
-          <motion.div
-            onMouseLeave={() => setHoveredIndex(null)}
-            className="absolute inset-0 flex flex-1 items-center justify-center"
-          >
-            <div className="flex items-center gap-1">
-              {navItems.map((item, idx) => (
-                <Link
+          <div className="absolute inset-0 flex flex-1 items-center justify-center pointer-events-none">
+            <div className="flex items-center gap-1 pointer-events-auto">
+              {navItems.map((item) => (
+                <MagneticLink
                   key={item.label}
                   href={item.href}
-                  onMouseEnter={() => setHoveredIndex(idx)}
-                  className="relative px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  isActive={isActive(item.href)}
                 >
-                  {hoveredIndex === idx && (
-                    <motion.div
-                      layoutId="navbar-hover"
-                      className="absolute inset-0 h-full w-full rounded-full bg-muted/60"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className={cn(
-                    "relative z-20",
-                    isActive(item.href) && "text-primary font-semibold"
-                  )}>
-                    {item.label}
-                  </span>
-                </Link>
+                  {item.label}
+                </MagneticLink>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Right Actions */}
-          <div className="relative z-20 flex items-center gap-2">
+          <div className="relative z-20 flex items-center gap-4">
             {isAuthenticated && user ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative rounded-full hover:bg-muted/60"
+                {/* Cart Button */}
+                <motion.button
                   onClick={toggleCart}
+                  className="relative p-3 rounded-full bg-green-50 hover:bg-green-100 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   aria-label="Shopping Cart"
                 >
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingCart className="h-6 w-6 text-green-700" />
                   {getItemCount() > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium"
+                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white text-xs flex items-center justify-center font-semibold shadow-lg shadow-green-500/30"
                     >
                       {getItemCount()}
                     </motion.span>
                   )}
-                </Button>
-                
+                </motion.button>
+
+                {/* User Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="gap-2 px-3 rounded-full hover:bg-muted/60"
+                    <motion.button
+                      className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-green-50 hover:bg-green-100 transition-colors"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary" />
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-inner">
+                        <User className="h-5 w-5 text-white" />
                       </div>
-                      <span className="font-medium text-sm max-w-[100px] truncate">
+                      <span className="font-semibold text-base text-green-800 max-w-[100px] truncate">
                         {user.fullName}
                       </span>
-                    </Button>
+                    </motion.button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl">
-                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
-                      <Link href="/profile" className="flex items-center gap-2 py-2">
-                        <User className="h-4 w-4" />
+                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-green-100">
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg hover:bg-green-50">
+                      <Link href="/profile" className="flex items-center gap-2 py-2.5 text-base">
+                        <User className="h-5 w-5 text-green-600" />
                         Profile
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
-                      <Link href="/orders" className="flex items-center gap-2 py-2">
-                        <ShoppingCart className="h-4 w-4" />
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg hover:bg-green-50">
+                      <Link href="/orders" className="flex items-center gap-2 py-2.5 text-base">
+                        <ShoppingCart className="h-5 w-5 text-green-600" />
                         My Orders
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-green-100" />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="cursor-pointer text-destructive focus:text-destructive rounded-lg"
+                      className="cursor-pointer text-destructive focus:text-destructive rounded-lg py-2.5 text-base"
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
+                      <LogOut className="h-5 w-5 mr-2" />
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -213,17 +400,16 @@ export function Navbar() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button
-                    variant="ghost"
-                    className="text-sm font-medium rounded-full hover:bg-muted/60"
+                  <motion.button
+                    className="px-5 py-2.5 text-base font-semibold text-green-700 hover:text-green-600 transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     Login
-                  </Button>
+                  </motion.button>
                 </Link>
                 <Link href="/register">
-                  <Button className="text-sm font-medium rounded-full px-5 shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] hover:-translate-y-0.5 transition-all duration-200">
-                    Sign Up
-                  </Button>
+                  <ShimmerButton>Sign Up</ShimmerButton>
                 </Link>
               </>
             )}
@@ -233,33 +419,39 @@ export function Navbar() {
 
       {/* Mobile Navbar */}
       <motion.header
-        animate={{
-          backdropFilter: visible ? "blur(16px)" : "blur(0px)",
-          boxShadow: visible
-            ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
-            : "none",
-          width: visible ? "95%" : "100%",
-          borderRadius: visible ? "16px" : "0px",
-          y: visible ? 8 : 0,
-        }}
+        className="fixed top-0 left-0 right-0 z-50 flex lg:hidden justify-center px-4"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{
-          type: "spring",
-          stiffness: 200,
-          damping: 50,
+          delay: 0.3,
+          duration: 0.6,
+          ease: [0.23, 1, 0.32, 1],
         }}
-        className={cn(
-          "fixed inset-x-0 top-0 z-50 mx-auto flex flex-col lg:hidden",
-          visible ? "bg-white/90 dark:bg-neutral-950/90" : "bg-white/70 dark:bg-neutral-950/70"
-        )}
-        style={{ maxWidth: visible ? "calc(100% - 2rem)" : "100%", marginTop: visible ? "16px" : "0px" }}
       >
-        <div className="flex items-center justify-between px-5 py-5">
+        <motion.nav
+          className={cn(
+            "mt-3 w-full flex items-center justify-between px-4 py-3",
+            "rounded-2xl border backdrop-blur-xl"
+          )}
+          animate={{
+            backgroundColor: isScrolled
+              ? "rgba(255, 255, 255, 0.95)"
+              : "rgba(255, 255, 255, 0.8)",
+            borderColor: isScrolled
+              ? "rgba(209, 250, 229, 0.8)"
+              : "rgba(209, 250, 229, 0.4)",
+            boxShadow: isScrolled
+              ? "0 8px 32px rgba(34, 197, 94, 0.1)"
+              : "0 4px 24px rgba(0, 0, 0, 0.05)",
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 300,
+            damping: 25,
+          }}
+        >
           {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 group"
-            aria-label="The HomeoPatha Home"
-          >
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/logo.png"
               alt="The HomeoPatha Logo"
@@ -267,7 +459,15 @@ export function Navbar() {
               height={32}
               className="w-8 h-8 object-contain"
             />
-            <span className="font-semibold text-base tracking-tight text-foreground">
+            <span
+              className="font-bold text-base"
+              style={{
+                background: "linear-gradient(135deg, #166534 0%, #22c55e 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
               HomeoPatha
             </span>
           </Link>
@@ -275,111 +475,190 @@ export function Navbar() {
           {/* Right Actions */}
           <div className="flex items-center gap-2">
             {isAuthenticated && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative rounded-full"
+              <motion.button
                 onClick={toggleCart}
+                className="relative p-2 rounded-full bg-green-50"
+                whileTap={{ scale: 0.9 }}
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5 text-green-700" />
                 {getItemCount() > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-semibold">
                     {getItemCount()}
                   </span>
                 )}
-              </Button>
+              </motion.button>
             )}
-            <button
+
+            {/* Menu Toggle */}
+            <motion.button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-full hover:bg-muted/60 transition-colors"
+              className="p-2 rounded-full bg-green-50 hover:bg-green-100 transition-colors"
+              whileTap={{ scale: 0.9 }}
               aria-label="Toggle menu"
             >
-              {isMobileMenuOpen ? (
-                <IconX className="h-5 w-5 text-foreground" />
-              ) : (
-                <IconMenu2 className="h-5 w-5 text-foreground" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden border-t border-border/50"
-            >
-              <div className="px-4 py-4 space-y-1">
-                {navItems.map((item, index) => (
+              <AnimatePresence mode="wait">
+                {isMobileMenuOpen ? (
                   <motion.div
-                    key={item.label}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "block px-4 py-3 rounded-xl text-base font-medium transition-colors",
-                        isActive(item.href)
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground hover:bg-muted/60"
-                      )}
-                    >
-                      {item.label}
-                    </Link>
+                    <X className="h-5 w-5 text-green-700" />
                   </motion.div>
-                ))}
-
-                <div className="pt-4 mt-4 border-t border-border/50 space-y-2">
-                  {isAuthenticated && user ? (
-                    <>
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/60 transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-medium">{user.fullName}</div>
-                          <div className="text-sm text-muted-foreground">View Profile</div>
-                        </div>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        onClick={handleLogout}
-                        className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
-                      >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Logout
-                      </Button>
-                    </>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Link href="/login" className="flex-1">
-                        <Button variant="outline" className="w-full rounded-full">
-                          Login
-                        </Button>
-                      </Link>
-                      <Link href="/register" className="flex-1">
-                        <Button className="w-full rounded-full">Sign Up</Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="h-5 w-5 text-green-700" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
+        </motion.nav>
       </motion.header>
 
-      {/* Spacer for content below (only needed on mobile when not visible) */}
-      <div className="h-16 lg:h-0" />
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            className="fixed inset-0 z-40 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Backdrop */}
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                background: "linear-gradient(135deg, rgba(240, 253, 244, 0.98) 0%, rgba(220, 252, 231, 0.98) 50%, rgba(187, 247, 208, 0.98) 100%)",
+                backdropFilter: "blur(20px)",
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+
+            {/* Floating particles for visual interest */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-32 h-32 rounded-full bg-green-300/20"
+                  style={{
+                    left: `${20 + i * 15}%`,
+                    top: `${10 + i * 12}%`,
+                  }}
+                  animate={{
+                    y: [0, -20, 0],
+                    scale: [1, 1.1, 1],
+                    opacity: [0.2, 0.4, 0.2],
+                  }}
+                  transition={{
+                    duration: 4 + i,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.3,
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Menu Content */}
+            <div className="relative h-full flex flex-col items-center justify-center gap-6 p-8 pt-24">
+              {navItems.map((item, index) => (
+                <MobileNavLink
+                  key={item.label}
+                  href={item.href}
+                  delay={index * 0.05}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  isActive={isActive(item.href)}
+                >
+                  {item.label}
+                </MobileNavLink>
+              ))}
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+                className="mt-8 flex flex-col items-center gap-4"
+              >
+                {isAuthenticated && user ? (
+                  <>
+                    <Link
+                      href="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-6 py-3 rounded-full bg-white/80 shadow-lg"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold text-green-800">{user.fullName}</div>
+                        <div className="text-sm text-green-600">View Profile</div>
+                      </div>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full px-6"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex gap-4">
+                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="outline" className="rounded-full px-8 border-green-300 text-green-700 hover:bg-green-50">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                      <ShimmerButton className="px-8">Sign Up</ShimmerButton>
+                    </Link>
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Decorative dots */}
+              <motion.div
+                className="absolute bottom-10 flex gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="w-2 h-2 rounded-full bg-green-400"
+                    animate={{
+                      scale: [1, 1.5, 1],
+                      opacity: [0.3, 0.7, 0.3],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      delay: i * 0.1,
+                      repeat: Infinity,
+                    }}
+                  />
+                ))}
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

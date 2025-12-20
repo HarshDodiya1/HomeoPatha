@@ -10,7 +10,7 @@ import { FeaturedProducts } from "@/components/sections/featured-products"
 import { WhyChooseUs } from "@/components/sections/why-choose-us"
 import { Testimonials } from "@/components/sections/testimonials"
 import { CTABanner } from "@/components/sections/cta-banner"
-import { Newsletter } from "@/components/sections/newsletter"
+// import { Newsletter } from "@/components/sections/newsletter"
 import { Footer } from "@/components/footer"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -73,8 +73,8 @@ export default function HomePage() {
             {/* CTA Banner */}
             <CTABanner />
 
-            {/* Newsletter */}
-            <Newsletter />
+            {/* Newsletter - Removed */}
+            {/* <Newsletter /> */}
 
             {/* Footer */}
             <Footer />
