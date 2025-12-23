@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +29,13 @@ import {
   IndianRupee,
   CheckCircle,
   AlertCircle,
+  Sparkles,
+  Clock,
+  Users,
+  Star,
+  Calendar,
+  Shield,
+  Heart,
 } from "lucide-react"
 import { toast } from "sonner"
 import { useAuthStore } from "@/store/auth.store"
@@ -36,6 +45,30 @@ import { Specialization, AppointmentQuestion } from "@/types/specialization"
 import Script from "next/script"
 
 type BookingStep = "select" | "questions" | "payment" | "success"
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+}
 
 export default function AppointmentsPage() {
   const router = useRouter()
@@ -381,33 +414,68 @@ export default function AppointmentsPage() {
         src="https://checkout.razorpay.com/v1/checkout.js"
         onLoad={() => setRazorpayLoaded(true)}
       />
-      <main className="min-h-screen pt-20 pb-12 px-4 md:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
+      <main className="min-h-screen pt-28 pb-16 relative overflow-hidden">
+        {/* Premium background */}
+        <div className="fixed inset-0 bg-gradient-to-b from-background via-secondary/10 to-background -z-10" />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(34,197,94,0.06),transparent_60%)] -z-10" />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(22,163,74,0.06),transparent_60%)] -z-10" />
+        
+        {/* Floating decorative elements */}
+        <div className="fixed top-32 right-20 w-3 h-3 rounded-full bg-primary/30 animate-bounce pointer-events-none" style={{ animationDelay: '0s' }} />
+        <div className="fixed top-60 left-16 w-2 h-2 rounded-full bg-accent/30 animate-bounce pointer-events-none" style={{ animationDelay: '0.5s' }} />
+        <div className="fixed bottom-32 right-1/4 w-2 h-2 rounded-full bg-primary/20 animate-bounce pointer-events-none" style={{ animationDelay: '1s' }} />
+
+        <div className="max-w-6xl mx-auto px-4 md:px-8 lg:px-12">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">Book an Appointment</h1>
-            <p className="text-muted-foreground">
-              Choose a specialization and book your consultation
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-10"
+          >
+            <motion.span 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-accent/10 text-primary text-sm font-medium mb-4 border border-primary/20"
+            >
+              <Sparkles className="h-4 w-4" />
+              Book Consultation
+            </motion.span>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3">
+              Book an <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Appointment</span>
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl">
+              Choose a specialization and book your consultation with expert homeopathy doctors.
             </p>
-          </div>
+          </motion.div>
 
           {/* Progress Steps */}
           {currentStep !== "success" && (
-            <div className="mb-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mb-10"
+            >
               <div className="flex items-center justify-center gap-2 md:gap-4">
                 {steps.map((step, index) => (
                   <div key={step.key} className="flex items-center">
                     <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                      className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all duration-300 ${
                         index <= currentStepIndex
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
+                          ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/30"
+                          : "bg-white dark:bg-card border-2 border-border/50 text-muted-foreground"
                       }`}
                     >
-                      {index + 1}
+                      {index < currentStepIndex ? (
+                        <CheckCircle className="h-5 w-5" />
+                      ) : (
+                        index + 1
+                      )}
                     </div>
                     <span
-                      className={`ml-2 text-sm hidden md:inline ${
+                      className={`ml-2 text-sm hidden md:inline transition-colors ${
                         index <= currentStepIndex
                           ? "text-foreground font-medium"
                           : "text-muted-foreground"
@@ -417,314 +485,527 @@ export default function AppointmentsPage() {
                     </span>
                     {index < steps.length - 1 && (
                       <div
-                        className={`w-8 md:w-16 h-0.5 mx-2 ${
-                          index < currentStepIndex ? "bg-primary" : "bg-muted"
+                        className={`w-12 md:w-20 h-1 mx-3 rounded-full transition-colors ${
+                          index < currentStepIndex 
+                            ? "bg-gradient-to-r from-primary to-accent" 
+                            : "bg-border/50"
                         }`}
                       />
                     )}
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Step 1: Select Specialization */}
           {currentStep === "select" && (
             <>
               {/* Search */}
-              <div className="mb-6">
-                <div className="relative max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="mb-8"
+              >
+                <div className="relative max-w-xl">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     placeholder="Search specializations..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-12 h-12 rounded-xl bg-white dark:bg-card border-border/50 focus:border-primary/50 transition-colors"
                   />
                 </div>
-              </div>
+              </motion.div>
 
               {/* Specializations Grid */}
-              {isLoadingSpecializations ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, i) => (
-                    <Card key={i}>
-                      <CardHeader>
-                        <div className="h-6 bg-muted animate-pulse rounded w-3/4" />
-                        <div className="h-4 bg-muted animate-pulse rounded w-1/2 mt-2" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="h-16 bg-muted animate-pulse rounded" />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : filteredSpecializations.length === 0 ? (
-                <div className="text-center py-12">
-                  <Stethoscope className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No specializations found</h3>
-                  <p className="text-muted-foreground">
-                    Try adjusting your search
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredSpecializations.map((spec) => (
-                    <Card
-                      key={spec._id}
-                      className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group hover:border-primary"
-                      onClick={() => handleSelectSpecialization(spec)}
-                    >
-                      <div className="relative h-40 bg-gradient-to-br from-primary/10 to-primary/5">
-                        {spec.imageUrl ? (
-                          <img
-                            src={spec.imageUrl}
-                            alt={spec.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Stethoscope className="h-16 w-16 text-primary/30" />
+              <AnimatePresence mode="wait">
+                {isLoadingSpecializations ? (
+                  <motion.div 
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  >
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl blur-xl opacity-30" />
+                        <div className="relative bg-white dark:bg-card rounded-3xl overflow-hidden border border-border/50">
+                          <div className="h-44 bg-gradient-to-br from-muted to-muted/50 animate-pulse" />
+                          <div className="p-6 space-y-3">
+                            <div className="h-6 bg-muted animate-pulse rounded-lg w-3/4" />
+                            <div className="h-4 bg-muted animate-pulse rounded-lg w-full" />
+                            <div className="h-12 bg-muted animate-pulse rounded-xl mt-4" />
                           </div>
-                        )}
+                        </div>
                       </div>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                          {spec.name}
-                        </CardTitle>
-                        <CardDescription className="line-clamp-2">
-                          {spec.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {spec.tags.slice(0, 3).map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
+                    ))}
+                  </motion.div>
+                ) : filteredSpecializations.length === 0 ? (
+                  <motion.div 
+                    key="empty"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center py-20"
+                  >
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                      <Stethoscope className="h-12 w-12 text-primary/60" />
+                    </div>
+                    <h3 className="text-2xl font-semibold mb-2">No specializations found</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      Try adjusting your search to find what you're looking for.
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-6 rounded-full"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      Clear Search
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="specializations"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  >
+                    {filteredSpecializations.map((spec) => (
+                      <motion.div key={spec._id} variants={itemVariants}>
+                        <div 
+                          className="relative cursor-pointer group"
+                          onClick={() => handleSelectSpecialization(spec)}
+                        >
+                          {/* Glow effect on hover */}
+                          <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-accent/50 rounded-[28px] blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
+                          
+                          <div className="relative bg-white dark:bg-card rounded-3xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl group-hover:shadow-primary/10">
+                            {/* Top accent bar */}
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+                            
+                            {/* Image */}
+                            <div className="relative h-44 overflow-hidden">
+                              {spec.imageUrl ? (
+                                <Image
+                                  src={spec.imageUrl}
+                                  alt={spec.name}
+                                  fill
+                                  className="object-cover transition-all duration-700 group-hover:scale-110"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/50 to-accent/10">
+                                  <div className="relative">
+                                    <div className="absolute inset-0 animate-ping opacity-30">
+                                      <Stethoscope className="h-16 w-16 text-primary" />
+                                    </div>
+                                    <Stethoscope className="h-16 w-16 text-primary/60" />
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Gradient overlays */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                              
+                              {/* Available badge */}
+                              <div className="absolute top-4 right-4">
+                                <div className="px-3 py-1.5 rounded-full bg-white/90 dark:bg-card/90 backdrop-blur-sm shadow-lg flex items-center gap-1.5 border border-white/20">
+                                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                  <span className="text-xs font-medium text-foreground">Available</span>
+                                </div>
+                              </div>
+
+                              {/* Bottom content overlay */}
+                              <div className="absolute bottom-0 left-0 right-0 p-5">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className="h-3.5 w-3.5 fill-amber-400 text-amber-400 drop-shadow-sm"
+                                    />
+                                  ))}
+                                  <span className="text-sm text-white/90 ml-1 font-medium">(5.0)</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-white drop-shadow-lg group-hover:text-primary-foreground">
+                                  {spec.name}
+                                </h3>
+                              </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-5">
+                              <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                                {spec.description}
+                              </p>
+
+                              {/* Tags */}
+                              <div className="flex flex-wrap gap-1.5 mb-4">
+                                {spec.tags.slice(0, 3).map((tag) => (
+                                  <Badge 
+                                    key={tag} 
+                                    variant="secondary" 
+                                    className="text-xs rounded-full bg-secondary/80 hover:bg-secondary"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+
+                              {/* Stats row */}
+                              <div className="flex items-center gap-4 mb-5 text-xs text-muted-foreground">
+                                <div className="flex items-center gap-1.5">
+                                  <Clock className="h-3.5 w-3.5 text-primary" />
+                                  <span>30 min</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <Users className="h-3.5 w-3.5 text-primary" />
+                                  <span>1000+ patients</span>
+                                </div>
+                              </div>
+
+                              {/* Price and CTA */}
+                              <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                                <div>
+                                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Consultation</span>
+                                  <div className="flex items-baseline gap-0.5">
+                                    <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">₹{spec.consultationFee}</span>
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  className="rounded-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/25 group-hover:shadow-primary/40 transition-all duration-300 gap-1.5"
+                                >
+                                  <Calendar className="h-4 w-4" />
+                                  Book Now
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </CardContent>
-                      <CardFooter className="flex justify-between items-center pt-0">
-                        <div className="flex items-center text-lg font-semibold text-primary">
-                          <IndianRupee className="h-4 w-4" />
-                          {spec.consultationFee}
-                        </div>
-                        <Button size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground">
-                          Book Now
-                          <ArrowRight className="ml-1 h-4 w-4" />
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
 
           {/* Step 2: Questions Form */}
           {currentStep === "questions" && selectedSpecialization && (
-            <div className="max-w-2xl mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-2xl mx-auto"
+            >
               <Button
                 variant="ghost"
                 onClick={() => setCurrentStep("select")}
-                className="mb-4"
+                className="mb-6 rounded-full hover:bg-primary/10"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Specializations
               </Button>
 
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-4">
-                    {selectedSpecialization.imageUrl ? (
-                      <img
-                        src={selectedSpecialization.imageUrl}
-                        alt={selectedSpecialization.name}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Stethoscope className="h-8 w-8 text-primary" />
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-[28px] blur-lg opacity-50" />
+                <Card className="relative rounded-3xl border-border/50 overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-4">
+                      {selectedSpecialization.imageUrl ? (
+                        <div className="relative w-20 h-20 rounded-2xl overflow-hidden shadow-lg">
+                          <Image
+                            src={selectedSpecialization.imageUrl}
+                            alt={selectedSpecialization.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                          <Stethoscope className="h-10 w-10 text-primary" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <CardTitle className="text-xl">{selectedSpecialization.name}</CardTitle>
+                        <CardDescription className="mt-1">{selectedSpecialization.description}</CardDescription>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star key={star} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                          ))}
+                          <span className="text-sm text-muted-foreground ml-1">(5.0)</span>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <CardTitle>{selectedSpecialization.name}</CardTitle>
-                      <CardDescription>{selectedSpecialization.description}</CardDescription>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingQuestions ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                  ) : questions.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground mb-4">
-                        No additional information required
-                      </p>
-                      <Button onClick={handleProceedToPayment}>
-                        Proceed to Payment
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {questions.map((question, index) => (
-                        <div key={question._id} className="space-y-2">
-                          <Label className="text-base">
-                            {index + 1}. {question.question}
-                            {question.isRequired && (
-                              <span className="text-red-500 ml-1">*</span>
-                            )}
-                          </Label>
-                          {renderQuestionInput(question)}
+                  </CardHeader>
+                  <CardContent>
+                    {isLoadingQuestions ? (
+                      <div className="flex items-center justify-center py-16">
+                        <div className="relative">
+                          <div className="absolute inset-0 animate-ping opacity-30">
+                            <Loader2 className="h-10 w-10 text-primary" />
+                          </div>
+                          <Loader2 className="h-10 w-10 animate-spin text-primary" />
                         </div>
-                      ))}
-
-                      <Separator className="my-6" />
-
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Consultation Fee</p>
-                          <p className="text-2xl font-bold text-primary flex items-center">
-                            <IndianRupee className="h-5 w-5" />
-                            {selectedSpecialization.consultationFee}
-                          </p>
+                      </div>
+                    ) : questions.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                          <CheckCircle className="h-8 w-8 text-primary" />
                         </div>
-                        <Button onClick={handleProceedToPayment} size="lg">
+                        <p className="text-muted-foreground mb-6">
+                          No additional information required
+                        </p>
+                        <Button 
+                          onClick={handleProceedToPayment}
+                          className="rounded-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/25"
+                        >
                           Proceed to Payment
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {questions.map((question, index) => (
+                          <motion.div 
+                            key={question._id} 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="space-y-3 p-4 rounded-2xl bg-secondary/30 border border-border/50"
+                          >
+                            <Label className="text-base font-medium flex items-start gap-2">
+                              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-semibold flex-shrink-0">
+                                {index + 1}
+                              </span>
+                              <span>
+                                {question.question}
+                                {question.isRequired && (
+                                  <span className="text-rose-500 ml-1">*</span>
+                                )}
+                              </span>
+                            </Label>
+                            {renderQuestionInput(question)}
+                          </motion.div>
+                        ))}
+
+                        <Separator className="my-8" />
+
+                        <div className="flex justify-between items-center p-4 rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Consultation Fee</p>
+                            <p className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center">
+                              ₹{selectedSpecialization.consultationFee}
+                            </p>
+                          </div>
+                          <Button 
+                            onClick={handleProceedToPayment} 
+                            size="lg"
+                            className="rounded-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/25 gap-2"
+                          >
+                            Proceed to Payment
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </motion.div>
           )}
 
           {/* Step 3: Payment Confirmation */}
           {currentStep === "payment" && selectedSpecialization && (
-            <div className="max-w-lg mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-lg mx-auto"
+            >
               <Button
                 variant="ghost"
                 onClick={() => setCurrentStep("questions")}
-                className="mb-4"
+                className="mb-6 rounded-full hover:bg-primary/10"
                 disabled={isProcessingPayment}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Form
               </Button>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Confirm Payment</CardTitle>
-                  <CardDescription>Review your booking details before payment</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                    {selectedSpecialization.imageUrl ? (
-                      <img
-                        src={selectedSpecialization.imageUrl}
-                        alt={selectedSpecialization.name}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Stethoscope className="h-8 w-8 text-primary" />
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-[28px] blur-lg opacity-50" />
+                <Card className="relative rounded-3xl border-border/50 overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+                  <CardHeader>
+                    <CardTitle className="text-xl">Confirm Payment</CardTitle>
+                    <CardDescription>Review your booking details before payment</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-secondary/50 to-secondary/30 rounded-2xl border border-border/50">
+                      {selectedSpecialization.imageUrl ? (
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden shadow-md">
+                          <Image
+                            src={selectedSpecialization.imageUrl}
+                            alt={selectedSpecialization.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                          <Stethoscope className="h-8 w-8 text-primary" />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-semibold text-foreground">{selectedSpecialization.name}</h3>
+                        <p className="text-sm text-muted-foreground">Consultation</p>
                       </div>
-                    )}
-                    <div>
-                      <h3 className="font-semibold">{selectedSpecialization.name}</h3>
-                      <p className="text-sm text-muted-foreground">Consultation</p>
                     </div>
-                  </div>
 
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Consultation Fee</span>
-                      <span>₹{selectedSpecialization.consultationFee}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Platform Fee</span>
-                      <span>₹0</span>
-                    </div>
                     <Separator />
-                    <div className="flex justify-between text-lg font-semibold">
-                      <span>Total</span>
-                      <span className="text-primary">₹{selectedSpecialization.consultationFee}</span>
-                    </div>
-                  </div>
 
-                  <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-amber-700 dark:text-amber-300">
-                      After successful payment, our team will review your details and confirm the appointment.
-                    </p>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={handlePayment}
-                    disabled={isProcessingPayment}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {isProcessingPayment ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        Pay ₹{selectedSpecialization.consultationFee}
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
+                    <div className="space-y-3 p-4 rounded-2xl bg-secondary/20">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Consultation Fee</span>
+                        <span className="font-medium">₹{selectedSpecialization.consultationFee}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Platform Fee</span>
+                        <span className="font-medium text-green-600">₹0 (Free)</span>
+                      </div>
+                      <Separator />
+                      <div className="flex justify-between text-lg font-bold">
+                        <span>Total</span>
+                        <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">₹{selectedSpecialization.consultationFee}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl flex items-start gap-3 border border-amber-200/50 dark:border-amber-800/50">
+                      <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                        After successful payment, our team will review your details and confirm the appointment.
+                      </p>
+                    </div>
+
+                    {/* Trust badges */}
+                    <div className="flex items-center justify-center gap-6 pt-2">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Shield className="h-4 w-4 text-primary" />
+                        <span>Secure Payment</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Heart className="h-4 w-4 text-primary" />
+                        <span>Quality Care</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="pb-6">
+                    <Button
+                      onClick={handlePayment}
+                      disabled={isProcessingPayment}
+                      className="w-full rounded-full h-12 text-base bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/25"
+                      size="lg"
+                    >
+                      {isProcessingPayment ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          Pay ₹{selectedSpecialization.consultationFee}
+                        </>
+                      )}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </motion.div>
           )}
 
           {/* Step 4: Success */}
           {currentStep === "success" && (
-            <div className="max-w-lg mx-auto">
-              <Card>
-                <CardContent className="pt-8 text-center">
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
-                  </div>
-                  <h2 className="text-2xl font-bold mb-2">Booking Confirmed!</h2>
-                  <p className="text-muted-foreground mb-6">
-                    Your appointment has been booked successfully. We will review your details and confirm shortly.
-                  </p>
-                  <div className="flex flex-col gap-3">
-                    {appointmentId && (
-                      <Button onClick={() => router.push(`/appointments/${appointmentId}`)}>
-                        View Appointment Details
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-lg mx-auto"
+            >
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-green-400/30 to-emerald-400/30 rounded-[28px] blur-lg opacity-50" />
+                <Card className="relative rounded-3xl border-green-200 dark:border-green-800/50 overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 via-emerald-400 to-green-400" />
+                  <CardContent className="pt-10 text-center">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                      className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 flex items-center justify-center shadow-lg shadow-green-500/20"
+                    >
+                      <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
+                    </motion.div>
+                    <motion.h2 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="text-2xl font-bold mb-2"
+                    >
+                      Booking Confirmed! 🎉
+                    </motion.h2>
+                    <motion.p 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className="text-muted-foreground mb-8 max-w-sm mx-auto"
+                    >
+                      Your appointment has been booked successfully. We will review your details and confirm shortly.
+                    </motion.p>
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="flex flex-col gap-3"
+                    >
+                      {appointmentId && (
+                        <Button 
+                          onClick={() => router.push(`/appointments/${appointmentId}`)}
+                          className="rounded-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/25"
+                        >
+                          View Appointment Details
+                        </Button>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        onClick={() => router.push("/profile?tab=appointments")}
+                        className="rounded-full border-primary/30 hover:bg-primary/10"
+                      >
+                        Go to My Appointments
                       </Button>
-                    )}
-                    <Button variant="outline" onClick={() => router.push("/profile?tab=appointments")}>
-                      Go to My Appointments
-                    </Button>
-                    <Button variant="ghost" onClick={() => {
-                      setCurrentStep("select")
-                      setSelectedSpecialization(null)
-                      setQuestions([])
-                      setAnswers({})
-                      setBookingSuccess(false)
-                      setAppointmentId(null)
-                    }}>
-                      Book Another Appointment
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => {
+                          setCurrentStep("select")
+                          setSelectedSpecialization(null)
+                          setQuestions([])
+                          setAnswers({})
+                          setBookingSuccess(false)
+                          setAppointmentId(null)
+                        }}
+                        className="rounded-full hover:bg-secondary"
+                      >
+                        Book Another Appointment
+                      </Button>
+                    </motion.div>
+                  </CardContent>
+                </Card>
+              </div>
+            </motion.div>
           )}
         </div>
       </main>

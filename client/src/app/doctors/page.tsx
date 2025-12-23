@@ -1,14 +1,53 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { doctorService } from "@/lib/services/doctor.service";
 import { Doctor } from "@/types/doctor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, User, Heart, Award, Users, Clock, CheckCircle, Mail, Phone, MapPin } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Star, 
+  User, 
+  Heart, 
+  Award, 
+  Users, 
+  Clock, 
+  CheckCircle, 
+  Mail, 
+  Phone, 
+  MapPin,
+  Sparkles,
+  Leaf,
+  ArrowRight,
+  Shield,
+  Stethoscope,
+  Loader2
+} from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import Link from "next/link";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4 },
+  },
+};
 
 export default function AboutPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -23,7 +62,7 @@ export default function AboutPage() {
     try {
       const response = await doctorService.getAllDoctors({
         page: 1,
-        limit: 50, // Get all doctors for the team section
+        limit: 50,
       });
       setDoctors(response.data.doctors);
     } catch (error) {
@@ -66,48 +105,124 @@ export default function AboutPage() {
 
   return (
     <>
-      <main className="min-h-screen">
+      <main className="min-h-screen relative overflow-hidden">
+        {/* Premium background */}
+        <div className="fixed inset-0 bg-gradient-to-b from-background via-secondary/10 to-background -z-10" />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(34,197,94,0.06),transparent_60%)] -z-10" />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(22,163,74,0.06),transparent_60%)] -z-10" />
+        
+        {/* Floating decorative elements */}
+        <div className="fixed top-40 right-20 w-3 h-3 rounded-full bg-primary/30 animate-bounce pointer-events-none" style={{ animationDelay: '0s' }} />
+        <div className="fixed top-72 left-16 w-2 h-2 rounded-full bg-accent/30 animate-bounce pointer-events-none" style={{ animationDelay: '0.5s' }} />
+        <div className="fixed bottom-40 right-1/4 w-2 h-2 rounded-full bg-primary/20 animate-bounce pointer-events-none" style={{ animationDelay: '1s' }} />
+
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-primary/10 via-background to-green-50 pt-24 pb-16 px-4 md:px-8 lg:px-12">
+        <section className="relative pt-28 pb-20 px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-green-600 bg-clip-text text-transparent">
-              About HomeoPatha
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Badge className="mb-6 bg-primary/10 text-primary border-0 rounded-full px-4 py-1.5">
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                Natural Healing Excellence
+              </Badge>
+            </motion.div>
+            
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
+            >
+              About{" "}
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                HomeoPatha
+              </span>
+            </motion.h1>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10"
+            >
               Your trusted partner in natural healing. We combine ancient homeopathic wisdom with modern healthcare practices to provide you with the best possible care.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
+            </motion.p>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-wrap justify-center gap-4"
+            >
               <Link href="/appointments">
-                <Button size="lg">Book a Consultation</Button>
+                <Button size="lg" className="rounded-full bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/25">
+                  Book a Consultation
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </Link>
               <Link href="/contact">
-                <Button size="lg" variant="outline">Contact Us</Button>
+                <Button size="lg" variant="outline" className="rounded-full border-primary/20 hover:bg-primary/5">
+                  Contact Us
+                </Button>
               </Link>
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Stats Section */}
-        <section className="py-12 bg-primary text-primary-foreground">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <p className="text-3xl md:text-4xl font-bold mb-2">{stat.number}</p>
-                  <p className="text-sm md:text-base opacity-90">{stat.label}</p>
+        <section className="py-16">
+          <div className="max-w-6xl mx-auto px-4 md:px-8 lg:px-12">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-[28px] blur-lg opacity-50" />
+              <div className="relative bg-gradient-to-r from-primary to-accent rounded-3xl p-8 md:p-12 text-white overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+                
+                <div className="relative grid grid-cols-2 md:grid-cols-4 gap-8">
+                  {stats.map((stat, index) => (
+                    <motion.div 
+                      key={index} 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      className="text-center"
+                    >
+                      <p className="text-4xl md:text-5xl font-bold mb-2">{stat.number}</p>
+                      <p className="text-sm md:text-base opacity-90">{stat.label}</p>
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Our Story Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-12">
+        <section className="py-20 px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
+            <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <Badge className="mb-4 bg-primary/10 text-primary border-0 rounded-full px-3 py-1">
+                  <Leaf className="h-3 w-3 mr-1.5" />
+                  Our Journey
+                </Badge>
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Story</h2>
-                <div className="space-y-4 text-muted-foreground">
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>
                     HomeoPatha was founded with a simple yet powerful mission: to make quality homeopathic healthcare accessible to everyone. We understand that true healing goes beyond just treating symptoms—it's about nurturing the body's natural ability to heal itself.
                   </p>
@@ -118,53 +233,103 @@ export default function AboutPage() {
                     We combine traditional homeopathic principles with modern technology, making it easier than ever for you to consult with experienced practitioners from the comfort of your home.
                   </p>
                 </div>
-              </div>
-              <div className="relative h-[400px] rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-green-100 flex items-center justify-center">
-                <div className="text-center p-8">
-                  <Heart className="h-24 w-24 mx-auto text-primary mb-4" />
-                  <p className="text-2xl font-semibold text-primary">Healing with Care</p>
-                  <p className="text-muted-foreground mt-2">Since 2010</p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="relative"
+              >
+                <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-[32px] blur-xl opacity-50" />
+                <div className="relative h-[400px] rounded-3xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 border border-border/50 flex items-center justify-center">
+                  <div className="text-center p-8">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent mx-auto mb-6 flex items-center justify-center shadow-lg shadow-primary/25">
+                      <Heart className="h-12 w-12 text-white" />
+                    </div>
+                    <p className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                      Healing with Care
+                    </p>
+                    <p className="text-muted-foreground mt-2">Since 2010</p>
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
 
         {/* Our Values Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-12 bg-muted/30">
+        <section className="py-20 px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-14"
+            >
+              <Badge className="mb-4 bg-primary/10 text-primary border-0 rounded-full px-3 py-1">
+                <Shield className="h-3 w-3 mr-1.5" />
+                What We Stand For
+              </Badge>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Values</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 These core values guide everything we do and how we care for our patients.
               </p>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            </motion.div>
+            
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
               {values.map((value, index) => (
-                <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                  <CardContent className="pt-6 text-center">
-                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <value.icon className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-lg mb-2">{value.title}</h3>
-                    <p className="text-sm text-muted-foreground">{value.description}</p>
-                  </CardContent>
-                </Card>
+                <motion.div key={index} variants={itemVariants}>
+                  <Card className="h-full border-border/50 rounded-3xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
+                    <CardContent className="pt-8 pb-8 text-center">
+                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
+                        <value.icon className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="font-bold text-lg mb-3">{value.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{value.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Why Choose Homeopathy Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-12">
+        <section className="py-20 px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-14"
+            >
+              <Badge className="mb-4 bg-primary/10 text-primary border-0 rounded-full px-3 py-1">
+                <Leaf className="h-3 w-3 mr-1.5" />
+                Natural Medicine
+              </Badge>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Homeopathy?</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Discover the benefits of this gentle yet effective system of medicine.
               </p>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </motion.div>
+            
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
               {[
                 "Natural & Safe - No harmful side effects",
                 "Treats Root Cause - Not just symptoms",
@@ -173,142 +338,194 @@ export default function AboutPage() {
                 "Chronic Disease Management - Long-term solutions",
                 "Holistic Approach - Mind, body & spirit"
               ].map((benefit, index) => (
-                <div key={index} className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                  <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                <motion.div 
+                  key={index} 
+                  variants={itemVariants}
+                  className="flex items-start gap-4 p-5 rounded-2xl bg-secondary/30 border border-border/50 hover:border-primary/20 hover:bg-secondary/50 transition-all duration-300"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                  </div>
                   <span className="font-medium">{benefit}</span>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Our Team Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-12 bg-gradient-to-br from-primary/5 to-green-50">
+        <section className="py-20 px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-14"
+            >
+              <Badge className="mb-4 bg-primary/10 text-primary border-0 rounded-full px-3 py-1">
+                <Stethoscope className="h-3 w-3 mr-1.5" />
+                Expert Practitioners
+              </Badge>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet Our Team</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Our experienced homeopathic practitioners are dedicated to your well-being and committed to providing the highest quality care.
               </p>
-            </div>
+            </motion.div>
 
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <div className="h-48 bg-muted animate-pulse" />
-                    <CardContent className="p-4 space-y-2">
-                      <div className="h-4 bg-muted animate-pulse rounded" />
-                      <div className="h-4 bg-muted animate-pulse rounded w-2/3" />
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="flex items-center justify-center py-20">
+                <div className="relative">
+                  <div className="absolute inset-0 animate-ping opacity-30">
+                    <Loader2 className="h-10 w-10 text-primary" />
+                  </div>
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                </div>
               </div>
             ) : doctors.length === 0 ? (
-              <div className="text-center py-12">
-                <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Our team is growing</h3>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-16"
+              >
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-10 w-10 text-primary/60" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Our team is growing</h3>
                 <p className="text-muted-foreground">
                   Check back soon to meet our practitioners
                 </p>
-              </div>
+              </motion.div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              >
                 {doctors.map((doctor) => (
-                  <Card
-                    key={doctor._id}
-                    className="overflow-hidden hover:shadow-lg transition-shadow group"
-                  >
-                    <div className="relative h-56 bg-gradient-to-br from-primary/10 to-green-100">
-                      {doctor.images && doctor.images[0] ? (
-                        <Image
-                          src={doctor.images[0]}
-                          alt={doctor.userId.fullName}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <User className="h-20 w-20 text-primary/30" />
+                  <motion.div key={doctor._id} variants={itemVariants}>
+                    <Card className="overflow-hidden rounded-3xl border-border/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group h-full">
+                      <div className="relative h-56 bg-gradient-to-br from-primary/10 to-accent/10 overflow-hidden">
+                        {doctor.images && doctor.images[0] ? (
+                          <Image
+                            src={doctor.images[0]}
+                            alt={doctor.userId.fullName}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="h-10 w-10 text-primary/40" />
+                            </div>
+                          </div>
+                        )}
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-white/90 dark:bg-black/70 text-primary border-0 rounded-full shadow-lg">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                            {doctor.rating.toFixed(1)}
+                          </Badge>
                         </div>
-                      )}
-                    </div>
-
-                    <CardContent className="p-5">
-                      <h3 className="font-semibold text-lg mb-1">
-                        Dr. {doctor.userId.fullName}
-                      </h3>
-                      <p className="text-sm text-primary font-medium mb-2">
-                        {doctor.specialization}
-                      </p>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {doctor.qualification}
-                      </p>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {doctor.experience} years of experience
-                      </p>
-
-                      <div className="flex items-center gap-1 pt-3 border-t">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">
-                          {doctor.rating.toFixed(1)}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          ({doctor.totalRatings} reviews)
-                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
+
+                      <CardContent className="p-5">
+                        <h3 className="font-bold text-lg mb-1">
+                          Dr. {doctor.userId.fullName}
+                        </h3>
+                        <p className="text-sm font-medium text-primary mb-2">
+                          {doctor.specialization}
+                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {doctor.qualification}
+                        </p>
+                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
+                          <Badge variant="secondary" className="rounded-full text-xs">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {doctor.experience} yrs exp
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            ({doctor.totalRatings} reviews)
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-12 bg-primary text-primary-foreground">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Your Healing Journey?</h2>
-            <p className="text-lg opacity-90 mb-8">
-              Book a consultation with one of our expert homeopathic practitioners today and take the first step towards natural wellness.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/appointments">
-                <Button size="lg" variant="secondary">Book Appointment</Button>
-              </Link>
-              <Link href="/products">
-                <Button size="lg" variant="outline" className="bg-transparent border-white hover:bg-white/10">Browse Products</Button>
-              </Link>
-            </div>
+        <section className="py-20 px-4 md:px-8 lg:px-12">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-[28px] blur-lg opacity-60" />
+              <div className="relative bg-gradient-to-r from-primary to-accent rounded-3xl p-10 md:p-14 text-white text-center overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+                
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6">
+                    <Sparkles className="h-8 w-8 text-white" />
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Your Healing Journey?</h2>
+                  <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
+                    Book a consultation with one of our expert homeopathic practitioners today and take the first step towards natural wellness.
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-4">
+                    <Link href="/appointments">
+                      <Button size="lg" className="rounded-full bg-white text-primary hover:bg-white/90 shadow-lg">
+                        Book Appointment
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/products">
+                      <Button size="lg" variant="outline" className="rounded-full bg-transparent border-white/50 text-white hover:bg-white/10">
+                        Browse Products
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Contact Info Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-12">
+        <section className="py-20 px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center p-6">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Mail className="h-7 w-7 text-primary" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Email Us</h3>
-                <p className="text-muted-foreground">support@homeopatha.com</p>
-              </div>
-              <div className="text-center p-6">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Phone className="h-7 w-7 text-primary" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Call Us</h3>
-                <p className="text-muted-foreground">+91 1234 567 890</p>
-              </div>
-              <div className="text-center p-6">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="h-7 w-7 text-primary" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">Visit Us</h3>
-                <p className="text-muted-foreground">123 Health Street, Mumbai</p>
-              </div>
-            </div>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="grid md:grid-cols-3 gap-6"
+            >
+              {[
+                { icon: Mail, title: "Email Us", info: "support@homeopatha.com", color: "primary" },
+                { icon: Phone, title: "Call Us", info: "+91 1234 567 890", color: "accent" },
+                { icon: MapPin, title: "Visit Us", info: "123 Health Street, Mumbai", color: "primary" }
+              ].map((item, index) => (
+                <motion.div key={index} variants={itemVariants}>
+                  <Card className="text-center p-8 rounded-3xl border-border/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 h-full">
+                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mx-auto mb-4">
+                      <item.icon className="h-7 w-7 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">{item.title}</h3>
+                    <p className="text-muted-foreground">{item.info}</p>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </section>
       </main>
