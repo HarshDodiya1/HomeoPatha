@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, Variants } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -57,7 +57,7 @@ const containerVariants = {
   },
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30, scale: 0.95 },
   visible: {
     opacity: 1,
@@ -65,7 +65,7 @@ const itemVariants = {
     scale: 1,
     transition: {
       duration: 0.5,
-      ease: [0.22, 1, 0.36, 1],
+      ease: "easeOut",
     },
   },
 }
@@ -587,8 +587,7 @@ export default function AppointmentsPage() {
                             {/* Top accent bar */}
                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                             
-                            {/* Image */}
-                            <div className="relative h-44 overflow-hidden">
+                            {/* Image */}                            <div className="relative h-44 overflow-hidden">
                               {spec.imageUrl ? (
                                 <Image
                                   src={spec.imageUrl}
