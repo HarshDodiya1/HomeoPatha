@@ -2,13 +2,27 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { motion } from "framer-motion"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, ShoppingCart, CreditCard, Truck } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { 
+  Loader2, 
+  ShoppingCart, 
+  CreditCard, 
+  Truck, 
+  MapPin, 
+  Sparkles, 
+  ShoppingBag, 
+  Package,
+  CheckCircle,
+  Shield,
+  ArrowRight 
+} from "lucide-react"
 import { toast } from "sonner"
 import { useAuthStore } from "@/store/auth.store"
 import { useCartStore } from "@/store/cart.store"
@@ -140,7 +154,7 @@ export default function CheckoutPage() {
           contact: user?.phoneNumber || '',
         },
         theme: {
-          color: '#10b981',
+          color: '#22c55e',
         },
         modal: {
           ondismiss: function () {
@@ -162,208 +176,316 @@ export default function CheckoutPage() {
 
   if (!isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center relative">
+        <div className="fixed inset-0 bg-gradient-to-b from-background via-secondary/10 to-background -z-10" />
+        <div className="relative">
+          <div className="absolute inset-0 animate-ping opacity-30">
+            <Loader2 className="h-10 w-10 text-primary" />
+          </div>
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
       </div>
     )
   }
 
   if (!cart || cart.items.length === 0) {
     return (
-      <div className="min-h-screen bg-background py-12">
+      <div className="min-h-screen pb-16 pt-28 relative overflow-hidden">
+        <div className="fixed inset-0 bg-gradient-to-b from-background via-secondary/10 to-background -z-10" />
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(34,197,94,0.06),transparent_60%)] -z-10" />
+        
         <div className="container mx-auto px-4 max-w-6xl">
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
-              <p className="text-muted-foreground mb-6">Add some products to checkout</p>
-              <Button onClick={() => router.push('/products')}>
-                Browse Products
-              </Button>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <Card className="rounded-3xl border-border/50 overflow-hidden">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-6">
+                  <ShoppingCart className="h-12 w-12 text-primary" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
+                <p className="text-muted-foreground mb-6">Add some products to checkout</p>
+                <Button 
+                  onClick={() => router.push('/products')}
+                  className="rounded-full px-8 shadow-lg shadow-primary/25"
+                >
+                  Browse Products
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background py-12">
+    <div className="min-h-screen pb-16 pt-28 relative overflow-hidden">
+      {/* Premium background */}
+      <div className="fixed inset-0 bg-gradient-to-b from-background via-secondary/10 to-background -z-10" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(34,197,94,0.06),transparent_60%)] -z-10" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(22,163,74,0.06),transparent_60%)] -z-10" />
+      
+      {/* Floating decorative elements */}
+      <div className="fixed top-40 right-20 w-3 h-3 rounded-full bg-primary/30 animate-bounce pointer-events-none" style={{ animationDelay: '0s' }} />
+      <div className="fixed top-72 left-16 w-2 h-2 rounded-full bg-accent/30 animate-bounce pointer-events-none" style={{ animationDelay: '0.5s' }} />
+
       <div className="container mx-auto px-4 max-w-6xl">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <Sparkles className="h-6 w-6 text-primary" />
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Checkout
+            </h1>
+          </div>
+          <p className="text-muted-foreground">Complete your purchase securely</p>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Shipping & Payment */}
           <div className="lg:col-span-2 space-y-6">
             {/* Shipping Address Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Truck className="h-5 w-5" />
-                  Shipping Address
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="addressLine1">Address Line 1 *</Label>
-                  <Input
-                    id="addressLine1"
-                    value={shippingAddress.addressLine1}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, addressLine1: e.target.value })}
-                    placeholder="Street address, building name"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="addressLine2">Address Line 2</Label>
-                  <Input
-                    id="addressLine2"
-                    value={shippingAddress.addressLine2}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, addressLine2: e.target.value })}
-                    placeholder="Apartment, suite, unit (optional)"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="city">City *</Label>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Card className="rounded-3xl border-border/50 overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <MapPin className="h-4 w-4 text-primary" />
+                    </div>
+                    Shipping Address
+                  </CardTitle>
+                  <CardDescription>Enter your delivery details</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="addressLine1" className="text-sm font-medium">Address Line 1 *</Label>
                     <Input
-                      id="city"
-                      value={shippingAddress.city}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                      placeholder="City"
+                      id="addressLine1"
+                      value={shippingAddress.addressLine1}
+                      onChange={(e) => setShippingAddress({ ...shippingAddress, addressLine1: e.target.value })}
+                      placeholder="Street address, building name"
+                      className="h-12 rounded-xl border-border/50 focus:border-primary/50"
                       required
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="state">State *</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="addressLine2" className="text-sm font-medium">Address Line 2</Label>
                     <Input
-                      id="state"
-                      value={shippingAddress.state}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
-                      placeholder="State"
+                      id="addressLine2"
+                      value={shippingAddress.addressLine2}
+                      onChange={(e) => setShippingAddress({ ...shippingAddress, addressLine2: e.target.value })}
+                      placeholder="Apartment, suite, unit (optional)"
+                      className="h-12 rounded-xl border-border/50 focus:border-primary/50"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city" className="text-sm font-medium">City *</Label>
+                      <Input
+                        id="city"
+                        value={shippingAddress.city}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
+                        placeholder="City"
+                        className="h-12 rounded-xl border-border/50 focus:border-primary/50"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="state" className="text-sm font-medium">State *</Label>
+                      <Input
+                        id="state"
+                        value={shippingAddress.state}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
+                        placeholder="State"
+                        className="h-12 rounded-xl border-border/50 focus:border-primary/50"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="pincode" className="text-sm font-medium">Pincode *</Label>
+                    <Input
+                      id="pincode"
+                      value={shippingAddress.pincode}
+                      onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
+                      placeholder="6-digit pincode"
+                      maxLength={6}
+                      className="h-12 rounded-xl border-border/50 focus:border-primary/50"
                       required
                     />
                   </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="pincode">Pincode *</Label>
-                  <Input
-                    id="pincode"
-                    value={shippingAddress.pincode}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
-                    placeholder="6-digit pincode"
-                    maxLength={6}
-                    required
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Payment Method Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Payment Method
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'razorpay' | 'cod')}>
-                  <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-accent">
-                    <RadioGroupItem value="razorpay" id="razorpay" />
-                    <Label htmlFor="razorpay" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Online Payment (Razorpay)</div>
-                      <div className="text-sm text-muted-foreground">Pay securely using UPI, Cards, Net Banking</div>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2 border rounded-lg p-4 cursor-pointer hover:bg-accent">
-                    <RadioGroupItem value="cod" id="cod" />
-                    <Label htmlFor="cod" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Cash on Delivery</div>
-                      <div className="text-sm text-muted-foreground">Pay when you receive the order</div>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </CardContent>
-            </Card>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Card className="rounded-3xl border-border/50 overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <CreditCard className="h-4 w-4 text-primary" />
+                    </div>
+                    Payment Method
+                  </CardTitle>
+                  <CardDescription>Choose how you want to pay</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'razorpay' | 'cod')}>
+                    <div 
+                      className={`flex items-center space-x-3 rounded-2xl p-4 cursor-pointer transition-all border-2 ${
+                        paymentMethod === 'razorpay' 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border/50 hover:border-primary/30 hover:bg-secondary/30'
+                      }`}
+                    >
+                      <RadioGroupItem value="razorpay" id="razorpay" />
+                      <Label htmlFor="razorpay" className="flex-1 cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">Online Payment</span>
+                          <Badge className="bg-primary/10 text-primary border-0 text-xs">Recommended</Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-0.5">Pay securely using UPI, Cards, Net Banking</div>
+                      </Label>
+                      <Shield className="h-5 w-5 text-primary" />
+                    </div>
+                    <div 
+                      className={`flex items-center space-x-3 rounded-2xl p-4 cursor-pointer transition-all border-2 mt-3 ${
+                        paymentMethod === 'cod' 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border/50 hover:border-primary/30 hover:bg-secondary/30'
+                      }`}
+                    >
+                      <RadioGroupItem value="cod" id="cod" />
+                      <Label htmlFor="cod" className="flex-1 cursor-pointer">
+                        <div className="font-semibold">Cash on Delivery</div>
+                        <div className="text-sm text-muted-foreground mt-0.5">Pay when you receive the order</div>
+                      </Label>
+                      <Truck className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </RadioGroup>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
           {/* Right Column - Order Summary */}
-          <div>
-            <Card className="sticky top-24">
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  {cart.items.map((item) => (
-                    <div key={item._id} className="flex gap-3">
-                      <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                        {item.product?.images?.[0] && (
-                          <Image
-                            src={item.product.images[0]}
-                            alt={item.product.title || 'Product'}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{item.product?.title}</p>
-                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                        <p className="text-sm font-semibold">₹{((item.product?.currentPrice || 0) * item.quantity).toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal</span>
-                    <span>₹{totalAmount.toFixed(2)}</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <div className="relative lg:sticky lg:top-24">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 rounded-[28px] blur-lg opacity-50" />
+              <Card className="relative rounded-3xl border-border/50 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingBag className="h-5 w-5 text-primary" />
+                    Order Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                    {cart.items.map((item, index) => (
+                      <motion.div 
+                        key={item._id} 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
+                        className="flex gap-3 p-3 rounded-xl bg-secondary/30"
+                      >
+                        <div className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-muted shadow-sm">
+                          {item.product?.images?.[0] && (
+                            <Image
+                              src={item.product.images[0]}
+                              alt={item.product.title || 'Product'}
+                              fill
+                              className="object-cover"
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{item.product?.title}</p>
+                          <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                          <p className="text-sm font-semibold text-primary">
+                            ₹{((item.product?.currentPrice || 0) * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Shipping</span>
-                    <span className="text-green-600">FREE</span>
-                  </div>
+
                   <Separator />
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
-                    <span>₹{totalAmount.toFixed(2)}</span>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="font-medium">₹{totalAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Shipping</span>
+                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs">
+                        FREE
+                      </Badge>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-semibold">Total</span>
+                      <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                        ₹{totalAmount.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <Button 
-                  onClick={handlePlaceOrder} 
-                  disabled={isProcessing}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      Place Order
-                      <span className="ml-2">₹{totalAmount.toFixed(2)}</span>
-                    </>
-                  )}
-                </Button>
+                  <Button 
+                    onClick={handlePlaceOrder} 
+                    disabled={isProcessing}
+                    className="w-full rounded-full h-12 shadow-lg shadow-primary/25"
+                    size="lg"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-5 w-5 mr-2" />
+                        Place Order
+                        <span className="ml-2 opacity-80">₹{totalAmount.toFixed(2)}</span>
+                      </>
+                    )}
+                  </Button>
 
-                <p className="text-xs text-center text-muted-foreground">
-                  By placing this order, you agree to our Terms & Conditions
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+                  <p className="text-xs text-center text-muted-foreground">
+                    By placing this order, you agree to our Terms & Conditions
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>

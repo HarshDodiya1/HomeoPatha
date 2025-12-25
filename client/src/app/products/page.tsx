@@ -17,20 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Search, 
-  ShoppingCart, 
-  Star, 
-  Filter, 
-  Heart, 
-  Plus, 
-  Leaf, 
-  ChevronLeft, 
+import {
+  Search,
+  ShoppingCart,
+  Star,
+  Filter,
+  Heart,
+  Plus,
+  Leaf,
+  ChevronLeft,
   ChevronRight,
   Package,
   Zap,
   Sparkles,
-  SlidersHorizontal
+  SlidersHorizontal,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -115,7 +115,7 @@ export default function ProductsPage() {
   const handleAddToCart = async (e: React.MouseEvent, productId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!isAuthenticated) {
       toast.error("Please login to add items to cart");
       router.push("/login");
@@ -137,21 +137,30 @@ export default function ProductsPage() {
         <div className="fixed inset-0 bg-gradient-to-b from-background via-secondary/10 to-background -z-10" />
         <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(34,197,94,0.06),transparent_60%)] -z-10" />
         <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(22,163,74,0.06),transparent_60%)] -z-10" />
-        
+
         {/* Floating decorative elements */}
-        <div className="fixed top-40 left-10 w-3 h-3 rounded-full bg-primary/30 animate-bounce pointer-events-none" style={{ animationDelay: '0s' }} />
-        <div className="fixed top-60 right-20 w-2 h-2 rounded-full bg-accent/30 animate-bounce pointer-events-none" style={{ animationDelay: '0.5s' }} />
-        <div className="fixed bottom-40 left-1/4 w-2 h-2 rounded-full bg-primary/20 animate-bounce pointer-events-none" style={{ animationDelay: '1s' }} />
+        <div
+          className="fixed top-40 left-10 w-3 h-3 rounded-full bg-primary/30 animate-bounce pointer-events-none"
+          style={{ animationDelay: "0s" }}
+        />
+        <div
+          className="fixed top-60 right-20 w-2 h-2 rounded-full bg-accent/30 animate-bounce pointer-events-none"
+          style={{ animationDelay: "0.5s" }}
+        />
+        <div
+          className="fixed bottom-40 left-1/4 w-2 h-2 rounded-full bg-primary/20 animate-bounce pointer-events-none"
+          style={{ animationDelay: "1s" }}
+        />
 
         <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
           {/* Header */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="mb-10"
           >
-            <motion.span 
+            <motion.span
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -161,15 +170,19 @@ export default function ProductsPage() {
               Natural Remedies
             </motion.span>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3">
-              Homeopathic <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">Products</span>
+              Homeopathic{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">
+                Products
+              </span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
-              Discover natural remedies for your health and wellness, delivered to your doorstep.
+              Discover natural remedies for your health and wellness, delivered
+              to your doorstep.
             </p>
           </motion.div>
 
           {/* Filters */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
@@ -185,7 +198,11 @@ export default function ProductsPage() {
                   className="pl-12 h-12 rounded-xl bg-white dark:bg-card border-border/50 focus:border-primary/50 transition-colors"
                 />
               </div>
-              <Button type="submit" size="lg" className="rounded-xl px-6 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/20">
+              <Button
+                type="submit"
+                size="lg"
+                className="rounded-xl px-6 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/20"
+              >
                 Search
               </Button>
             </form>
@@ -195,8 +212,14 @@ export default function ProductsPage() {
                 <SlidersHorizontal className="h-4 w-4" />
                 <span>Filters:</span>
               </div>
-              
-              <Select value={selectedCategory} onValueChange={(v) => { setSelectedCategory(v); setPage(1); }}>
+
+              <Select
+                value={selectedCategory}
+                onValueChange={(v) => {
+                  setSelectedCategory(v);
+                  setPage(1);
+                }}
+              >
                 <SelectTrigger className="w-[180px] rounded-xl bg-white dark:bg-card border-border/50">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
@@ -210,7 +233,13 @@ export default function ProductsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setPage(1); }}>
+              <Select
+                value={sortBy}
+                onValueChange={(v) => {
+                  setSortBy(v);
+                  setPage(1);
+                }}
+              >
                 <SelectTrigger className="w-[160px] rounded-xl bg-white dark:bg-card border-border/50">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
@@ -224,7 +253,10 @@ export default function ProductsPage() {
 
               <Select
                 value={sortOrder}
-                onValueChange={(v) => { setSortOrder(v as "asc" | "desc"); setPage(1); }}
+                onValueChange={(v) => {
+                  setSortOrder(v as "asc" | "desc");
+                  setPage(1);
+                }}
               >
                 <SelectTrigger className="w-[140px] rounded-xl bg-white dark:bg-card border-border/50">
                   <SelectValue />
@@ -240,7 +272,7 @@ export default function ProductsPage() {
           {/* Products Grid */}
           <AnimatePresence mode="wait">
             {isLoading ? (
-              <motion.div 
+              <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -262,7 +294,7 @@ export default function ProductsPage() {
                 ))}
               </motion.div>
             ) : products.length === 0 ? (
-              <motion.div 
+              <motion.div
                 key="empty"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -272,12 +304,15 @@ export default function ProductsPage() {
                 <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
                   <Package className="h-12 w-12 text-primary/60" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-2">No products found</h3>
+                <h3 className="text-2xl font-semibold mb-2">
+                  No products found
+                </h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  Try adjusting your filters or search query to find what you're looking for.
+                  Try adjusting your filters or search query to find what you're
+                  looking for.
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-6 rounded-full"
                   onClick={() => {
                     setSearch("");
@@ -299,11 +334,14 @@ export default function ProductsPage() {
               >
                 {products.map((product) => (
                   <motion.div key={product._id} variants={itemVariants}>
-                    <Link href={`/products/${product._id}`} className="block group">
+                    <Link
+                      href={`/products/${product._id}`}
+                      className="block group"
+                    >
                       <div className="relative">
                         {/* Glow effect */}
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/40 to-accent/40 rounded-[20px] blur-md opacity-0 group-hover:opacity-25 transition-all duration-500" />
-                        
+
                         <div className="relative bg-white dark:bg-card rounded-2xl overflow-hidden border border-border/50 hover:border-primary/30 transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-primary/5">
                           {/* Image Container */}
                           <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-secondary/50 to-secondary/20">
@@ -332,20 +370,28 @@ export default function ProductsPage() {
                             )}
 
                             {/* Discount badge */}
-                            {product.oldPrice && product.oldPrice > product.currentPrice && (
-                              <div className="absolute top-3 right-3">
-                                <div className="bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-                                  -{Math.round(((product.oldPrice - product.currentPrice) / product.oldPrice) * 100)}%
+                            {product.oldPrice &&
+                              product.oldPrice > product.currentPrice && (
+                                <div className="absolute top-3 right-3">
+                                  <div className="bg-rose-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
+                                    -
+                                    {Math.round(
+                                      ((product.oldPrice -
+                                        product.currentPrice) /
+                                        product.oldPrice) *
+                                        100
+                                    )}
+                                    %
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
 
                             {/* Quick Actions */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100">
                               <button className="w-11 h-11 rounded-full bg-white/95 dark:bg-card/95 shadow-xl flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/20">
                                 <Heart className="h-5 w-5" />
                               </button>
-                              <button 
+                              <button
                                 onClick={(e) => handleAddToCart(e, product._id)}
                                 className="w-11 h-11 rounded-full bg-gradient-to-r from-primary to-accent shadow-xl shadow-primary/30 flex items-center justify-center text-white hover:shadow-primary/50 transition-all duration-200"
                               >
@@ -355,7 +401,7 @@ export default function ProductsPage() {
 
                             {/* Bottom Add to Cart */}
                             <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                              <Button 
+                              <Button
                                 onClick={(e) => handleAddToCart(e, product._id)}
                                 className="w-full rounded-xl bg-white/95 dark:bg-card/95 text-foreground hover:bg-primary hover:text-white shadow-xl backdrop-blur-sm gap-2 font-semibold border border-white/20"
                               >
@@ -371,9 +417,13 @@ export default function ProductsPage() {
                             <div className="flex items-center gap-1.5 mb-2">
                               <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10">
                                 <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                                <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">{product.rating.toFixed(1)}</span>
+                                <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+                                  {product.rating.toFixed(1)}
+                                </span>
                               </div>
-                              <span className="text-xs text-muted-foreground">{product.category}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {product.category}
+                              </span>
                             </div>
 
                             {/* Title */}
@@ -386,11 +436,12 @@ export default function ProductsPage() {
                               <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                                 ₹{product.currentPrice}
                               </span>
-                              {product.oldPrice && product.oldPrice > product.currentPrice && (
-                                <span className="text-sm text-muted-foreground line-through">
-                                  ₹{product.oldPrice}
-                                </span>
-                              )}
+                              {product.oldPrice &&
+                                product.oldPrice > product.currentPrice && (
+                                  <span className="text-sm text-muted-foreground line-through">
+                                    ₹{product.oldPrice}
+                                  </span>
+                                )}
                             </div>
                           </div>
                         </div>
@@ -404,7 +455,7 @@ export default function ProductsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && !isLoading && products.length > 0 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -420,7 +471,7 @@ export default function ProductsPage() {
                 <ChevronLeft className="h-4 w-4" />
                 Previous
               </Button>
-              
+
               <div className="flex items-center gap-2 px-4">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
@@ -433,15 +484,15 @@ export default function ProductsPage() {
                   } else {
                     pageNum = page - 2 + i;
                   }
-                  
+
                   return (
                     <button
                       key={pageNum}
                       onClick={() => setPage(pageNum)}
                       className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 ${
                         page === pageNum
-                          ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/30'
-                          : 'bg-white dark:bg-card border border-border/50 hover:border-primary/50 text-foreground'
+                          ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/30"
+                          : "bg-white dark:bg-card border border-border/50 hover:border-primary/50 text-foreground"
                       }`}
                     >
                       {pageNum}
@@ -449,7 +500,7 @@ export default function ProductsPage() {
                   );
                 })}
               </div>
-              
+
               <Button
                 variant="outline"
                 size="lg"
