@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react"
 import { LogoLoader } from "@/components/logo-loader"
 import { Hero } from "@/components/hero"
-import { TrustIndicators } from "@/components/sections/trust-indicators"
+import { SocialSidebar } from "@/components/social-sidebar"
 import { FeaturedDoctors } from "@/components/sections/featured-doctors"
-import { HowItWorks } from "@/components/sections/how-it-works"
 import { FeaturedProducts } from "@/components/sections/featured-products"
+import { ServicesOverview } from "@/components/sections/services-overview"
 import { WhyChooseUs } from "@/components/sections/why-choose-us"
 import { Testimonials } from "@/components/sections/testimonials"
 import { CTABanner } from "@/components/sections/cta-banner"
@@ -48,20 +48,20 @@ export default function HomePage() {
             transition={{ duration: 0.5 }}
             className="min-h-dvh flex flex-col overflow-hidden"
           >
+            {/* Sticky Social Sidebar */}
+            <SocialSidebar />
+
             {/* Hero Section */}
             <Hero />
 
-            {/* Trust Indicators */}
-            <TrustIndicators />
-
-            {/* How It Works */}
-            <HowItWorks />
-
-            {/* Featured Doctors / Specializations */}
-            <FeaturedDoctors />
-
             {/* Featured Products */}
             <FeaturedProducts />
+
+            {/* Featured Doctors / Appointment Booking */}
+            <FeaturedDoctors />
+
+            {/* Services Overview - Trust + How It Works Combined */}
+            <ServicesOverview />
 
             {/* Why Choose Us */}
             <WhyChooseUs />

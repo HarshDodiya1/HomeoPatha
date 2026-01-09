@@ -147,7 +147,7 @@ export function Hero() {
               transition={{ delay: 0.4, duration: 0.6 }}
               className="text-lg md:text-xl text-white/80 max-w-xl leading-relaxed mb-8"
             >
-              Find trusted homeopathy doctors, schedule appointments seamlessly, and access quality medical products — all in one place.
+              Find trusted doctors, schedule appointments seamlessly, and access quality medical products — all in one place.
             </motion.p>
 
             {/* CTAs */}
@@ -171,7 +171,7 @@ export function Hero() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto rounded-full px-8 py-6 text-base font-semibold border-white/30 text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
+                  className="w-full sm:w-auto rounded-full px-8 py-6 text-base font-semibold border-white/30 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-300"
                 >
                   <ShoppingBag className="w-5 h-5 mr-2" />
                   View Products
