@@ -1,14 +1,14 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+import { HeroImage, siteSettingsService } from "@/lib/services/site-settings.service"
+import Autoplay from "embla-carousel-autoplay"
+import useEmblaCarousel from "embla-carousel-react"
+import { motion } from "framer-motion"
+import { ArrowRight, Calendar, ShoppingBag } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
-import { ArrowRight, Calendar, ShoppingBag, Play } from "lucide-react"
-import useEmblaCarousel from "embla-carousel-react"
-import Autoplay from "embla-carousel-autoplay"
 import { useCallback, useEffect, useState } from "react"
-import { siteSettingsService, HeroImage } from "@/lib/services/site-settings.service"
 
 const defaultHeroImages = [
   {

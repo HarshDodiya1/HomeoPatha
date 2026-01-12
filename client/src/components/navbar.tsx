@@ -1,29 +1,29 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, ShoppingCart, Menu, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { useCartStore } from "@/store/cart.store";
-import { useRouter, usePathname } from "next/navigation";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
+import { LogOut, Menu, ShoppingCart, User, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/appointments", label: "Book Appointment" },
   { href: "/products", label: "Products" },
-  { href: "/doctors", label: "About Us" },
+  { href: "/aboutus", label: "About Us" },
   { href: "/contact", label: "Contact" },
 ];
 

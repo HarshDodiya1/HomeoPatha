@@ -1,16 +1,13 @@
 "use client"
-
-import Link from "next/link"
+import { Heart, Leaf, Mail, MapPin, Phone } from "lucide-react"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Send, Heart, Leaf, Phone, Mail, MapPin } from "lucide-react"
+import Link from "next/link"
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Doctors", href: "/doctors" },
-  { label: "Appointments", href: "/appointments" },
   { label: "Products", href: "/products" },
+  { label: "Appointments", href: "/appointments" },
+  { label: "About Us", href: "/aboutus" },
   { label: "Contact", href: "/contact" },
 ]
 
@@ -18,13 +15,13 @@ const serviceLinks = [
   { label: "Book Appointment", href: "/appointments" },
   { label: "Shop Products", href: "/products" },
   { label: "Online Consultation", href: "/appointments" },
-  { label: "Health Tips", href: "/products" },
+  { label: "Health Tips", href: "/aboutus" },
 ]
 
 const socialLinks = [
-  { label: "LinkedIn", href: "https://linkedin.com" },
-  { label: "Twitter", href: "https://twitter.com" },
   { label: "Instagram", href: "https://instagram.com" },
+  { label: "WhatsApp", href: "9979488188" },
+  { label: "Facebook", href: "https://facebook.com" },
 ]
 
 export function Footer() {
@@ -57,26 +54,8 @@ export function Footer() {
                   </span>
                 </Link>
                 
-                <h2 className="mb-3 text-2xl font-semibold tracking-tight text-white">Stay Connected</h2>
-                <p className="mb-6 text-green-100/80 leading-relaxed">
-                  Join our newsletter for the latest updates on homeopathy, wellness tips, and exclusive offers.
-                </p>
-                
-                <form className="relative">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="bg-white/20 border-green-400/30 pr-14 text-white placeholder:text-green-200/60 backdrop-blur-sm focus:border-green-300 focus:ring-green-300/30"
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg bg-white text-green-700 transition-all hover:scale-105 hover:bg-green-50"
-                  >
-                    <Send className="h-4 w-4" />
-                    <span className="sr-only">Subscribe</span>
-                  </Button>
-                </form>
+                <h2 className="mb-3 text-2xl font-semibold tracking-tight text-white">Stay Connected,</h2>
+                <h2 className="mb-3 text-2xl font-semibold tracking-tight text-white">Stay Healthy ❤️</h2>
                 
                 {/* Decorative blur */}
                 <div className="absolute -right-8 top-0 h-32 w-32 rounded-full bg-green-400/20 blur-3xl pointer-events-none" />
