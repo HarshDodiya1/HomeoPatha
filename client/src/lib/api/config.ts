@@ -24,6 +24,12 @@ export const API_ENDPOINTS = {
     list: '/api/products',
     detail: (id: string) => `/api/products/${id}`,
   },
+  blogs: {
+    list: '/api/blogs',
+    detail: (id: string) => `/api/blogs/${id}`,
+    featured: '/api/blogs/featured',
+    tags: '/api/blogs/tags',
+  },
 } as const;
 
 // Token storage keys

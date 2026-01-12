@@ -43,9 +43,13 @@ apiClient.interceptors.response.use(
         localStorage.removeItem(STORAGE_KEYS.accessToken);
         localStorage.removeItem(STORAGE_KEYS.tokenExpiry);
         localStorage.removeItem(STORAGE_KEYS.user);
+        // Also clear the Zustand persisted auth state to prevent redirect loops
+        localStorage.removeItem('auth-storage');
         
-        // Redirect to login
-        window.location.href = '/login';
+        // Only redirect if not already on login page to prevent redirect loops
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
 

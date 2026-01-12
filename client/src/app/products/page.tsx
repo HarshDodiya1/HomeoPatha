@@ -139,6 +139,7 @@ export default function ProductsPage() {
         <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(22,163,74,0.06),transparent_60%)] -z-10" />
 
         {/* Floating decorative elements */}
+        {/* Floating decorative elements */}
         <div
           className="fixed top-40 left-10 w-3 h-3 rounded-full bg-primary/30 animate-bounce pointer-events-none"
           style={{ animationDelay: "0s" }}
@@ -214,26 +215,6 @@ export default function ProductsPage() {
               </div>
 
               <Select
-                value={selectedCategory}
-                onValueChange={(v) => {
-                  setSelectedCategory(v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="w-[180px] rounded-xl bg-white dark:bg-card border-border/50">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
                 value={sortBy}
                 onValueChange={(v) => {
                   setSortBy(v);
@@ -266,6 +247,43 @@ export default function ProductsPage() {
                   <SelectItem value="desc">Descending</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Category Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedCategory === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setSelectedCategory("all");
+                  setPage(1);
+                }}
+                className={`rounded-full px-4 transition-all ${
+                  selectedCategory === "all"
+                    ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25"
+                    : "hover:border-primary/50 hover:bg-primary/5"
+                }`}
+              >
+                All Products
+              </Button>
+              {categories.map((cat) => (
+                <Button
+                  key={cat}
+                  variant={selectedCategory === cat ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                  setSelectedCategory(cat);
+                  setPage(1);
+                  }}
+                  className={`rounded-full px-4 transition-all ${
+                  selectedCategory === cat
+                    ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25"
+                    : "bg-white dark:bg-card border border-border/50 hover:bg-gradient-to-r hover:from-primary/20 hover:to-accent/20 hover:border-primary/50 text-foreground hover:text-primary"
+                  }`}
+                >
+                  {cat}
+                </Button>
+              ))}
             </div>
           </motion.div>
 

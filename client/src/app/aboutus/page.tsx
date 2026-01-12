@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { doctorService } from "@/lib/services/doctor.service";
+import { blogService } from "@/lib/services/blog.service";
 import { Doctor } from "@/types/doctor";
+import { Blog } from "@/types/blog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +25,9 @@ import {
   ArrowRight,
   Shield,
   Stethoscope,
-  Loader2
+  Loader2,
+  BookOpen,
+  Calendar
 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -52,9 +56,12 @@ const itemVariants = {
 export default function AboutPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [featuredBlog, setFeaturedBlog] = useState<Blog | null>(null);
+  const [isBlogLoading, setIsBlogLoading] = useState(true);
 
   useEffect(() => {
     fetchDoctors();
+    fetchFeaturedBlog();
   }, []);
 
   const fetchDoctors = async () => {
@@ -71,6 +78,82 @@ export default function AboutPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchFeaturedBlog = async () => {
+    setIsBlogLoading(true);
+    try {
+      // First get the latest featured blog (without content)
+      const response = await blogService.getFeaturedBlogs(1);
+      if (response.data.blogs && response.data.blogs.length > 0) {
+        const blogId = response.data.blogs[0]._id;
+        // Then fetch full blog with content
+        const fullBlogResponse = await blogService.getBlogById(blogId);
+        setFeaturedBlog(fullBlogResponse.data.blog);
+      }
+    } catch (error) {
+      console.error("Failed to fetch featured blog:", error);
+      // Silently fail - blog section will just not show
+    } finally {
+      setIsBlogLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Format plain text content to HTML
+  const formatBlogContent = (content: string) => {
+    if (!content) return '';
+    
+    // Split content by double newlines to get paragraphs
+    const paragraphs = content.split(/\n\n+/);
+    
+    return paragraphs.map(paragraph => {
+      // Check if this paragraph is a numbered list (lines starting with numbers followed by dot)
+      const lines = paragraph.split('\n');
+      const isNumberedList = lines.every(line => /^\d+\.?\s/.test(line.trim()) || line.trim() === '');
+      
+      if (isNumberedList && lines.length > 1) {
+        const listItems = lines
+          .filter(line => line.trim())
+          .map(line => {
+            // Remove the number prefix and format as list item
+            const text = line.replace(/^\d+\.?\s*/, '').trim();
+            return `<li class="mb-2">${text}</li>`;
+          })
+          .join('');
+        return `<ol class="list-decimal list-inside space-y-1 mb-6 text-muted-foreground">${listItems}</ol>`;
+      }
+      
+      // Check if this is a bulleted list (lines starting with - or *)
+      const isBulletList = lines.every(line => /^[-*•]\s/.test(line.trim()) || line.trim() === '');
+      
+      if (isBulletList && lines.length > 1) {
+        const listItems = lines
+          .filter(line => line.trim())
+          .map(line => {
+            const text = line.replace(/^[-*•]\s*/, '').trim();
+            return `<li class="mb-2">${text}</li>`;
+          })
+          .join('');
+        return `<ul class="list-disc list-inside space-y-1 mb-6 text-muted-foreground">${listItems}</ul>`;
+      }
+      
+      // Regular paragraph - convert single newlines to <br>
+      const formattedParagraph = paragraph
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line)
+        .join('<br />');
+      
+      return `<p class="mb-6 text-muted-foreground leading-relaxed text-base md:text-lg">${formattedParagraph}</p>`;
+    }).join('');
   };
 
   const values = [
@@ -171,6 +254,127 @@ export default function AboutPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* Featured Blog Section - Full Content */}
+        {!isBlogLoading && featuredBlog && (
+          <section className="py-16 px-4 md:px-8 lg:px-12">
+            <div className="max-w-4xl mx-auto">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="text-center mb-10"
+              >
+                <Badge className="mb-4 bg-primary/10 text-primary border-0 rounded-full px-3 py-1">
+                  <BookOpen className="h-3 w-3 mr-1.5" />
+                  Latest Insights
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">From Our Blog</h2>
+              </motion.div>
+
+              <motion.article
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="relative"
+              >
+                <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 to-accent/10 rounded-[36px] blur-xl opacity-30" />
+                <Card className="relative overflow-hidden rounded-3xl border-border/50">
+                  {/* Cover Image */}
+                  {featuredBlog.coverImage && (
+                    <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden">
+                      <Image
+                        src={featuredBlog.coverImage}
+                        alt={featuredBlog.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                    </div>
+                  )}
+
+                  <CardContent className="p-8 md:p-10 lg:p-12">
+                    {/* Tags */}
+                    {featuredBlog.tags && featuredBlog.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {featuredBlog.tags.map((tag, index) => (
+                          <Badge 
+                            key={index} 
+                            variant="secondary" 
+                            className="rounded-full text-xs capitalize"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Title */}
+                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight">
+                      {featuredBlog.title}
+                    </h3>
+
+                    {/* Author & Date */}
+                    <div className="flex flex-wrap items-center gap-4 mb-8 pb-8 border-b border-border/50">
+                      {featuredBlog.author && (
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-12 h-12 rounded-full overflow-hidden bg-primary/10">
+                            {featuredBlog.author.images?.[0] ? (
+                              <Image
+                                src={featuredBlog.author.images[0]}
+                                alt={featuredBlog.author.userId?.fullName || "Author"}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <User className="h-6 w-6 text-primary/40" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-semibold">
+                              {featuredBlog.author.userId?.fullName || "Unknown"}
+                            </p>
+                            {featuredBlog.author.qualification && (
+                              <p className="text-sm text-muted-foreground">
+                                {featuredBlog.author.qualification}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground md:ml-auto">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          {formatDate(featuredBlog.publishedAt || featuredBlog.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Full Blog Content */}
+                    {featuredBlog.content && (
+                      <div 
+                        className="blog-content"
+                        dangerouslySetInnerHTML={{ __html: formatBlogContent(featuredBlog.content) }}
+                      />
+                    )}
+
+                    {/* Show summary if no content */}
+                    {!featuredBlog.content && featuredBlog.summary && (
+                      <p className="text-lg text-muted-foreground leading-relaxed">
+                        {featuredBlog.summary}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.article>
+            </div>
+          </section>
+        )}
 
         {/* Stats Section */}
         <section className="py-16">
@@ -432,7 +636,7 @@ export default function AboutPage() {
 
                       <CardContent className="p-5">
                         <h3 className="font-bold text-lg mb-1">
-                          Dr. {doctor.userId.fullName}
+                          {doctor.userId.fullName}
                         </h3>
                         <p className="text-sm font-medium text-primary mb-2">
                           {doctor.specialization}

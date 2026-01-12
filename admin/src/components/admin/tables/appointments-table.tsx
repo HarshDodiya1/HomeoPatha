@@ -150,13 +150,18 @@ export function AppointmentsTable() {
   }
 
   const handleDeleteConfirm = async () => {
-    if (!selectedAppointment) return
+    if (!selectedAppointment) {
+      toast.error('No appointment selected for deletion')
+      setIsDeleteDialogOpen(false)
+      return
+    }
 
     setIsUpdating(true)
     try {
       await appointmentsService.deleteAppointment(selectedAppointment._id)
       toast.success('Appointment deleted successfully')
       setIsDeleteDialogOpen(false)
+      setSelectedAppointment(null)
       fetchAppointments()
     } catch (error: any) {
       console.error('Failed to delete appointment:', error)
@@ -164,6 +169,13 @@ export function AppointmentsTable() {
     } finally {
       setIsUpdating(false)
     }
+  }
+
+  const handleDeleteDialogClose = (open: boolean) => {
+    if (!open) {
+      setSelectedAppointment(null)
+    }
+    setIsDeleteDialogOpen(open)
   }
 
   const filteredAppointments = useMemo(() => {
@@ -537,7 +549,7 @@ export function AppointmentsTable() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={handleDeleteDialogClose}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Appointment</DialogTitle>
@@ -546,7 +558,7 @@ export function AppointmentsTable() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isUpdating}>
+            <Button variant="outline" onClick={() => handleDeleteDialogClose(false)} disabled={isUpdating}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isUpdating}>

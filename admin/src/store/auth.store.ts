@@ -57,7 +57,7 @@ export const useAuthStore = create<AuthStore>()(
           const userStr = localStorage.getItem(STORAGE_KEYS.user);
 
           if (token && userStr) {
-            // Token exists and user data exists
+            // Token exists and user data exists - verify with server
             try {
               const userData = await authService.getCurrentUser();
               set({
@@ -66,15 +66,28 @@ export const useAuthStore = create<AuthStore>()(
                 isAuthenticated: true,
                 isInitialized: true,
               });
-            } catch (error) {
-              // If fetching user fails, use cached user data
-              const user = JSON.parse(userStr);
-              set({
-                user,
-                accessToken: token,
-                isAuthenticated: true,
-                isInitialized: true,
-              });
+            } catch (error: any) {
+              // If fetching user fails with 401, token is invalid - clear auth state
+              if (error.response?.status === 401) {
+                localStorage.removeItem(STORAGE_KEYS.accessToken);
+                localStorage.removeItem(STORAGE_KEYS.user);
+                localStorage.removeItem('auth-storage');
+                set({
+                  user: null,
+                  accessToken: null,
+                  isAuthenticated: false,
+                  isInitialized: true,
+                });
+              } else {
+                // For other errors (network issues), use cached user data temporarily
+                const user = JSON.parse(userStr);
+                set({
+                  user,
+                  accessToken: token,
+                  isAuthenticated: true,
+                  isInitialized: true,
+                });
+              }
             }
           } else {
             // No token or user data, user not authenticated
@@ -169,6 +182,8 @@ export const useAuthStore = create<AuthStore>()(
           // Clear localStorage
           localStorage.removeItem(STORAGE_KEYS.accessToken);
           localStorage.removeItem(STORAGE_KEYS.user);
+          // Also clear the Zustand persisted auth state
+          localStorage.removeItem('auth-storage');
 
           // Reset state
           set({
@@ -207,7 +222,8 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
-        isInitialized: state.isInitialized,
+        // Don't persist isInitialized - it should always start as false
+        // and be set to true after initialization check on each page load
       }),
     }
   )

@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Calendar, Sparkles, Heart, Shield } from "lucide-react"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { ArrowRight, Calendar, Heart, Shield, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export function CTABanner() {
   return (
@@ -20,7 +20,7 @@ export function CTABanner() {
           <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
-          
+
           {/* Floating elements */}
           <motion.div
             animate={{ y: [-10, 10, -10] }}
@@ -44,7 +44,12 @@ export function CTABanner() {
 
           <motion.div
             animate={{ y: [-8, 8, -8] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5,
+            }}
             className="absolute top-1/2 right-32 hidden xl:block"
           >
             <div className="w-14 h-14 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center shadow-lg">
@@ -83,8 +88,9 @@ export function CTABanner() {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="text-lg md:text-xl lg:text-2xl text-white/80 max-w-3xl mx-auto mb-10 leading-relaxed"
             >
-              Join thousands of patients who trust us for their homeopathic healthcare needs. 
-              Book your appointment today and experience the difference.
+              Join thousands of patients who trust us for their homeopathic
+              healthcare needs. Book your appointment today and experience the
+              difference.
             </motion.p>
 
             <motion.div
@@ -108,7 +114,7 @@ export function CTABanner() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 rounded-full px-10 py-7 text-lg font-semibold backdrop-blur-sm"
+                  className="w-full sm:w-auto rounded-full px-10 py-7 text-base font-semibold border-white/30 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-300"
                 >
                   Browse Products
                 </Button>
@@ -132,7 +138,9 @@ export function CTABanner() {
                   <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
                     {stat.value}
                   </div>
-                  <div className="text-sm md:text-base text-white/70 mt-2">{stat.label}</div>
+                  <div className="text-sm md:text-base text-white/70 mt-2">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </motion.div>
@@ -140,5 +148,5 @@ export function CTABanner() {
         </div>
       </motion.div>
     </section>
-  )
+  );
 }
