@@ -57,8 +57,10 @@ const adminAnalyticsRoutes = require("./routes/adminRoutes/analyticsRoutes.js");
 const adminPaymentRoutes = require("./routes/adminRoutes/paymentRoutes.js");
 const adminSiteSettingsRoutes = require("./routes/adminRoutes/siteSettingsRoutes.js");
 const adminBlogRoutes = require("./routes/adminRoutes/blogRoutes.js");
+const adminFeedbackRoutes = require("./routes/adminRoutes/feedbackRoutes.js");
 const siteSettingsRoutes = require("./routes/siteSettingsRoutes.js");
 const blogRoutes = require("./routes/blogRoutes.js");
+const feedbackRoutes = require("./routes/feedbackRoutes.js");
 
 // Swagger Documentation Route
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
@@ -115,8 +117,10 @@ app.use("/api/admin/analytics", adminAnalyticsRoutes);
 app.use("/api/admin/payments", adminPaymentRoutes);
 app.use("/api/admin/site-settings", adminSiteSettingsRoutes);
 app.use("/api/admin/blogs", adminBlogRoutes);
+app.use("/api/admin/feedbacks", adminFeedbackRoutes);
 app.use("/api/site-settings", siteSettingsRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/feedbacks", feedbackRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

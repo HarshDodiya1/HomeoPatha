@@ -15,10 +15,10 @@ export function CTABanner() {
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="mx-auto max-w-7xl"
       >
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary via-primary to-accent p-10 md:p-16 lg:p-20">
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-800 via-primary to-emerald-700 p-10 md:p-16 lg:p-20">
           {/* Background decorations */}
           <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
 
           {/* Floating elements */}

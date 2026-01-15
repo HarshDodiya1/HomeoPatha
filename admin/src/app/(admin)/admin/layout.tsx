@@ -44,7 +44,8 @@ import {
   FolderHeart, 
   Settings,
   ChevronDown,
-  FileText
+  FileText,
+  MessageSquareQuote
 } from "lucide-react"
 import type * as React from "react"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -62,6 +63,7 @@ const mainRoutes = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/blogs", label: "Blogs", icon: FileText },
+  { href: "/admin/feedbacks", label: "Testimonials", icon: MessageSquareQuote },
 ]
 
 // Settings & management routes
@@ -88,6 +90,7 @@ function usePageTitle(pathname: string) {
     contacts: "Contacts",
     profile: "Profile",
     blogs: "Blogs",
+    feedbacks: "Testimonials",
   }
   if (parts[1] in map) {
     if (parts[2] === "new") return `Add ${map[parts[1]].slice(0, -1)}`
