@@ -179,7 +179,7 @@ export default function BlogDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              className="rounded-full border-border/50 hover:bg-primary/10 hover:border-primary/30"
+              className="rounded-full border-border/50 hover:bg-primary/90 hover:border-primary/30"
               onClick={() => router.back()}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -192,7 +192,7 @@ export default function BlogDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-full border-border/50 hover:bg-primary/10 hover:border-primary/30"
+                  className="rounded-full border-border/50 hover:bg-primary/90 hover:border-primary/30"
                 >
                   <Share2 className="h-4 w-4 mr-2" />
                   Share
@@ -219,7 +219,7 @@ export default function BlogDetailPage() {
                   <Facebook className="h-4 w-4 mr-2" />
                   Share on Facebook
                 </DropdownMenuItem>
-                {typeof navigator !== 'undefined' && navigator.share && (
+                {typeof navigator !== 'undefined' && 'share' in navigator && (
                   <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer rounded-lg">
                     <Share2 className="h-4 w-4 mr-2" />
                     More Options
@@ -247,7 +247,7 @@ export default function BlogDetailPage() {
                   className="object-cover"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-background/60 via-transparent to-transparent" />
               </div>
             )}
 
@@ -277,7 +277,7 @@ export default function BlogDetailPage() {
               {/* Author */}
               {blog.author && (
                 <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden bg-linear-to-br from-primary/20 to-accent/20">
                     {blog.author.images?.[0] ? (
                       <Image
                         src={blog.author.images[0]}
@@ -409,14 +409,14 @@ export default function BlogDetailPage() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="mt-10 text-center"
             >
-              <div className="p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/10">
+              <div className="p-8 rounded-3xl bg-linear-to-br from-primary/10 to-accent/10 border border-primary/10">
                 <h3 className="text-xl font-bold mb-2">Interested in Natural Healing?</h3>
                 <p className="text-muted-foreground mb-6">
                   Book a consultation with our expert homeopathic practitioners today.
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
                   <Link href="/appointments">
-                    <Button className="rounded-full bg-gradient-to-r from-primary to-accent hover:opacity-90">
+                    <Button className="rounded-full bg-linear-to-r from-primary to-accent hover:opacity-90">
                       Book Appointment
                     </Button>
                   </Link>
