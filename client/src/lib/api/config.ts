@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
   blogs: {
     list: '/api/blogs',
     detail: (id: string) => `/api/blogs/${id}`,
+    bySlug: (slug: string) => `/api/blogs/slug/${slug}`,
     featured: '/api/blogs/featured',
     tags: '/api/blogs/tags',
   },

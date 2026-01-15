@@ -40,6 +40,16 @@ export const blogService = {
   },
 
   /**
+   * Get a single blog by slug
+   */
+  async getBlogBySlug(slug: string): Promise<BlogResponse> {
+    const response = await apiClient.get<BlogResponse>(
+      API_ENDPOINTS.blogs.bySlug(slug)
+    );
+    return response.data;
+  },
+
+  /**
    * Get featured/recent blogs
    */
   async getFeaturedBlogs(limit: number = 5): Promise<FeaturedBlogsResponse> {

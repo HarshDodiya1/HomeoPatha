@@ -25,6 +25,7 @@ export interface BlogAuthor {
 export interface Blog {
   _id: string;
   title: string;
+  slug: string;
   summary: string;
   content: string;
   coverImage: string;

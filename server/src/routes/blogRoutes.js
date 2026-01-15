@@ -5,6 +5,7 @@ const {
   getBlogById,
   getAllTags,
   getFeaturedBlogs,
+  getBlogBySlug,
 } = require("../controllers/blogController.js");
 
 /**
@@ -144,6 +145,43 @@ router.get("/tags", getAllTags);
  *         description: Server error
  */
 router.get("/featured", getFeaturedBlogs);
+
+/**
+ * @swagger
+ * /api/blogs/slug/{slug}:
+ *   get:
+ *     summary: Get blog by slug
+ *     description: Retrieve a single published blog by its URL-friendly slug
+ *     tags:
+ *       - Blogs
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Blog slug (URL-friendly title)
+ *     responses:
+ *       200:
+ *         description: Blog retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     blog:
+ *                       type: object
+ *       404:
+ *         description: Blog not found or not published
+ *       500:
+ *         description: Server error
+ */
+router.get("/slug/:slug", getBlogBySlug);
 
 /**
  * @swagger

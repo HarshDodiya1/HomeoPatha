@@ -2,15 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { doctorService } from "@/lib/services/doctor.service";
 import { blogService } from "@/lib/services/blog.service";
-import { Doctor } from "@/types/doctor";
 import { Blog } from "@/types/blog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Star, 
   User, 
   Heart, 
   Award, 
@@ -24,10 +21,10 @@ import {
   Leaf,
   ArrowRight,
   Shield,
-  Stethoscope,
   Loader2,
   BookOpen,
-  Calendar
+  Calendar,
+  Tag
 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -54,106 +51,43 @@ const itemVariants = {
 };
 
 export default function AboutPage() {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [featuredBlog, setFeaturedBlog] = useState<Blog | null>(null);
-  const [isBlogLoading, setIsBlogLoading] = useState(true);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [isBlogsLoading, setIsBlogsLoading] = useState(true);
 
   useEffect(() => {
-    fetchDoctors();
-    fetchFeaturedBlog();
+    fetchBlogs();
   }, []);
 
-  const fetchDoctors = async () => {
-    setIsLoading(true);
+  const fetchBlogs = async () => {
+    setIsBlogsLoading(true);
     try {
-      const response = await doctorService.getAllDoctors({
-        page: 1,
-        limit: 50,
-      });
-      setDoctors(response.data.doctors);
+      const response = await blogService.getBlogs({ limit: 6, sortBy: 'publishedAt', sortOrder: 'desc' });
+      setBlogs(response.data.blogs);
     } catch (error) {
-      console.error("Failed to fetch doctors:", error);
-      toast.error("Failed to load team members");
+      console.error("Failed to fetch blogs:", error);
+      toast.error("Failed to load blog posts");
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchFeaturedBlog = async () => {
-    setIsBlogLoading(true);
-    try {
-      // First get the latest featured blog (without content)
-      const response = await blogService.getFeaturedBlogs(1);
-      if (response.data.blogs && response.data.blogs.length > 0) {
-        const blogId = response.data.blogs[0]._id;
-        // Then fetch full blog with content
-        const fullBlogResponse = await blogService.getBlogById(blogId);
-        setFeaturedBlog(fullBlogResponse.data.blog);
-      }
-    } catch (error) {
-      console.error("Failed to fetch featured blog:", error);
-      // Silently fail - blog section will just not show
-    } finally {
-      setIsBlogLoading(false);
+      setIsBlogsLoading(false);
     }
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
   };
 
-  // Format plain text content to HTML
-  const formatBlogContent = (content: string) => {
-    if (!content) return '';
-    
-    // Split content by double newlines to get paragraphs
-    const paragraphs = content.split(/\n\n+/);
-    
-    return paragraphs.map(paragraph => {
-      // Check if this paragraph is a numbered list (lines starting with numbers followed by dot)
-      const lines = paragraph.split('\n');
-      const isNumberedList = lines.every(line => /^\d+\.?\s/.test(line.trim()) || line.trim() === '');
-      
-      if (isNumberedList && lines.length > 1) {
-        const listItems = lines
-          .filter(line => line.trim())
-          .map(line => {
-            // Remove the number prefix and format as list item
-            const text = line.replace(/^\d+\.?\s*/, '').trim();
-            return `<li class="mb-2">${text}</li>`;
-          })
-          .join('');
-        return `<ol class="list-decimal list-inside space-y-1 mb-6 text-muted-foreground">${listItems}</ol>`;
-      }
-      
-      // Check if this is a bulleted list (lines starting with - or *)
-      const isBulletList = lines.every(line => /^[-*•]\s/.test(line.trim()) || line.trim() === '');
-      
-      if (isBulletList && lines.length > 1) {
-        const listItems = lines
-          .filter(line => line.trim())
-          .map(line => {
-            const text = line.replace(/^[-*•]\s*/, '').trim();
-            return `<li class="mb-2">${text}</li>`;
-          })
-          .join('');
-        return `<ul class="list-disc list-inside space-y-1 mb-6 text-muted-foreground">${listItems}</ul>`;
-      }
-      
-      // Regular paragraph - convert single newlines to <br>
-      const formattedParagraph = paragraph
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line)
-        .join('<br />');
-      
-      return `<p class="mb-6 text-muted-foreground leading-relaxed text-base md:text-lg">${formattedParagraph}</p>`;
-    }).join('');
+  // Helper function to generate slug from title (fallback if slug not present)
+  const getSlug = (blog: Blog) => {
+    if (blog.slug) return blog.slug;
+    return blog.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
   };
 
   const values = [
@@ -256,9 +190,9 @@ export default function AboutPage() {
         </section>
 
         {/* Featured Blog Section - Full Content */}
-        {!isBlogLoading && featuredBlog && (
+        {!isBlogsLoading && blogs.length > 0 && (
           <section className="py-16 px-4 md:px-8 lg:px-12">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-7xl mx-auto">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -271,107 +205,123 @@ export default function AboutPage() {
                   Latest Insights
                 </Badge>
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">From Our Blog</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  Explore our latest articles on homeopathy, natural healing, and holistic wellness.
+                </p>
               </motion.div>
 
-              <motion.article
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
                 viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="relative"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 to-accent/10 rounded-[36px] blur-xl opacity-30" />
-                <Card className="relative overflow-hidden rounded-3xl border-border/50">
-                  {/* Cover Image */}
-                  {featuredBlog.coverImage && (
-                    <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden">
-                      <Image
-                        src={featuredBlog.coverImage}
-                        alt={featuredBlog.title}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-                    </div>
-                  )}
+                {blogs.map((blog) => (
+                  <motion.div key={blog._id} variants={itemVariants}>
+                    <Link href={`/blogs/${getSlug(blog)}`}>
+                      <Card className="h-full overflow-hidden rounded-3xl border-border/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group cursor-pointer">
+                        {/* Cover Image */}
+                        <div className="relative h-48 bg-gradient-to-br from-primary/10 to-accent/10 overflow-hidden">
+                          {blog.coverImage ? (
+                            <Image
+                              src={blog.coverImage}
+                              alt={blog.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <BookOpen className="h-12 w-12 text-primary/30" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                          
+                          {/* Tags overlay */}
+                          {blog.tags && blog.tags.length > 0 && (
+                            <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                              {blog.tags.slice(0, 2).map((tag, index) => (
+                                <Badge 
+                                  key={index} 
+                                  className="bg-white/90 dark:bg-black/70 text-primary border-0 rounded-full text-xs shadow-sm capitalize"
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
 
-                  <CardContent className="p-8 md:p-10 lg:p-12">
-                    {/* Tags */}
-                    {featuredBlog.tags && featuredBlog.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {featuredBlog.tags.map((tag, index) => (
-                          <Badge 
-                            key={index} 
-                            variant="secondary" 
-                            className="rounded-full text-xs capitalize"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+                        <CardContent className="p-5">
+                          {/* Title */}
+                          <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                            {blog.title}
+                          </h3>
 
-                    {/* Title */}
-                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight">
-                      {featuredBlog.title}
-                    </h3>
+                          {/* Summary */}
+                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                            {blog.summary}
+                          </p>
 
-                    {/* Author & Date */}
-                    <div className="flex flex-wrap items-center gap-4 mb-8 pb-8 border-b border-border/50">
-                      {featuredBlog.author && (
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-12 h-12 rounded-full overflow-hidden bg-primary/10">
-                            {featuredBlog.author.images?.[0] ? (
-                              <Image
-                                src={featuredBlog.author.images[0]}
-                                alt={featuredBlog.author.userId?.fullName || "Author"}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <User className="h-6 w-6 text-primary/40" />
+                          {/* Author & Date */}
+                          <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                            {blog.author && (
+                              <div className="flex items-center gap-2">
+                                <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
+                                  {blog.author.images?.[0] ? (
+                                    <Image
+                                      src={blog.author.images[0]}
+                                      alt={blog.author.userId?.fullName || "Author"}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <User className="h-4 w-4 text-primary/40" />
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="text-xs font-medium truncate max-w-[100px]">
+                                  {blog.author.userId?.fullName || "Unknown"}
+                                </span>
                               </div>
                             )}
+                            
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              <span>{formatDate(blog.publishedAt || blog.createdAt)}</span>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold">
-                              {featuredBlog.author.userId?.fullName || "Unknown"}
-                            </p>
-                            {featuredBlog.author.qualification && (
-                              <p className="text-sm text-muted-foreground">
-                                {featuredBlog.author.qualification}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground md:ml-auto">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {formatDate(featuredBlog.publishedAt || featuredBlog.createdAt)}
-                        </span>
-                      </div>
-                    </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+          </section>
+        )}
 
-                    {/* Full Blog Content */}
-                    {featuredBlog.content && (
-                      <div 
-                        className="blog-content"
-                        dangerouslySetInnerHTML={{ __html: formatBlogContent(featuredBlog.content) }}
-                      />
-                    )}
-
-                    {/* Show summary if no content */}
-                    {!featuredBlog.content && featuredBlog.summary && (
-                      <p className="text-lg text-muted-foreground leading-relaxed">
-                        {featuredBlog.summary}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.article>
+        {/* Loading state for blogs */}
+        {isBlogsLoading && (
+          <section className="py-16 px-4 md:px-8 lg:px-12">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-10">
+                <div className="h-6 w-32 bg-muted rounded-full mx-auto mb-4 animate-pulse" />
+                <div className="h-10 w-64 bg-muted rounded mx-auto mb-4 animate-pulse" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="overflow-hidden rounded-3xl animate-pulse">
+                    <div className="h-48 bg-muted" />
+                    <CardContent className="p-5">
+                      <div className="h-6 bg-muted rounded mb-2" />
+                      <div className="h-4 bg-muted rounded mb-4" />
+                      <div className="h-4 bg-muted rounded w-1/2" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </section>
         )}
@@ -554,111 +504,6 @@ export default function AboutPage() {
                 </motion.div>
               ))}
             </motion.div>
-          </div>
-        </section>
-
-        {/* Our Team Section */}
-        <section className="py-20 px-4 md:px-8 lg:px-12">
-          <div className="max-w-7xl mx-auto">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="text-center mb-14"
-            >
-              <Badge className="mb-4 bg-primary/10 text-primary border-0 rounded-full px-3 py-1">
-                <Stethoscope className="h-3 w-3 mr-1.5" />
-                Expert Practitioners
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet Our Team</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Our experienced homeopathic practitioners are dedicated to your well-being and committed to providing the highest quality care.
-              </p>
-            </motion.div>
-
-            {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="relative">
-                  <div className="absolute inset-0 animate-ping opacity-30">
-                    <Loader2 className="h-10 w-10 text-primary" />
-                  </div>
-                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                </div>
-              </div>
-            ) : doctors.length === 0 ? (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-16"
-              >
-                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-10 w-10 text-primary/60" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Our team is growing</h3>
-                <p className="text-muted-foreground">
-                  Check back soon to meet our practitioners
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div 
-                variants={containerVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-              >
-                {doctors.map((doctor) => (
-                  <motion.div key={doctor._id} variants={itemVariants}>
-                    <Card className="overflow-hidden rounded-3xl border-border/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group h-full">
-                      <div className="relative h-56 bg-gradient-to-br from-primary/10 to-accent/10 overflow-hidden">
-                        {doctor.images && doctor.images[0] ? (
-                          <Image
-                            src={doctor.images[0]}
-                            alt={doctor.userId.fullName}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                              <User className="h-10 w-10 text-primary/40" />
-                            </div>
-                          </div>
-                        )}
-                        <div className="absolute top-3 right-3">
-                          <Badge className="bg-white/90 dark:bg-black/70 text-primary border-0 rounded-full shadow-lg">
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-                            {doctor.rating.toFixed(1)}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <CardContent className="p-5">
-                        <h3 className="font-bold text-lg mb-1">
-                          {doctor.userId.fullName}
-                        </h3>
-                        <p className="text-sm font-medium text-primary mb-2">
-                          {doctor.specialization}
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          {doctor.qualification}
-                        </p>
-                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
-                          <Badge variant="secondary" className="rounded-full text-xs">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {doctor.experience} yrs exp
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            ({doctor.totalRatings} reviews)
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
           </div>
         </section>
 

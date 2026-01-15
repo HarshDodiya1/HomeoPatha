@@ -240,9 +240,59 @@ const getFeaturedBlogs = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Get a single blog by slug
+ * @route   GET /api/blogs/slug/:slug
+ * @access  Public
+ */
+const getBlogBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const blog = await Blog.findOne({ slug, published: true })
+      .populate({
+        path: "author",
+        select: "userId qualification specialization images experience about",
+        populate: [
+          {
+            path: "userId",
+            select: "fullName email",
+          },
+        ],
+      })
+      .lean();
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+        code: "BLOG_NOT_FOUND",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Blog retrieved successfully",
+      code: "BLOG_RETRIEVED",
+      data: {
+        blog,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching blog by slug:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve blog",
+      code: "SERVER_ERROR",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getPublishedBlogs,
   getBlogById,
   getAllTags,
   getFeaturedBlogs,
+  getBlogBySlug,
 };

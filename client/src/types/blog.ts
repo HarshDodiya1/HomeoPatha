@@ -21,6 +21,7 @@ export interface BlogAuthor {
 export interface Blog {
   _id: string;
   title: string;
+  slug: string;
   summary: string;
   content?: string; // Only included in single blog detail
   coverImage: string;
