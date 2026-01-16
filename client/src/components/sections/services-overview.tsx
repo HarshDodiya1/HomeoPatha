@@ -8,8 +8,8 @@ import {
   ShieldCheck,
   UserSearch,
   Stethoscope,
-  ArrowRight
 } from "lucide-react"
+import SquigglyArrow from "@/components/ui/squiggle-arrow"
 
 const trustItems = [
   {
@@ -92,7 +92,7 @@ export function ServicesOverview() {
   return (
     <section className="py-20 md:py-28 relative overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-secondary/30 via-background to-secondary/50" />
+      <div className="absolute inset-0 bg-linear-to-br from-secondary/30 via-background to-secondary/50" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(37,99,235,0.05),transparent_40%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.05),transparent_40%)]" />
 
@@ -110,7 +110,7 @@ export function ServicesOverview() {
             Your Health Journey
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Why Trust <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">HomeoPatha</span>
+            Why Trust <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-accent">HomeoPatha</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Experience seamless healthcare with our trusted platform — from booking to treatment.
@@ -135,11 +135,11 @@ export function ServicesOverview() {
               >
                 <div className="relative h-full bg-white dark:bg-card rounded-2xl p-6 border border-border/50 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
                   {/* Gradient accent bar */}
-                  <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${item.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                  <div className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-r ${item.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                   
                   {/* Icon */}
                   <div className="mb-4">
-                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} text-white shadow-lg shadow-primary/10 group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-linear-to-br ${item.gradient} text-white shadow-lg shadow-primary/10 group-hover:scale-110 transition-transform duration-300`}>
                       <item.icon className="w-6 h-6" />
                     </div>
                   </div>
@@ -153,7 +153,7 @@ export function ServicesOverview() {
                   </p>
 
                   {/* Decorative corner */}
-                  <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-primary/5 to-transparent rounded-tl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 right-0 w-16 h-16 bg-linear-to-tl from-primary/5 to-transparent rounded-tl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
               </motion.div>
             ))}
@@ -179,30 +179,15 @@ export function ServicesOverview() {
 
             {/* Circular Flow Container */}
             <div className="relative">
-              {/* Central Circle with rotating border */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-48 h-48 md:w-56 md:h-56 rounded-full border-2 border-dashed border-primary/20 animate-[spin_30s_linear_infinite]" />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-primary/10" />
-              </div>
-
-              {/* Center Icon */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl shadow-primary/30">
-                  <Stethoscope className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                </div>
-              </div>
-
               {/* Steps positioned around the circle */}
               <div className="relative h-80 md:h-96">
                 {steps.map((step, index) => {
                   // Position each step at corners of a square around the center
                   const positions = [
-                    "top-0 left-1/2 -translate-x-1/2", // Top center
-                    "top-1/2 right-0 -translate-y-1/2", // Right center
-                    "bottom-0 left-1/2 -translate-x-1/2", // Bottom center
-                    "top-1/2 left-0 -translate-y-1/2", // Left center
+                    "top-0 left-1/2 -translate-x-1/2", // Top center (Step 1)
+                    "top-1/2 right-0 -translate-y-1/2", // Right center (Step 2)
+                    "bottom-0 left-1/2 -translate-x-1/2", // Bottom center (Step 3)
+                    "top-1/2 left-0 -translate-y-1/2", // Left center (Step 4)
                   ]
 
                   return (
@@ -214,9 +199,9 @@ export function ServicesOverview() {
                       transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
                       className={`absolute ${positions[index]} group`}
                     >
-                      <div className="relative flex flex-col items-center text-center max-w-[140px]">
+                      <div className="relative flex flex-col items-center text-center max-w-35">
                         {/* Step Number Badge */}
-                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center z-10 shadow-lg">
+                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-linear-to-br from-primary to-accent text-white text-xs font-bold flex items-center justify-center z-10 shadow-lg">
                           {index + 1}
                         </div>
 
@@ -233,24 +218,82 @@ export function ServicesOverview() {
                           {step.description}
                         </p>
                       </div>
-
-                      {/* Connector Arrow (except last step) */}
-                      {index < steps.length - 1 && (
-                        <div className="absolute hidden lg:flex">
-                          {index === 0 && (
-                            <ArrowRight className="w-4 h-4 text-primary/40 absolute top-6 -right-12 rotate-45" />
-                          )}
-                          {index === 1 && (
-                            <ArrowRight className="w-4 h-4 text-primary/40 absolute -bottom-12 left-6 rotate-45" />
-                          )}
-                          {index === 2 && (
-                            <ArrowRight className="w-4 h-4 text-primary/40 absolute top-6 -left-12 rotate-[225deg]" />
-                          )}
-                        </div>
-                      )}
                     </motion.div>
                   )
                 })}
+
+                {/* Squiggly Arrows connecting steps */}
+                {/* Arrow from Step 1 (top) to Step 2 (right) */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="absolute top-[15%] right-[10%] hidden md:block"
+                >
+                  <SquigglyArrow 
+                    width={120} 
+                    height={60} 
+                    strokeWidth={3.5}
+                    variant="smooth"
+                    direction="down"
+                    className="text-orange-500 -rotate-45"
+                  />
+                </motion.div>
+
+                {/* Arrow from Step 2 (right) to Step 3 (bottom) */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  className="absolute bottom-[15%] right-[10%] hidden md:block"
+                >
+                  <SquigglyArrow 
+                    width={120} 
+                    height={60} 
+                    strokeWidth={3.5}
+                    variant="smooth"
+                    direction="down"
+                    className="text-teal-500 rotate-45"
+                  />
+                </motion.div>
+
+                {/* Arrow from Step 3 (bottom) to Step 4 (left) */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  className="absolute bottom-[15%] left-[10%] hidden md:block"
+                >
+                  <SquigglyArrow 
+                    width={120} 
+                    height={60} 
+                    strokeWidth={3.5}
+                    variant="smooth"
+                    direction="down"
+                    className="text-purple-500 rotate-135"
+                  />
+                </motion.div>
+
+                {/* Arrow from Step 4 (left) completing the circle (optional - shows cycle) */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.9 }}
+                  className="absolute top-[15%] left-[10%] hidden md:block"
+                >
+                  <SquigglyArrow 
+                    width={120} 
+                    height={60} 
+                    strokeWidth={3.5}
+                    variant="smooth"
+                    direction="down"
+                    className="text-pink-500 rotate-[-135deg]"
+                  />
+                </motion.div>
               </div>
             </div>
           </motion.div>

@@ -135,7 +135,7 @@ export function Testimonials() {
                     transition={{ delay: index * 0.1, duration: 0.5 }}
                     className="flex-[0_0_90%] sm:flex-[0_0_45%] lg:flex-[0_0_33.333%] pl-4 md:pl-6"
                   >
-                    <div className="group h-full bg-gradient-to-b from-secondary/50 to-secondary/20 rounded-3xl p-6 md:p-8 border border-border/50 hover:shadow-lg hover:border-primary/20 transition-all duration-300">
+                    <div className="group h-full bg-linear-to-b from-secondary/50 to-secondary/20 rounded-3xl p-6 md:p-8 border border-border/50 hover:shadow-lg hover:border-primary/20 transition-all duration-300">
                       {/* Quote Icon */}
                       <div className="mb-6">
                         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 text-primary">
@@ -160,13 +160,13 @@ export function Testimonials() {
                       </div>
 
                       {/* Quote */}
-                      <p className="text-foreground leading-relaxed mb-6 min-h-[100px] line-clamp-4">
+                      <p className="text-foreground leading-relaxed mb-6 min-h-25 line-clamp-4">
                         "{feedback.quote}"
                       </p>
 
                       {/* Author */}
                       <div className="flex items-center gap-4 pt-4 border-t border-border/50">
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-md">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-linear-to-br from-primary to-primary/70 flex items-center justify-center shadow-md">
                           <span className="text-white font-bold text-lg drop-shadow-sm">
                             {getUserInitials(feedback.userName)}
                           </span>
@@ -207,7 +207,7 @@ export function Testimonials() {
                                   : `https://instagram.com/${feedback.socialLinks.instagram.replace('@', '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 rounded-lg bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white hover:opacity-90 hover:scale-110 transition-all duration-200 shadow-sm"
+                                className="p-2 rounded-lg bg-linear-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white hover:opacity-90 hover:scale-110 transition-all duration-200 shadow-sm"
                                 aria-label="Instagram"
                               >
                                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
