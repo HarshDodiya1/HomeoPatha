@@ -32,11 +32,11 @@ export function PromoBanner() {
 
   return (
     <StickyBanner 
-      className="bg-gradient-to-r from-primary via-primary/90 to-accent text-white"
+      className="bg-linear-to-r from-primary via-primary/90 to-accent text-white"
       hideOnScroll={true}
     >
       <div className="flex items-center justify-center gap-3 text-sm font-medium">
-        <Sparkles className="h-4 w-4 flex-shrink-0" />
+        <Sparkles className="h-4 w-4 shrink-0" />
         <span>{banner?.heading}</span>
         {banner?.linkText && banner?.linkUrl && (
           <>

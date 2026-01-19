@@ -218,7 +218,7 @@ export function LogoLoader({ onComplete, duration = 3000 }: LogoLoaderProps) {
           variants={containerVariants}
           initial="initial"
           exit="exit"
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
+          className="fixed inset-0 z-100 flex flex-col items-center justify-center overflow-hidden"
           style={{
             background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 30%, #bbf7d0 60%, #f0fdf4 100%)",
           }}
@@ -248,13 +248,13 @@ export function LogoLoader({ onComplete, duration = 3000 }: LogoLoaderProps) {
 
           {/* Decorative circles in background */}
           <motion.div
-            className="absolute w-[600px] h-[600px] rounded-full border border-green-200/30"
+            className="absolute w-150 h-150 rounded-full border border-green-200/30"
             style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
             animate={{ rotate: 360 }}
             transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
           />
           <motion.div
-            className="absolute w-[500px] h-[500px] rounded-full border border-green-300/20"
+            className="absolute w-125 h-125 rounded-full border border-green-300/20"
             style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
             animate={{ rotate: -360 }}
             transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
@@ -284,30 +284,6 @@ export function LogoLoader({ onComplete, duration = 3000 }: LogoLoaderProps) {
                   marginLeft: "-90px",
                 }}
               >
-                {/* Background circle */}
-                <circle
-                  cx="90"
-                  cy="90"
-                  r="58"
-                  fill="none"
-                  stroke="rgba(34, 197, 94, 0.15)"
-                  strokeWidth="4"
-                />
-                {/* Progress circle */}
-                <motion.circle
-                  cx="90"
-                  cy="90"
-                  r="58"
-                  fill="none"
-                  stroke="url(#progressGradient)"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  style={{
-                    transition: "stroke-dashoffset 0.1s ease-out",
-                  }}
-                />
                 {/* Progress end dot */}
                 <defs>
                   <linearGradient

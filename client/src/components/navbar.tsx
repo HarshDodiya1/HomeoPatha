@@ -97,7 +97,7 @@ const MagneticLink = ({ href, children, isActive, onClick }: MagneticLinkProps) 
           />
         )}
         <motion.div
-          className="absolute bottom-0 left-1/2 h-0.5 bg-gradient-to-r from-green-500 to-green-600 rounded-full"
+          className="absolute bottom-0 left-1/2 h-0.5 bg-linear-to-r from-green-500 to-green-600 rounded-full"
           initial={{ width: 0, x: "-50%" }}
           whileHover={{ width: "60%", x: "-50%" }}
           transition={{ duration: 0.3 }}
@@ -121,9 +121,9 @@ const ShimmerButton = ({ children, onClick, className }: ShimmerButtonProps) => 
       onClick={onClick}
       className={cn(
         "relative overflow-hidden px-7 py-3 rounded-full text-base font-bold text-white",
-        "bg-gradient-to-r from-green-600 via-green-500 to-green-600 bg-[length:200%_100%]",
+        "bg-linear-to-r from-green-600 via-green-500 to-green-600 bg-size-[200%_100%]",
         "shadow-lg shadow-green-500/30",
-        "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
+        "before:absolute before:inset-0 before:bg-linear-to-r before:from-transparent before:via-white/20 before:to-transparent",
         "before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700",
         className
       )}
@@ -350,7 +350,7 @@ export function Navbar() {
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white text-xs flex items-center justify-center font-semibold shadow-lg shadow-green-500/30"
+                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-linear-to-r from-green-500 to-green-600 text-white text-xs flex items-center justify-center font-semibold shadow-lg shadow-green-500/30"
                     >
                       {getItemCount()}
                     </motion.span>
@@ -365,10 +365,10 @@ export function Navbar() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-inner">
+                      <div className="w-9 h-9 rounded-full bg-linear-to-br from-green-400 to-green-600 flex items-center justify-center shadow-inner">
                         <User className="h-5 w-5 text-white" />
                       </div>
-                      <span className="font-semibold text-base text-green-800 max-w-[100px] truncate">
+                      <span className="font-semibold text-base text-green-800 max-w-25 truncate">
                         {user.fullName}
                       </span>
                     </motion.button>
@@ -598,7 +598,7 @@ export function Navbar() {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-6 py-3 rounded-full bg-white/80 shadow-lg"
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-green-400 to-green-600 flex items-center justify-center">
                         <User className="h-5 w-5 text-white" />
                       </div>
                       <div className="text-left">
