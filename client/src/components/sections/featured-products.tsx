@@ -86,7 +86,7 @@ export function FeaturedProducts() {
               Shop Essentials
             </motion.span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3">
-              Medical <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">Products</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">Products</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-xl">
               Quality homeopathy medicines and health products delivered to your doorstep.
