@@ -8,8 +8,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Phone number validation regex (supports international formats)
 const PHONE_REGEX = /^[0-9]{7,15}$/;
 
-// Password validation: minimum 8 characters, at least one uppercase, one lowercase, one number
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+// Password validation: minimum 6 characters
+const MIN_PASSWORD_LENGTH = 8;
 
 // Pincode validation: 5-6 digits
 const PINCODE_REGEX = /^[0-9]{5,6}$/;
@@ -39,9 +39,9 @@ const validateRegistration = (data) => {
   // Password validation
   if (!data.password || typeof data.password !== "string") {
     errors.password = "Password is required and must be a string";
-  } else if (!PASSWORD_REGEX.test(data.password)) {
+  } else if (data.password.length < MIN_PASSWORD_LENGTH) {
     errors.password =
-      "Password must be at least 8 characters and contain uppercase, lowercase, and number";
+      `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`;
   }
 
   // Confirm Password validation
@@ -163,9 +163,9 @@ const validateChangePassword = (data) => {
   // New password validation
   if (!data.newPassword || typeof data.newPassword !== "string") {
     errors.newPassword = "New password is required";
-  } else if (!PASSWORD_REGEX.test(data.newPassword)) {
+  } else if (data.newPassword.length < MIN_PASSWORD_LENGTH) {
     errors.newPassword =
-      "New password must be at least 8 characters and contain uppercase, lowercase, and number";
+      `New password must be at least ${MIN_PASSWORD_LENGTH} characters long`;
   }
 
   // Confirm new password validation
