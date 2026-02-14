@@ -4,23 +4,32 @@ import { motion, AnimatePresence, type Variants } from "framer-motion"
 import Image from "next/image"
 import { useState, useEffect, useCallback, useMemo } from "react"
 
+// Seeded random number generator to produce deterministic values per particle index
+function seededRandom(seed: number) {
+  const x = Math.sin(seed + 1) * 10000
+  return x - Math.floor(x)
+}
+
 // Particle component for floating background effect
 interface ParticleProps {
   index: number
 }
 
 const Particle = ({ index }: ParticleProps) => {
-  // Memoize random values to prevent recalculation on re-renders
-  const particleValues = useMemo(() => ({
-    randomX: Math.random() * 400 - 200,
-    randomY: Math.random() * 400 - 200,
-    randomDelay: Math.random() * 2,
-    randomDuration: 4 + Math.random() * 5,
-    randomSize: 4 + Math.random() * 10,
-    randomOpacity: 0.2 + Math.random() * 0.4,
-    startX: Math.random() * 100,
-    startY: Math.random() * 100,
-  }), [])
+  // Use seeded random values based on index to avoid hydration mismatch
+  const particleValues = useMemo(() => {
+    const r = (offset: number) => seededRandom(index * 8 + offset)
+    return {
+      randomX: r(0) * 400 - 200,
+      randomY: r(1) * 400 - 200,
+      randomDelay: r(2) * 2,
+      randomDuration: 4 + r(3) * 5,
+      randomSize: 4 + r(4) * 10,
+      randomOpacity: 0.2 + r(5) * 0.4,
+      startX: r(6) * 100,
+      startY: r(7) * 100,
+    }
+  }, [index])
 
   return (
     <motion.div

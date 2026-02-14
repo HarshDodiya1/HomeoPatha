@@ -66,16 +66,19 @@ const MagneticLink = ({ href, children, isActive, onClick }: MagneticLinkProps) 
   }, []);
 
   return (
-    <Link href={href} legacyBehavior passHref>
-      <motion.a
-        ref={linkRef}
-        onClick={onClick}
-        className={cn(
-          "relative px-5 py-2.5 text-base font-semibold transition-colors duration-300",
-          isActive 
-            ? "text-green-600 dark:text-green-400" 
-            : "text-gray-800 hover:text-green-600 dark:text-white dark:hover:text-green-400"
-        )}
+    <Link
+      href={href}
+      ref={linkRef as React.Ref<HTMLAnchorElement>}
+      onClick={onClick}
+      className={cn(
+        "relative px-5 py-2.5 text-base font-semibold transition-colors duration-300 inline-block",
+        isActive 
+          ? "text-green-600 dark:text-green-400" 
+          : "text-gray-800 hover:text-green-600 dark:text-white dark:hover:text-green-400"
+      )}
+    >
+      <motion.span
+        className="relative block"
         style={{
           x: position.x,
           y: position.y,
@@ -102,7 +105,7 @@ const MagneticLink = ({ href, children, isActive, onClick }: MagneticLinkProps) 
           whileHover={{ width: "60%", x: "-50%" }}
           transition={{ duration: 0.3 }}
         />
-      </motion.a>
+      </motion.span>
     </Link>
   );
 };

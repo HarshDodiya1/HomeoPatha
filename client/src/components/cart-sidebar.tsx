@@ -104,10 +104,10 @@ export function CartSidebar() {
                     className="flex gap-4 p-4 rounded-2xl border border-border/50 bg-secondary/30 hover:bg-secondary/50 transition-colors"
                   >
                     <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-white flex-shrink-0 border border-border/50">
-                      {item.product.images && item.product.images[0] ? (
+                      {item.product?.images && item.product.images[0] ? (
                         <Image
                           src={item.product.images[0]}
-                          alt={item.product.title}
+                          alt={item.product?.title || "Product"}
                           fill
                           className="object-cover"
                         />
@@ -120,7 +120,7 @@ export function CartSidebar() {
 
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-sm line-clamp-2 mb-1">
-                        {item.product.title}
+                        {item.product?.title || "Product"}
                       </h4>
                       <p className="text-sm text-primary font-semibold mb-3">
                         ₹{item.priceAtTime}
