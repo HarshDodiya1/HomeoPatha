@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { motion, Variants } from "framer-motion"
@@ -88,6 +88,21 @@ function filterSpecializations(
 
 // ─── Component ───────────────────────────────────────────────────────
 export default function AppointmentsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center relative">
+          <div className="fixed inset-0 bg-gradient-to-b from-background via-secondary/10 to-background -z-10" />
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <AppointmentsContent />
+    </Suspense>
+  )
+}
+
+function AppointmentsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isAuthenticated, initialize } = useAuthStore()

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { Loader2, AlertCircle, Mail, Lock, Sparkles, Leaf, ArrowRight } from "lucide-react"
@@ -14,6 +14,21 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center relative">
+          <div className="fixed inset-0 bg-gradient-to-b from-background via-secondary/10 to-background -z-10" />
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
+  )
+}
+
+function LoginContent() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isInitialized, setIsInitialized] = useState(false)
