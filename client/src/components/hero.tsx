@@ -71,7 +71,7 @@ export function Hero() {
   }, [emblaApi, onSelect])
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden">
+    <section className="relative min-h-[72svh] sm:min-h-[78svh] md:min-h-screen w-full overflow-hidden bg-black">
       {/* Full-screen Image Slider */}
       <div
         ref={emblaRef}
@@ -88,7 +88,7 @@ export function Hero() {
                   src={image.imageUrl}
                   alt={image.title || "Hero image"}
                   fill
-                  className="object-cover"
+                  className="object-contain md:object-cover object-center"
                   priority={index === 0}
                   quality={90}
                 />
@@ -96,11 +96,11 @@ export function Hero() {
                 <img
                   src={image.imageUrl}
                   alt={image.title || "Hero image"}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-contain md:object-cover object-center"
                 />
               )}
               {/* Dark overlay for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10 md:bg-gradient-to-r md:from-black/70 md:via-black/50 md:to-black/30" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             </div>
           ))}
@@ -108,8 +108,8 @@ export function Hero() {
       </div>
 
       {/* Content Overlay */}
-      <div className="relative z-10 min-h-screen flex items-center">
-        <div className="mx-auto max-w-7xl w-full px-4 md:px-6 py-24 md:py-32">
+      <div className="relative z-10 min-h-[72svh] sm:min-h-[78svh] md:min-h-screen flex items-center">
+        <div className="mx-auto max-w-7xl w-full px-4 md:px-6 py-16 md:py-32">
           <div className="max-w-2xl">
             {/* Badge */}
             <motion.div

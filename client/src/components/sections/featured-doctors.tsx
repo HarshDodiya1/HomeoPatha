@@ -139,9 +139,9 @@ export function FeaturedDoctors() {
             viewport={{ once: true, margin: "-100px" }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
           >
-            {specializations.map((spec, index) => (
+            {specializations.map((spec) => (
               <motion.div key={spec._id} variants={itemVariants}>
-                <Link href="/appointments" className="block group">
+                <Link href={`/appointments?specializationId=${spec._id}`} className="block group">
                   <div className="relative">
                     {/* Glow effect on hover */}
                     <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-accent/50 rounded-[28px] blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-500" />

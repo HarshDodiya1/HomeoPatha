@@ -61,8 +61,30 @@ export default function AboutPage() {
   const fetchBlogs = async () => {
     setIsBlogsLoading(true);
     try {
-      const response = await blogService.getBlogs({ limit: 6, sortBy: 'publishedAt', sortOrder: 'desc' });
-      setBlogs(response.data.blogs);
+      const allBlogs: Blog[] = [];
+      let page = 1;
+      let hasNextPage = true;
+
+      while (hasNextPage) {
+        const response = await blogService.getBlogs({
+          page,
+          limit: 50,
+          sortBy: 'publishedAt',
+          sortOrder: 'desc',
+        });
+
+        const currentBlogs = response.data.blogs;
+        allBlogs.push(...currentBlogs);
+
+        if (currentBlogs.length === 0) {
+          break;
+        }
+
+        hasNextPage = response.data.pagination.hasNextPage;
+        page += 1;
+      }
+
+      setBlogs(allBlogs);
     } catch (error) {
       console.error("Failed to fetch blogs:", error);
       toast.error("Failed to load blog posts");

@@ -10,7 +10,7 @@ import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { Loader2, AlertCircle, Mail, Lock, Sparkles, Leaf, ArrowRight } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 
 export default function LoginPage() {
@@ -19,7 +19,11 @@ export default function LoginPage() {
   const [isInitialized, setIsInitialized] = useState(false)
   
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login, isLoading, error, isAuthenticated, isInitialized: storeInitialized, initialize } = useAuthStore()
+  const redirectParam = searchParams.get("redirect")
+  const redirectPath =
+    redirectParam && redirectParam.startsWith("/") ? redirectParam : "/"
 
   useEffect(() => {
     initialize()
@@ -33,9 +37,9 @@ export default function LoginPage() {
     setIsInitialized(true)
 
     if (isAuthenticated) {
-      router.push('/')
+      router.push(redirectPath)
     }
-  }, [storeInitialized, isAuthenticated, router])
+  }, [storeInitialized, isAuthenticated, router, redirectPath])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,7 +67,7 @@ export default function LoginPage() {
       })
       
       toast.success("Login successful!")
-      router.push('/')
+      router.push(redirectPath)
     } catch (err: any) {
       console.error('Login error:', err)
     }
