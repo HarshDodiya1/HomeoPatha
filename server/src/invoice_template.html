@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 8mm;
+        }
+
+        @media print {
+            html {
+                background: white !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .document {
+                width: 100%;
+                margin: 0;
+                border: 2px solid #000;
+                background: white !important;
+            }
+        }
+
+        @media screen {
+            body {
+                background: #e0e0e0;
+                padding: 0px;
+            }
+
+            .document {
+                max-width: 100%;
+                min-height: 100vh;
+                margin: 0 auto;
+                background: white;
+                border: 2px solid #000;
+            }
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+        }
+
+        /* Header: Logo and Title */
+        .header-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 2px solid #000;
+            min-height: 100px;
+        }
+
+        .logo-section {
+            padding: 20px;
+            border-right: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+
+        .logo-section img {
+            max-width: 300px;
+            max-height: 240px;
+            object-fit: contain;
+        }
+
+        .logo-placeholder {
+            width: 300px;
+            height: 240px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10pt;
+            color: #999;
+            text-align: center;
+        }
+
+        .title-section {
+            padding: 20px 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: white;
+        }
+
+        .title-section h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #FF0000;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .invoice-details-header {
+            margin-top: 10px;
+        }
+
+        .invoice-details-header .detail-line {
+            font-size: 11pt;
+            margin-bottom: 3px;
+        }
+
+        .invoice-details-header .detail-line strong {
+            min-width: 100px;
+            display: inline-block;
+            font-weight: 700;
+        }
+
+        /* Two/Three Column Info Row */
+        .info-row {
+            display: grid;
+            border-bottom: 2px solid #000;
+        }
+
+        .info-row.two-column {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .info-row.three-column {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .info-column {
+            padding: 18px 25px;
+            background: white;
+            border-right: 2px solid #000;
+        }
+
+        .info-column:last-child {
+            border-right: none;
+        }
+
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #000;
+            text-transform: uppercase;
+        }
+
+        .info-line {
+            margin-bottom: 5px;
+            font-size: 11.5pt;
+        }
+
+        .info-line strong {
+            font-weight: 700;
+            min-width: 70px;
+            display: inline-block;
+        }
+
+        .company-name {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        /* Items Table */
+        .table-section {
+            border-bottom: 2px solid #000;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table thead th {
+            background: #A6A6A6;
+            color: black;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 11.5pt;
+            text-transform: uppercase;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+        }
+
+        .items-table thead th:last-child {
+            border-right: none;
+        }
+
+        .items-table tbody td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+            font-size: 11.5pt;
+            vertical-align: top;
+        }
+
+        .items-table tbody td:last-child {
+            border-right: none;
+        }
+
+        .items-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .item-description {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .item-hsn {
+            font-size: 10.5pt;
+            color: #666;
+        }
+
+        .item-details {
+            font-size: 10.5pt;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            border-bottom: 2px solid #000;
+            background: white;
+        }
+
+        .summary-content {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .summary-table {
+            width: 350px;
+        }
+
+        .summary-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            border-top: 2px solid #000;
+            padding-top: 10px;
+            margin-top: 5px;
+        }
+
+        .summary-label {
+            font-size: 11.5pt;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-size: 11.5pt;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .summary-row:last-child .summary-label,
+        .summary-row:last-child .summary-value {
+            font-size: 13pt;
+            font-weight: bold;
+        }
+
+        /* Amount in Words */
+        .amount-words-row {
+            padding: 15px 25px;
+            border-bottom: 2px solid #000;
+            background: #fffef0;
+        }
+
+        .amount-words-row .label {
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .amount-words-row .value {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* Footer: Bank Info, Stamp, Notes */
+        .footer-row {
+            display: grid;
+            grid-template-columns: 1fr 180px 1fr;
+            min-height: 150px;
+        }
+
+        .bank-section,
+        .stamp-section,
+        .notes-section {
+            padding: 18px;
+        }
+
+        .bank-section {
+            border-right: 2px solid #000;
+            background: white;
+        }
+
+        .stamp-section {
+            border-right: 2px solid #000;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stamp-section img {
+            max-width: 200px;
+            max-height: 160px;
+            object-fit: contain;
+        }
+
+        .stamp-placeholder {
+            width: 140px;
+            height: 80px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9pt;
+            color: #999;
+            text-align: center;
+        }
+
+        .notes-section {
+            background: white;
+        }
+
+        .signature-line {
+            width: 100%;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .signature-line hr {
+            border: none;
+            border-top: 1px solid #000;
+            margin-bottom: 4px;
+        }
+
+        .signature-line .label {
+            font-size: 9pt;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .footer-title {
+            font-size: 11pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: #2c3e50;
+        }
+
+        .footer-content {
+            font-size: 10.5pt;
+            line-height: 1.6;
+        }
+
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .print-button:hover {
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">🖨️ Print Document</button>
+
+    <div class="document">
+        <!-- Header: Logo and Title -->
+        <div class="header-row">
+            <div class="logo-section">
+                <div class="logo-placeholder">
+                    [Company Logo]
+                </div>
+            </div>
+            <div class="title-section">
+                <h1 id="invoiceType">Commercial Invoice</h1>
+                <div class="invoice-details-header">
+                    <div class="detail-line">
+                        <strong>Invoice No:</strong>
+                        <span id="invoiceNumber">INV-02</span>
+                    </div>
+                    <div class="detail-line">
+                        <strong>Invoice Date:</strong>
+                        <span id="invoiceDate">19 October, 2023</span>
+                    </div>
+                    <div class="detail-line">
+                        <strong>Due Date:</strong>
+                        <span id="dueDate">19 October, 2023</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Row: Issuer, Bill To, Consignee (dynamic columns) -->
+        <div class="info-row three-column" id="infoRow">
+            <div class="info-column">
+                <div class="section-title">Issuer</div>
+                <div class="company-name" id="issuerName">Al Manazil plastic waste TR LLC</div>
+                <div class="info-line"><span id="issuerAddress">Sajja industrial area, Near ladies camp</span></div>
+                <div class="info-line"><span id="issuerCity">Sharjah, P.O Box No. 5153, UNITED ARAB EMIRATES</span></div>
+                <div class="info-line"><strong>TRN:</strong> <span id="issuerTRN">100468660400003</span></div>
+                <div class="info-line"><strong>Mobile:</strong> <span id="issuerPhone">+971 5 02932305</span></div>
+                <div class="info-line"><strong>Email:</strong> <span id="issuerEmail">accounts@almanazilplastics.com</span></div>
+            </div>
+            <div class="info-column">
+                <div class="section-title" id="billToTitle">Bill To/Notify Party</div>
+                <div class="company-name" id="billToName">AIMS PLASTIC TRADING LLC</div>
+                <div class="info-line"><span id="billToAddress">OFFICE NO 102-A2, ABDUL RAHMAN MOHD HASSAN BLDG, AL KHABEESI ROAD</span></div>
+                <div class="info-line"><span id="billToCity">DUBAI UNITED ARAB EMIRATES</span></div>
+                <div class="info-line"><strong>Email:</strong> <span id="billToEmail">-</span></div>
+                <div class="info-line"><strong>Phone:</strong> <span id="billToPhone">+971 509717886</span></div>
+                <div class="info-line"><strong>GSTIN:</strong> <span id="billToGSTIN">-</span></div>
+                <div class="info-line"><strong>IEC:</strong> <span id="billToIEC">-</span></div>
+            </div>
+            <div class="info-column" id="consigneeColumn">
+                <div class="section-title">Consignee</div>
+                <div class="company-name" id="consigneeName">RAJESHWARI INTERNATIONAL</div>
+                <div class="info-line"><span id="consigneeAddress">Ofc no:- 271,276 central baazar, opp. vidhyakunj school, gandevi road</span></div>
+                <div class="info-line"><span id="consigneeCity">Navsari Gujarat India</span></div>
+                <div class="info-line"><strong>Email:</strong> <span id="consigneeEmail">sales@rajeshwariinternational.in</span></div>
+                <div class="info-line"><strong>Phone:</strong> <span id="consigneePhone">NA</span></div>
+                <div class="info-line"><strong>GSTIN:</strong> <span id="consigneeGSTIN">24AUTPJ3310R1Z6</span></div>
+                <div class="info-line"><strong>IEC:</strong> <span id="consigneeIEC">AUTPJ3310R</span></div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-section">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 45%;">Name & Description</th>
+                        <th style="width: 8%;">Unit</th>
+                        <th style="width: 10%;">Qty</th>
+                        <th style="width: 16%;">Price/Rate</th>
+                        <th style="width: 16%;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                    <tr>
+                        <td>1</td>
+                        <td>
+                            <div class="item-description">PLASTIC REGRIND</div>
+                            <div class="item-hsn">HSN 39019000</div>
+                            <div class="item-details">CONTAINER NO: BLJU 408120445G1</div>
+                            <div class="item-details">NO. OF BAGS: 40</div>
+                            <div class="item-details">SEAL NO: 695220</div>
+                        </td>
+                        <td>MT</td>
+                        <td>20.740</td>
+                        <td>AED 2136</td>
+                        <td>AED 44300.64</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>
+                            <div class="item-description">PLASTIC REGRIND</div>
+                            <div class="item-hsn">HSN 39019000</div>
+                            <div class="item-details">CONTAINER NO: SEGU 414895245G1</div>
+                            <div class="item-details">NO. OF BAGS: 40</div>
+                            <div class="item-details">SEAL NO: 694163</div>
+                        </td>
+                        <td>MT</td>
+                        <td>20.640</td>
+                        <td>AED 2136</td>
+                        <td>AED 44087.04</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-content">
+                <div class="summary-table">
+                    <div class="summary-row" id="invoiceAmountRow">
+                        <div class="summary-label">Invoice Amount</div>
+                        <div class="summary-value" id="invoiceAmount">AED 88387.68</div>
+                    </div>
+                    <div class="summary-row" id="vatRow" style="display: none;">
+                        <div class="summary-label">VAT (<span id="vatPercentage">5</span>%)</div>
+                        <div class="summary-value" id="vatAmount">AED 0.00</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">TOTAL</div>
+                        <div class="summary-value" id="totalAmount">AED 88387.68</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amount in Words -->
+        <div class="amount-words-row">
+            <div class="label">Amount in Words:</div>
+            <div class="value" id="amountWords">EIGHTY EIGHT THOUSANDS THREE HUNDRED AND EIGHTY SEVEN AND SIXTY EIGHT FIL</div>
+        </div>
+
+        <!-- Footer: Bank Info, Stamp, Notes -->
+        <div class="footer-row">
+            <div class="bank-section">
+                <div class="footer-title">Payment Info</div>
+                <div class="footer-content">
+                    <div class="info-line"><strong>Account Name:</strong><br><span id="bankAccountName">AL MANAZIL PLASTIC WASTE TR LLC</span></div>
+                    <div class="info-line"><strong>Account No:</strong> <span id="bankAccountNo">0573204299001</span></div>
+                    <div class="info-line"><strong>IBAN:</strong> <span id="bankIBAN">AE270400000573204299001</span></div>
+                    <div class="info-line"><strong>Currency:</strong> <span id="bankCurrency">AED</span></div>
+                    <div class="info-line"><strong>Swift Code:</strong> <span id="bankSwiftCode">NRAKAEAK</span></div>
+                </div>
+            </div>
+            <div class="stamp-section">
+                <div class="stamp-placeholder">
+                    [Company Stamp]
+                </div>
+                <div class="signature-line">
+                    <hr>
+                    <div class="label">Authorized Signature</div>
+                </div>
+            </div>
+            <div class="notes-section">
+                <div class="footer-title">Notes</div>
+                <div class="footer-content" id="notes">
+                    30% ADVANCE ON PI & REST ON COMMERCIAL INVOICE
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch and populate data
+        async function loadInvoiceData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const docId = urlParams.get('id');
+            
+            if (!docId) {
+                console.warn('No document ID provided');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/documents/${docId}/invoice`);
+                const data = await response.json();
+                
+                // Set invoice type
+                document.getElementById('invoiceType').textContent = data.invoiceType || 'Commercial Invoice';
+                
+                // Populate invoice details
+                document.getElementById('invoiceNumber').textContent = data.invoiceNumber;
+                document.getElementById('invoiceDate').textContent = data.invoiceDate;
+                document.getElementById('dueDate').textContent = data.dueDate;
+
+                // Populate issuer info
+                document.getElementById('issuerName').textContent = data.issuer.name;
+                document.getElementById('issuerAddress').textContent = data.issuer.address;
+                document.getElementById('issuerCity').textContent = data.issuer.city;
+                document.getElementById('issuerTRN').textContent = data.issuer.trn;
+                document.getElementById('issuerPhone').textContent = data.issuer.phone;
+                document.getElementById('issuerEmail').textContent = data.issuer.email;
+
+                // Populate bill to info
+                document.getElementById('billToName').textContent = data.billTo.name;
+                document.getElementById('billToAddress').textContent = data.billTo.address;
+                document.getElementById('billToCity').textContent = data.billTo.city;
+                document.getElementById('billToEmail').textContent = data.billTo.email || '-';
+                document.getElementById('billToPhone').textContent = data.billTo.phone || '-';
+                document.getElementById('billToGSTIN').textContent = data.billTo.gstin || '-';
+                document.getElementById('billToIEC').textContent = data.billTo.iec || '-';
+
+                // Handle consignee (show/hide based on data)
+                const infoRow = document.getElementById('infoRow');
+                const consigneeColumn = document.getElementById('consigneeColumn');
+                
+                if (data.consignee) {
+                    infoRow.classList.remove('two-column');
+                    infoRow.classList.add('three-column');
+                    consigneeColumn.style.display = 'block';
+                    
+                    document.getElementById('consigneeName').textContent = data.consignee.name;
+                    document.getElementById('consigneeAddress').textContent = data.consignee.address;
+                    document.getElementById('consigneeCity').textContent = data.consignee.city;
+                    document.getElementById('consigneeEmail').textContent = data.consignee.email || '-';
+                    document.getElementById('consigneePhone').textContent = data.consignee.phone || '-';
+                    document.getElementById('consigneeGSTIN').textContent = data.consignee.gstin || '-';
+                    document.getElementById('consigneeIEC').textContent = data.consignee.iec || '-';
+                    
+                    document.getElementById('billToTitle').textContent = 'Bill To/Notify Party';
+                } else {
+                    infoRow.classList.remove('three-column');
+                    infoRow.classList.add('two-column');
+                    consigneeColumn.style.display = 'none';
+                    document.getElementById('billToTitle').textContent = 'Bill To';
+                }
+
+                // Populate items table
+                const tbody = document.getElementById('itemsTableBody');
+                tbody.innerHTML = '';
+                
+                data.items.forEach((item, index) => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="item-description">${item.description}</div>
+                            <div class="item-hsn">HSN ${item.hsn}</div>
+                            ${item.containerNo ? `<div class="item-details">CONTAINER NO: ${item.containerNo}</div>` : ''}
+                            ${item.noOfBags ? `<div class="item-details">NO. OF BAGS: ${item.noOfBags}</div>` : ''}
+                            ${item.sealNo ? `<div class="item-details">SEAL NO: ${item.sealNo}</div>` : ''}
+                        </td>
+                        <td>${item.unit}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.currency} ${item.pricePerUnit}</td>
+                        <td>${item.currency} ${item.total}</td>
+                    `;
+                });
+
+                // Populate summary section
+                document.getElementById('invoiceAmount').textContent = `${data.currency} ${data.invoiceAmount}`;
+                
+                // Show/hide VAT row based on invoice type
+                const vatRow = document.getElementById('vatRow');
+                if (data.vat && data.vat.amount > 0) {
+                    vatRow.style.display = 'grid';
+                    document.getElementById('vatPercentage').textContent = data.vat.percentage;
+                    document.getElementById('vatAmount').textContent = `${data.currency} ${data.vat.amount}`;
+                } else {
+                    vatRow.style.display = 'none';
+                }
+                
+                document.getElementById('totalAmount').textContent = `${data.currency} ${data.totalAmount}`;
+
+                // Amount in words
+                document.getElementById('amountWords').textContent = data.amountInWords;
+
+                // Bank info
+                if (data.bankInfo) {
+                    document.getElementById('bankAccountName').textContent = data.bankInfo.accountName;
+                    document.getElementById('bankAccountNo').textContent = data.bankInfo.accountNumber;
+                    document.getElementById('bankIBAN').textContent = data.bankInfo.iban;
+                    document.getElementById('bankCurrency').textContent = data.bankInfo.currency;
+                    document.getElementById('bankSwiftCode').textContent = data.bankInfo.swiftCode;
+                }
+
+                // Notes
+                if (data.notes) {
+                    document.getElementById('notes').textContent = data.notes;
+                }
+
+            } catch (error) {
+                console.error('Error loading invoice data:', error);
+            }
+        }
+
+        // Uncomment to enable auto-load on page ready
+        // window.addEventListener('DOMContentLoaded', loadInvoiceData);
+    </script>
+</body>
+</html>

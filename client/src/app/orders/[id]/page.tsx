@@ -23,7 +23,8 @@ import {
   ShoppingBag,
   IndianRupee,
   Clock,
-  RotateCcw
+  RotateCcw,
+  FileText
 } from "lucide-react"
 import { toast } from "sonner"
 import { useAuthStore } from "@/store/auth.store"
@@ -236,15 +237,43 @@ export default function OrderDetailPage() {
                         </p>
                       </CardDescription>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge className={`${statusConfig.color} rounded-full px-3 py-1 flex items-center gap-1.5`}>
-                        <StatusIcon className="h-3.5 w-3.5" />
-                        {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
-                      </Badge>
-                      <Badge className={`${paymentConfig.color} rounded-full px-3 py-1 flex items-center gap-1.5`}>
-                        <PaymentIcon className="h-3.5 w-3.5" />
-                        {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
-                      </Badge>
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge className={`${statusConfig.color} rounded-full px-3 py-1 flex items-center gap-1.5`}>
+                          <StatusIcon className="h-3.5 w-3.5" />
+                          {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                        </Badge>
+                        <Badge className={`${paymentConfig.color} rounded-full px-3 py-1 flex items-center gap-1.5`}>
+                          <PaymentIcon className="h-3.5 w-3.5" />
+                          {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                        </Badge>
+                      </div>
+                      {order.orderStatus !== 'cancelled' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full"
+                          onClick={async () => {
+                            try {
+                              toast.info("Generating invoice...")
+                              const response = await orderService.getInvoice(order._id)
+                              const htmlContent = response.data
+                              const newWindow = window.open('', '_blank')
+                              if (newWindow) {
+                                newWindow.document.write(htmlContent)
+                                newWindow.document.close()
+                              } else {
+                                toast.error("Please allow popups to view the invoice")
+                              }
+                            } catch (error: any) {
+                              toast.error(error.response?.data?.message || "Failed to generate invoice")
+                            }
+                          }}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          View Invoice
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardHeader>

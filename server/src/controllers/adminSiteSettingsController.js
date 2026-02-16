@@ -83,7 +83,7 @@ const createHeroImage = async (req, res) => {
       });
     }
 
-    const { imageUrl, title, subtitle, isActive, order } = req.body;
+    const { imageUrl, mobileImageUrl, title, subtitle, isActive, order } = req.body;
 
     if (!imageUrl) {
       return res.status(400).json({
@@ -95,6 +95,7 @@ const createHeroImage = async (req, res) => {
 
     const heroImage = new HeroImage({
       imageUrl,
+      mobileImageUrl: mobileImageUrl || "",
       title: title || "",
       subtitle: subtitle || "",
       isActive: isActive !== undefined ? isActive : true,
@@ -138,7 +139,7 @@ const updateHeroImage = async (req, res) => {
     }
 
     const { id } = req.params;
-    const { imageUrl, title, subtitle, isActive, order } = req.body;
+    const { imageUrl, mobileImageUrl, title, subtitle, isActive, order } = req.body;
 
     const heroImage = await HeroImage.findById(id);
 
@@ -151,6 +152,7 @@ const updateHeroImage = async (req, res) => {
     }
 
     if (imageUrl !== undefined) heroImage.imageUrl = imageUrl;
+    if (mobileImageUrl !== undefined) heroImage.mobileImageUrl = mobileImageUrl;
     if (title !== undefined) heroImage.title = title;
     if (subtitle !== undefined) heroImage.subtitle = subtitle;
     if (isActive !== undefined) heroImage.isActive = isActive;

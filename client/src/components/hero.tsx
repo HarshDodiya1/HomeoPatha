@@ -14,6 +14,7 @@ const defaultHeroImages = [
   {
     _id: "default-1",
     imageUrl: "/doctor-illustration-for-healthcare-hero.jpg",
+    mobileImageUrl: "",
     title: "Expert Consultations",
     subtitle: "Connect with certified homeopaths",
     isActive: true,
@@ -78,32 +79,57 @@ export function Hero() {
         className="absolute inset-0 w-full h-full overflow-hidden"
       >
         <div className="flex h-full">
-          {heroImages.map((image, index) => (
-            <div
-              key={image._id}
-              className="relative flex-[0_0_100%] h-full"
-            >
-              {image.imageUrl.startsWith('/') ? (
-                <Image
-                  src={image.imageUrl}
-                  alt={image.title || "Hero image"}
-                  fill
-                  className="object-contain md:object-cover object-center"
-                  priority={index === 0}
-                  quality={90}
-                />
-              ) : (
-                <img
-                  src={image.imageUrl}
-                  alt={image.title || "Hero image"}
-                  className="absolute inset-0 w-full h-full object-contain md:object-cover object-center"
-                />
-              )}
-              {/* Dark overlay for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10 md:bg-gradient-to-r md:from-black/70 md:via-black/50 md:to-black/30" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-            </div>
-          ))}
+          {heroImages.map((image, index) => {
+            const hasMobileImage = !!image.mobileImageUrl;
+            return (
+              <div
+                key={image._id}
+                className="relative flex-[0_0_100%] h-full"
+              >
+                {/* Desktop Image */}
+                {image.imageUrl.startsWith('/') ? (
+                  <Image
+                    src={image.imageUrl}
+                    alt={image.title || "Hero image"}
+                    fill
+                    className={`object-cover object-center ${hasMobileImage ? 'hidden md:block' : 'object-contain md:object-cover'}`}
+                    priority={index === 0}
+                    quality={90}
+                  />
+                ) : (
+                  <img
+                    src={image.imageUrl}
+                    alt={image.title || "Hero image"}
+                    className={`absolute inset-0 w-full h-full object-cover object-center ${hasMobileImage ? 'hidden md:block' : 'object-contain md:object-cover'}`}
+                  />
+                )}
+
+                {/* Mobile Image (if provided) */}
+                {hasMobileImage && (
+                  image.mobileImageUrl.startsWith('/') ? (
+                    <Image
+                      src={image.mobileImageUrl}
+                      alt={image.title || "Hero image (mobile)"}
+                      fill
+                      className="object-cover object-center block md:hidden"
+                      priority={index === 0}
+                      quality={85}
+                    />
+                  ) : (
+                    <img
+                      src={image.mobileImageUrl}
+                      alt={image.title || "Hero image (mobile)"}
+                      className="absolute inset-0 w-full h-full object-cover object-center block md:hidden"
+                    />
+                  )
+                )}
+
+                {/* Dark overlay for better text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10 md:bg-gradient-to-r md:from-black/70 md:via-black/50 md:to-black/30" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+            );
+          })}
         </div>
       </div>
 

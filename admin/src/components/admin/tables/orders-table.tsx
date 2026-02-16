@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Eye, Edit, Trash2, ShoppingBag, DollarSign, Package, TrendingUp } from "lucide-react"
+import { Loader2, Eye, Edit, Trash2, ShoppingBag, DollarSign, Package, TrendingUp, FileText } from "lucide-react"
 import { ordersService } from "@/lib/services/orders.service"
 import { Order } from "@/types/order"
 import { toast } from "sonner"
@@ -177,6 +177,29 @@ export function OrdersTable() {
       toast.error(error.response?.data?.message || 'Failed to delete order')
     } finally {
       setIsUpdating(false)
+    }
+  }
+
+  const handleViewInvoice = async (order: Order) => {
+    if (order.orderStatus === 'cancelled') {
+      toast.error('Invoice not available for cancelled orders')
+      return
+    }
+
+    try {
+      toast.info('Generating invoice...')
+      const response = await ordersService.getOrderInvoice(order._id)
+      const htmlContent = response.data
+      const newWindow = window.open('', '_blank')
+      if (newWindow) {
+        newWindow.document.write(htmlContent)
+        newWindow.document.close()
+      } else {
+        toast.error('Please allow popups to view the invoice')
+      }
+    } catch (error: any) {
+      console.error('Failed to generate invoice:', error)
+      toast.error(error.response?.data?.message || 'Failed to generate invoice')
     }
   }
 
@@ -354,13 +377,25 @@ export function OrdersTable() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleViewDetails(order)}
+                              title="View Details"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
+                            {order.orderStatus !== 'cancelled' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewInvoice(order)}
+                                title="View Invoice"
+                              >
+                                <FileText className="h-4 w-4 text-green-600" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEdit(order)}
+                              title="Edit Order"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -368,6 +403,7 @@ export function OrdersTable() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDelete(order)}
+                              title="Delete Order"
                             >
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
@@ -387,8 +423,23 @@ export function OrdersTable() {
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-            <DialogDescription>Complete information about the order</DialogDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle>Order Details</DialogTitle>
+                <DialogDescription>Complete information about the order</DialogDescription>
+              </div>
+              {selectedOrder && selectedOrder.orderStatus !== 'cancelled' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleViewInvoice(selectedOrder)}
+                  className="ml-4"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  View Invoice
+                </Button>
+              )}
+            </div>
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-4">

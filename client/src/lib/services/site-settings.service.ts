@@ -8,6 +8,7 @@ import apiClient from '../api/client';
 export interface HeroImage {
   _id: string;
   imageUrl: string;
+  mobileImageUrl: string;
   title: string;
   subtitle: string;
   isActive: boolean;

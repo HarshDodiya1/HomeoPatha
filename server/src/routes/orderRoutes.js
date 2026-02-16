@@ -6,6 +6,7 @@ const {
   getUserOrders,
   getOrderDetails,
   cancelOrder,
+  getOrderInvoice,
 } = require("../controllers/orderController.js");
 const authMiddleware = require("../middleware/authMiddleware.js");
 
@@ -20,6 +21,9 @@ router.post("/verify-payment", verifyOrderPayment);
 
 // Get user's orders
 router.get("/", getUserOrders);
+
+// Get order invoice as HTML
+router.get("/:id/invoice", getOrderInvoice);
 
 // Get order details
 router.get("/:id", getOrderDetails);

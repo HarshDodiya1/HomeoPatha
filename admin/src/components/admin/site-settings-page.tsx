@@ -79,14 +79,17 @@ export function SiteSettingsPage() {
   const [editingHeroImage, setEditingHeroImage] = useState<HeroImage | null>(null)
   const [heroFormData, setHeroFormData] = useState({
     imageUrl: "",
+    mobileImageUrl: "",
     title: "",
     subtitle: "",
     isActive: true,
     order: 0,
   })
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false)
+  const [uploadingMobileImage, setUploadingMobileImage] = useState(false)
   const [heroDeleteId, setHeroDeleteId] = useState<string | null>(null)
   const heroFileInputRef = useRef<HTMLInputElement>(null)
+  const mobileFileInputRef = useRef<HTMLInputElement>(null)
 
   // Sticky Banner State
   const [showBannerDialog, setShowBannerDialog] = useState(false)
@@ -112,6 +115,7 @@ export function SiteSettingsPage() {
       setEditingHeroImage(heroImage)
       setHeroFormData({
         imageUrl: heroImage.imageUrl,
+        mobileImageUrl: heroImage.mobileImageUrl || "",
         title: heroImage.title,
         subtitle: heroImage.subtitle,
         isActive: heroImage.isActive,
@@ -121,6 +125,7 @@ export function SiteSettingsPage() {
       setEditingHeroImage(null)
       setHeroFormData({
         imageUrl: "",
+        mobileImageUrl: "",
         title: "",
         subtitle: "",
         isActive: true,
@@ -155,6 +160,34 @@ export function SiteSettingsPage() {
       toast.error(error.message || "Failed to upload image")
     } finally {
       setUploadingHeroImage(false)
+    }
+  }
+
+  const handleMobileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    try {
+      setUploadingMobileImage(true)
+      const file = files[0]
+
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file")
+        return
+      }
+
+      toast.info("Uploading mobile image...")
+      const mobileImageUrl = await siteSettingsService.uploadImage(file)
+      setHeroFormData(prev => ({ ...prev, mobileImageUrl }))
+      toast.success("Mobile image uploaded successfully")
+
+      if (mobileFileInputRef.current) {
+        mobileFileInputRef.current.value = ""
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload mobile image")
+    } finally {
+      setUploadingMobileImage(false)
     }
   }
 
@@ -319,6 +352,11 @@ export function SiteSettingsPage() {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute top-2 right-2 flex gap-1">
+                      {image.mobileImageUrl && (
+                        <Badge variant="outline" className="bg-white/80 text-xs">
+                          Mobile
+                        </Badge>
+                      )}
                       <Badge variant={image.isActive ? "default" : "secondary"}>
                         {image.isActive ? "Active" : "Inactive"}
                       </Badge>
@@ -489,14 +527,15 @@ export function SiteSettingsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {/* Image Preview/Upload */}
+            {/* Desktop Image Preview/Upload */}
             <div className="space-y-2">
-              <Label>Image</Label>
+              <Label>Desktop Image *</Label>
+              <p className="text-xs text-muted-foreground">Shown on tablets and desktops (md and above)</p>
               {heroFormData.imageUrl ? (
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
                   <img
                     src={heroFormData.imageUrl}
-                    alt="Preview"
+                    alt="Desktop preview"
                     className="w-full h-full object-cover"
                   />
                   <Button
@@ -533,12 +572,69 @@ export function SiteSettingsPage() {
                     ) : (
                       <>
                         <Upload className="mr-2 h-4 w-4" />
-                        Upload Image
+                        Upload Desktop Image
                       </>
                     )}
                   </Button>
                   <p className="text-sm text-muted-foreground mt-2">
                     Recommended: 1920x1080px or larger
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Image Preview/Upload */}
+            <div className="space-y-2">
+              <Label>Mobile Image (Optional)</Label>
+              <p className="text-xs text-muted-foreground">Shown on mobile devices. Falls back to desktop image if not set.</p>
+              {heroFormData.mobileImageUrl ? (
+                <div className="relative aspect-[9/16] max-w-[200px] rounded-lg overflow-hidden bg-muted">
+                  <img
+                    src={heroFormData.mobileImageUrl}
+                    alt="Mobile preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="destructive"
+                    className="absolute top-2 right-2 h-8 w-8"
+                    onClick={() => setHeroFormData(prev => ({ ...prev, mobileImageUrl: "" }))}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                  <input
+                    ref={mobileFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleMobileImageUpload}
+                    disabled={uploadingMobileImage}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => mobileFileInputRef.current?.click()}
+                    disabled={uploadingMobileImage}
+                  >
+                    {uploadingMobileImage ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Mobile Image
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Recommended: 1080x1920px (portrait)
                   </p>
                 </div>
               )}

@@ -35,4 +35,10 @@ export const orderService = {
 
   cancelOrder: (id: string) =>
     apiClient.put(`/api/orders/${id}/cancel`),
+
+  getInvoice: (id: string) =>
+    apiClient.get(`/api/orders/${id}/invoice`, {
+      responseType: 'text',
+      headers: { Accept: 'text/html' },
+    }),
 }

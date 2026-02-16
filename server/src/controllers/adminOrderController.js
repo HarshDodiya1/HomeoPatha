@@ -1,5 +1,8 @@
 const Order = require("../models/Order.js");
 const Product = require("../models/Product.js");
+const User = require("../models/User.js");
+const bcryptjs = require("bcryptjs");
+const { generateInvoiceHTML } = require("../utils/invoiceGenerator.js");
 
 /**
  * @desc Get all orders (Admin)
@@ -304,10 +307,256 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+/**
+ * @desc Create manual order/invoice (Admin)
+ * @route POST /api/admin/orders/create-manual
+ * @access Admin
+ */
+const createManualOrder = async (req, res) => {
+  try {
+    const {
+      customerName,
+      customerEmail,
+      customerPhone,
+      shippingAddress,
+      orderItems,
+      paymentMethod,
+      paymentStatus,
+      orderStatus,
+      totalAmount,
+      adminNotes,
+      estimatedDelivery,
+    } = req.body;
+
+    // Validation
+    if (!customerName || !customerPhone || !shippingAddress || !orderItems || orderItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields are missing",
+        code: "VALIDATION_ERROR",
+      });
+    }
+
+    // Find or create user
+    let user = await User.findOne({ email: customerEmail || `manual_${Date.now()}@homeopatha.com` });
+    
+    if (!user) {
+      // Create a patient user for manual orders
+      const bcrypt = require("bcryptjs");
+      const randomPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      
+      user = await User.create({
+        fullName: customerName,
+        email: customerEmail || `manual_${Date.now()}@homeopatha.com`,
+        phoneNumber: customerPhone,
+        password: hashedPassword,
+        role: "patient",
+      });
+    }
+
+    // Create the order
+    const order = await Order.create({
+      userId: user._id,
+      orderItems: orderItems.map(item => ({
+        productId: null, // Manual orders might not have product references
+        title: item.title,
+        quantity: item.quantity,
+        price: item.price,
+        image: item.image || "",
+      })),
+      shippingAddress: {
+        addressLine1: shippingAddress.addressLine1,
+        addressLine2: shippingAddress.addressLine2 || "",
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        pincode: shippingAddress.pincode,
+      },
+      paymentMethod: paymentMethod || "cod",
+      paymentStatus: paymentStatus || "completed",
+      totalAmount: totalAmount,
+      orderStatus: orderStatus || "confirmed",
+      adminNotes: adminNotes || "Manual order created by admin",
+      estimatedDelivery: estimatedDelivery || null,
+      confirmedAt: orderStatus === "confirmed" ? new Date() : null,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Manual order created successfully",
+      code: "ORDER_CREATED",
+      data: {
+        order,
+        orderId: order._id,
+      },
+    });
+  } catch (error) {
+    console.error("Create manual order error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while creating manual order",
+      code: "ORDER_CREATE_ERROR",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+/**
+ * @desc Create manual order/invoice (Admin)
+ * @route POST /api/admin/orders/manual
+ * @access Admin
+ */
+const createManualOrder = async (req, res) => {
+  try {
+    const {
+      customerName,
+      customerEmail,
+      customerPhone,
+      shippingAddress,
+      orderItems,
+      paymentMethod,
+      paymentStatus,
+      orderStatus,
+      adminNotes,
+      estimatedDelivery,
+    } = req.body;
+
+    // Validation
+    if (!customerName || !customerPhone || !shippingAddress || !orderItems || orderItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Customer details, shipping address, and order items are required",
+        code: "VALIDATION_ERROR",
+      });
+    }
+
+    // Create or find user
+    let user = await User.findOne({ phoneNumber: customerPhone });
+    
+    if (!user) {
+      // Create a new user for cash payment
+      user = await User.create({
+        fullName: customerName,
+        email: customerEmail || `cash_${Date.now()}@homeopatha.com`,
+        phoneNumber: customerPhone,
+        password: bcryptjs.hashSync(Math.random().toString(36), 10),
+        role: "patient",
+        addresses: [{
+          addressLine1: shippingAddress.addressLine1,
+          addressLine2: shippingAddress.addressLine2 || "",
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          pincode: shippingAddress.pincode,
+          isDefault: true,
+        }],
+      });
+    }
+
+    // Calculate total amount
+    const totalAmount = orderItems.reduce((sum, item) => {
+      return sum + (item.price * item.quantity);
+    }, 0);
+
+    // Create order
+    const order = await Order.create({
+      userId: user._id,
+      orderItems: orderItems.map(item => ({
+        productId: item.productId || null,
+        title: item.title,
+        quantity: item.quantity,
+        price: item.price,
+        image: item.image || "",
+      })),
+      shippingAddress: {
+        addressLine1: shippingAddress.addressLine1,
+        addressLine2: shippingAddress.addressLine2 || "",
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        pincode: shippingAddress.pincode,
+      },
+      paymentMethod: paymentMethod || "cod",
+      paymentStatus: paymentStatus || "completed",
+      totalAmount,
+      orderStatus: orderStatus || "confirmed",
+      adminNotes: adminNotes || "",
+      estimatedDelivery: estimatedDelivery || null,
+      confirmedAt: new Date(),
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Manual order created successfully",
+      code: "ORDER_CREATED",
+      data: { order },
+    });
+  } catch (error) {
+    console.error("Create manual order error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while creating order",
+      code: "ORDER_CREATE_ERROR",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+/**
+ * @desc Get order invoice as HTML (Admin)
+ * @route GET /api/admin/orders/:id/invoice
+ * @access Admin
+ */
+const getOrderInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+        code: "ORDER_NOT_FOUND",
+      });
+    }
+
+    if (order.orderStatus === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Invoice not available for cancelled orders",
+        code: "INVOICE_NOT_AVAILABLE",
+      });
+    }
+
+    const user = await User.findById(order.userId).select("fullName email phoneNumber");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        code: "USER_NOT_FOUND",
+      });
+    }
+
+    const invoiceHTML = generateInvoiceHTML(order, user);
+
+    res.setHeader("Content-Type", "text/html");
+    return res.status(200).send(invoiceHTML);
+  } catch (error) {
+    console.error("Get admin invoice error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while generating invoice",
+      code: "INVOICE_ERROR",
+    });
+  }
+};
+
 module.exports = {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
   updatePaymentStatus,
   deleteOrder,
+  getOrderInvoice,
+  createManualOrder,
 };

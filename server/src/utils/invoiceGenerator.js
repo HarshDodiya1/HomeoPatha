@@ -1,0 +1,642 @@
+/**
+ * Invoice HTML Generator
+ * Generates a printable HTML invoice from order data
+ */
+
+function numberToWords(num) {
+  if (num === 0) return "Zero";
+
+  const ones = [
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+  ];
+  const tens = [
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
+  ];
+
+  function convertChunk(n) {
+    if (n === 0) return "";
+    if (n < 20) return ones[n];
+    if (n < 100)
+      return tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "");
+    return (
+      ones[Math.floor(n / 100)] +
+      " Hundred" +
+      (n % 100 ? " and " + convertChunk(n % 100) : "")
+    );
+  }
+
+  const units = ["", "Thousand", "Lakh", "Crore"];
+  const integer = Math.floor(Math.abs(num));
+  const decimal = Math.round((Math.abs(num) - integer) * 100);
+
+  let result = "";
+  let remaining = integer;
+
+  // First chunk: last 3 digits
+  const firstChunk = remaining % 1000;
+  remaining = Math.floor(remaining / 1000);
+  if (firstChunk) result = convertChunk(firstChunk);
+
+  // Subsequent chunks: 2 digits each (Indian numbering)
+  let unitIndex = 1;
+  while (remaining > 0) {
+    const chunk = remaining % 100;
+    remaining = Math.floor(remaining / 100);
+    if (chunk) {
+      result = convertChunk(chunk) + " " + units[unitIndex] + (result ? " " + result : "");
+    }
+    unitIndex++;
+  }
+
+  let words = result + " Rupees";
+  if (decimal > 0) {
+    words += " and " + convertChunk(decimal) + " Paise";
+  }
+  words += " Only";
+
+  return words;
+}
+
+function formatDate(date) {
+  const d = new Date(date);
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  return `${d.getDate()} ${months[d.getMonth()]}, ${d.getFullYear()}`;
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
+ * Generate invoice HTML from order and user data
+ * @param {Object} order - The order document (populated)
+ * @param {Object} user - The user document
+ * @returns {string} Complete HTML string
+ */
+function generateInvoiceHTML(order, user) {
+  const invoiceNumber = `HP-${order._id.toString().slice(-8).toUpperCase()}`;
+  const invoiceDate = formatDate(order.createdAt);
+  const totalAmount = order.totalAmount;
+  const amountInWords = numberToWords(totalAmount);
+
+  const customerName = escapeHtml(user.fullName);
+  const customerEmail = escapeHtml(user.email);
+  const customerPhone = escapeHtml(user.phoneNumber);
+  const addr = order.shippingAddress;
+  const customerAddress = escapeHtml(
+    [addr.addressLine1, addr.addressLine2].filter(Boolean).join(", ")
+  );
+  const customerCity = escapeHtml(
+    [addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")
+  );
+
+  // Build items rows
+  const itemsHTML = order.orderItems
+    .map((item, index) => {
+      const itemTotal = (item.price * item.quantity).toFixed(2);
+      return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="item-description">${escapeHtml(item.title)}</div>
+                        </td>
+                        <td>Nos</td>
+                        <td>${item.quantity}</td>
+                        <td>&#8377; ${item.price.toFixed(2)}</td>
+                        <td>&#8377; ${itemTotal}</td>
+                    </tr>`;
+    })
+    .join("\n");
+
+  const paymentMethodText =
+    order.paymentMethod === "razorpay" ? "Online (Razorpay)" : "Cash on Delivery";
+  const paymentStatusText =
+    order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - ${invoiceNumber}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 8mm;
+        }
+
+        @media print {
+            html {
+                background: white !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .document {
+                width: 100%;
+                margin: 0;
+                border: 2px solid #000;
+                background: white !important;
+            }
+        }
+
+        @media screen {
+            body {
+                background: #e0e0e0;
+                padding: 0px;
+            }
+
+            .document {
+                max-width: 100%;
+                min-height: 100vh;
+                margin: 0 auto;
+                background: white;
+                border: 2px solid #000;
+            }
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+        }
+
+        .header-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 2px solid #000;
+            min-height: 100px;
+        }
+
+        .logo-section {
+            padding: 20px;
+            border-right: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+
+        .logo-text {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #16a34a;
+            letter-spacing: 2px;
+        }
+
+        .logo-subtitle {
+            font-size: 10pt;
+            color: #666;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .title-section {
+            padding: 20px 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: white;
+        }
+
+        .title-section h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #16a34a;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .invoice-details-header {
+            margin-top: 10px;
+        }
+
+        .invoice-details-header .detail-line {
+            font-size: 11pt;
+            margin-bottom: 3px;
+        }
+
+        .invoice-details-header .detail-line strong {
+            min-width: 110px;
+            display: inline-block;
+            font-weight: 700;
+        }
+
+        .info-row {
+            display: grid;
+            border-bottom: 2px solid #000;
+        }
+
+        .info-row.two-column {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .info-column {
+            padding: 18px 25px;
+            background: white;
+            border-right: 2px solid #000;
+        }
+
+        .info-column:last-child {
+            border-right: none;
+        }
+
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #000;
+            text-transform: uppercase;
+        }
+
+        .info-line {
+            margin-bottom: 5px;
+            font-size: 11.5pt;
+        }
+
+        .info-line strong {
+            font-weight: 700;
+            min-width: 70px;
+            display: inline-block;
+        }
+
+        .company-name {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        .table-section {
+            border-bottom: 2px solid #000;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table thead th {
+            background: #16a34a;
+            color: white;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 11.5pt;
+            text-transform: uppercase;
+            border-right: 1px solid #fff;
+            border-bottom: 1px solid #000;
+        }
+
+        .items-table thead th:last-child {
+            border-right: none;
+        }
+
+        .items-table tbody td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+            font-size: 11.5pt;
+            vertical-align: top;
+        }
+
+        .items-table tbody td:last-child {
+            border-right: none;
+        }
+
+        .items-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .item-description {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .summary-section {
+            border-bottom: 2px solid #000;
+            background: white;
+        }
+
+        .summary-content {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .summary-table {
+            width: 350px;
+        }
+
+        .summary-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            border-top: 2px solid #000;
+            padding-top: 10px;
+            margin-top: 5px;
+        }
+
+        .summary-label {
+            font-size: 11.5pt;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-size: 11.5pt;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .summary-row:last-child .summary-label,
+        .summary-row:last-child .summary-value {
+            font-size: 13pt;
+            font-weight: bold;
+        }
+
+        .amount-words-row {
+            padding: 15px 25px;
+            border-bottom: 2px solid #000;
+            background: #f0fdf4;
+        }
+
+        .amount-words-row .label {
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .amount-words-row .value {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .footer-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 130px;
+        }
+
+        .payment-section,
+        .notes-section {
+            padding: 18px;
+        }
+
+        .payment-section {
+            border-right: 2px solid #000;
+            background: white;
+        }
+
+        .notes-section {
+            background: white;
+        }
+
+        .footer-title {
+            font-size: 11pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: #16a34a;
+        }
+
+        .footer-content {
+            font-size: 10.5pt;
+            line-height: 1.6;
+        }
+
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .print-button:hover {
+            background: #15803d;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10pt;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-failed {
+            background: #fecaca;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">Print Invoice</button>
+
+    <div class="document">
+        <!-- Header: Logo and Title -->
+        <div class="header-row">
+            <div class="logo-section">
+                <div style="text-align: center;">
+                    <div class="logo-text">HomeoPatha</div>
+                    <div class="logo-subtitle">Your Trusted Homeopathy Partner</div>
+                </div>
+            </div>
+            <div class="title-section">
+                <h1>Invoice</h1>
+                <div class="invoice-details-header">
+                    <div class="detail-line">
+                        <strong>Invoice No:</strong>
+                        <span>${invoiceNumber}</span>
+                    </div>
+                    <div class="detail-line">
+                        <strong>Invoice Date:</strong>
+                        <span>${invoiceDate}</span>
+                    </div>
+                    <div class="detail-line">
+                        <strong>Order Status:</strong>
+                        <span>${escapeHtml(order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1))}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Row: Seller and Customer -->
+        <div class="info-row two-column">
+            <div class="info-column">
+                <div class="section-title">From</div>
+                <div class="company-name">HomeoPatha</div>
+                <div class="info-line"><span>Homeopathy Healthcare Solutions</span></div>
+                <div class="info-line"><strong>Email:</strong> <span>support@homeopatha.com</span></div>
+            </div>
+            <div class="info-column">
+                <div class="section-title">Bill To</div>
+                <div class="company-name">${customerName}</div>
+                <div class="info-line"><span>${customerAddress}</span></div>
+                <div class="info-line"><span>${customerCity}</span></div>
+                <div class="info-line"><strong>Email:</strong> <span>${customerEmail}</span></div>
+                <div class="info-line"><strong>Phone:</strong> <span>${customerPhone}</span></div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-section">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 45%;">Product</th>
+                        <th style="width: 10%;">Unit</th>
+                        <th style="width: 10%;">Qty</th>
+                        <th style="width: 15%;">Unit Price</th>
+                        <th style="width: 15%;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHTML}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <div class="summary-content">
+                <div class="summary-table">
+                    <div class="summary-row">
+                        <div class="summary-label">Subtotal</div>
+                        <div class="summary-value">&#8377; ${totalAmount.toFixed(2)}</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">Shipping</div>
+                        <div class="summary-value">&#8377; 0.00</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">TOTAL</div>
+                        <div class="summary-value">&#8377; ${totalAmount.toFixed(2)}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amount in Words -->
+        <div class="amount-words-row">
+            <div class="label">Amount in Words:</div>
+            <div class="value">${escapeHtml(amountInWords)}</div>
+        </div>
+
+        <!-- Footer: Payment Info and Notes -->
+        <div class="footer-row">
+            <div class="payment-section">
+                <div class="footer-title">Payment Information</div>
+                <div class="footer-content">
+                    <div class="info-line"><strong>Method:</strong> ${paymentMethodText}</div>
+                    <div class="info-line"><strong>Status:</strong> <span class="status-badge status-${order.paymentStatus}">${paymentStatusText}</span></div>
+                    ${order.paymentDetails?.razorpayPaymentId ? `<div class="info-line" style="margin-top: 8px;"><strong>Payment ID:</strong><br><span style="font-family: monospace; font-size: 10pt;">${escapeHtml(order.paymentDetails.razorpayPaymentId)}</span></div>` : ""}
+                </div>
+            </div>
+            <div class="notes-section">
+                <div class="footer-title">Notes</div>
+                <div class="footer-content">
+                    Thank you for your order! If you have any questions about this invoice, please contact our support team.
+                    <br><br>
+                    <em style="font-size: 9pt; color: #666;">This is a computer-generated invoice and does not require a signature.</em>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+}
+
+module.exports = { generateInvoiceHTML, numberToWords };

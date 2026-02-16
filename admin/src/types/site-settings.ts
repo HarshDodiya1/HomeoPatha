@@ -5,6 +5,7 @@
 export interface HeroImage {
   _id: string;
   imageUrl: string;
+  mobileImageUrl: string;
   title: string;
   subtitle: string;
   isActive: boolean;
@@ -25,6 +26,7 @@ export interface StickyBanner {
 
 export interface CreateHeroImageRequest {
   imageUrl: string;
+  mobileImageUrl?: string;
   title?: string;
   subtitle?: string;
   isActive?: boolean;
@@ -33,6 +35,7 @@ export interface CreateHeroImageRequest {
 
 export interface UpdateHeroImageRequest {
   imageUrl?: string;
+  mobileImageUrl?: string;
   title?: string;
   subtitle?: string;
   isActive?: boolean;

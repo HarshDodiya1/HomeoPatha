@@ -1,6 +1,31 @@
 import apiClient from '../api/client'
 import { UpdateOrderStatusRequest, UpdatePaymentStatusRequest } from '@/types/order'
 
+interface CreateManualOrderRequest {
+  customerName: string
+  customerEmail?: string
+  customerPhone: string
+  shippingAddress: {
+    addressLine1: string
+    addressLine2?: string
+    city: string
+    state: string
+    pincode: string
+  }
+  orderItems: Array<{
+    productId?: string
+    title: string
+    quantity: number
+    price: number
+    image?: string
+  }>
+  paymentMethod?: string
+  paymentStatus?: string
+  orderStatus?: string
+  adminNotes?: string
+  estimatedDelivery?: string
+}
+
 export const ordersService = {
   getAllOrders: (params?: {
     page?: number
@@ -24,4 +49,13 @@ export const ordersService = {
 
   deleteOrder: (id: string) =>
     apiClient.delete(`/api/admin/orders/${id}`),
+
+  getOrderInvoice: (id: string) =>
+    apiClient.get(`/api/admin/orders/${id}/invoice`, {
+      responseType: 'text',
+      headers: { Accept: 'text/html' },
+    }),
+
+  createManualOrder: (data: CreateManualOrderRequest) =>
+    apiClient.post('/api/admin/orders/manual', data),
 }

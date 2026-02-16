@@ -1,9 +1,11 @@
 const Order = require("../models/Order.js");
 const Cart = require("../models/Cart.js");
 const Product = require("../models/Product.js");
+const User = require("../models/User.js");
 const crypto = require("crypto");
 const config = require("../config/config.js");
 const Razorpay = require("razorpay");
+const { generateInvoiceHTML } = require("../utils/invoiceGenerator.js");
 
 /**
  * @desc Create order for checkout
@@ -412,10 +414,63 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+/**
+ * @desc Get order invoice as HTML
+ * @route GET /api/orders/:id/invoice
+ * @access Private
+ */
+const getOrderInvoice = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const order = await Order.findOne({ _id: id, userId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+        code: "ORDER_NOT_FOUND",
+      });
+    }
+
+    if (order.orderStatus === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Invoice not available for cancelled orders",
+        code: "INVOICE_NOT_AVAILABLE",
+      });
+    }
+
+    const user = await User.findById(userId).select("fullName email phoneNumber");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        code: "USER_NOT_FOUND",
+      });
+    }
+
+    const invoiceHTML = generateInvoiceHTML(order, user);
+
+    res.setHeader("Content-Type", "text/html");
+    return res.status(200).send(invoiceHTML);
+  } catch (error) {
+    console.error("Get invoice error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while generating invoice",
+      code: "INVOICE_ERROR",
+    });
+  }
+};
+
 module.exports = {
   createOrderForCheckout,
   verifyOrderPayment,
   getUserOrders,
   getOrderDetails,
   cancelOrder,
+  getOrderInvoice,
 };

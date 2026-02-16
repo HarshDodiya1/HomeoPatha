@@ -45,7 +45,8 @@ import {
   Settings,
   ChevronDown,
   FileText,
-  MessageSquareQuote
+  MessageSquareQuote,
+  FilePlus
 } from "lucide-react"
 import type * as React from "react"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -62,6 +63,7 @@ const mainRoutes = [
   { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin/invoices/create", label: "Create Invoice", icon: FilePlus },
   { href: "/admin/blogs", label: "Blogs", icon: FileText },
   { href: "/admin/feedbacks", label: "Testimonials", icon: MessageSquareQuote },
 ]
@@ -86,6 +88,7 @@ function usePageTitle(pathname: string) {
     appointments: "Appointments",
     products: "Products",
     orders: "Orders",
+    invoices: "Invoices",
     payments: "Payments",
     contacts: "Contacts",
     profile: "Profile",
@@ -95,6 +98,7 @@ function usePageTitle(pathname: string) {
   if (parts[1] in map) {
     if (parts[2] === "new") return `Add ${map[parts[1]].slice(0, -1)}`
     if (parts[2] === "edit") return `Edit ${map[parts[1]].slice(0, -1)}`
+    if (parts[2] === "create") return `Create ${map[parts[1]].slice(0, -1)}`
     if (parts[2] === "doctors") return "Doctors"
     if (parts[2] === "patients") return "Patients"
     return map[parts[1]]

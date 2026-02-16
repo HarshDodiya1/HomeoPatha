@@ -6,6 +6,10 @@ const heroImageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    mobileImageUrl: {
+      type: String,
+      default: "",
+    },
     title: {
       type: String,
       default: "",
