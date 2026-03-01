@@ -32,6 +32,7 @@ export interface Order {
     razorpayPaymentId?: string
     razorpaySignature?: string
   }
+  shippingCharges: number
   totalAmount: number
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   estimatedDelivery?: string
