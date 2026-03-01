@@ -123,7 +123,9 @@ function escapeHtml(str) {
 function generateInvoiceHTML(order, user) {
   const invoiceNumber = `HP-${order._id.toString().slice(-8).toUpperCase()}`;
   const invoiceDate = formatDate(order.createdAt);
+  const shippingCharges = order.shippingCharges || 0;
   const totalAmount = order.totalAmount;
+  const subtotal = totalAmount - shippingCharges;
   const amountInWords = numberToWords(totalAmount);
 
   const customerName = escapeHtml(user.fullName);
@@ -529,8 +531,9 @@ function generateInvoiceHTML(order, user) {
         <div class="header-row">
             <div class="logo-section">
                 <div style="text-align: center;">
-                    <div class="logo-text">HomeoPatha</div>
+                    <div class="logo-text">The HomeoPatha</div>
                     <div class="logo-subtitle">Your Trusted Homeopathy Partner</div>
+                    <div class="logo-subtitle" style="margin-top: 4px; font-weight: 600;">GSTIN: 08LVNPS5268K1ZD</div>
                 </div>
             </div>
             <div class="title-section">
@@ -556,9 +559,10 @@ function generateInvoiceHTML(order, user) {
         <div class="info-row two-column">
             <div class="info-column">
                 <div class="section-title">From</div>
-                <div class="company-name">HomeoPatha</div>
-                <div class="info-line"><span>Homeopathy Healthcare Solutions</span></div>
-                <div class="info-line"><strong>Email:</strong> <span>support@homeopatha.com</span></div>
+                <div class="company-name">The HomeoPatha</div>
+                <div class="info-line"><span>Mishrawari, Bathario Ka Chawk, Nagaur, Rajasthan 341001</span></div>
+                <div class="info-line"><strong>GSTIN:</strong> <span>08LVNPS5268K1ZD</span></div>
+                <div class="info-line"><strong>Email:</strong> <span>thehomeopatha@gmail.com</span></div>
             </div>
             <div class="info-column">
                 <div class="section-title">Bill To</div>
@@ -595,11 +599,15 @@ function generateInvoiceHTML(order, user) {
                 <div class="summary-table">
                     <div class="summary-row">
                         <div class="summary-label">Subtotal</div>
-                        <div class="summary-value">&#8377; ${totalAmount.toFixed(2)}</div>
+                        <div class="summary-value">&#8377; ${subtotal.toFixed(2)}</div>
                     </div>
                     <div class="summary-row">
                         <div class="summary-label">Shipping</div>
-                        <div class="summary-value">&#8377; 0.00</div>
+                        <div class="summary-value">&#8377; ${shippingCharges.toFixed(2)}</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label" style="font-size: 9pt; color: #666;">All taxes included</div>
+                        <div class="summary-value"></div>
                     </div>
                     <div class="summary-row">
                         <div class="summary-label">TOTAL</div>

@@ -321,8 +321,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Email</h3>
-                      <p className="text-muted-foreground text-sm">info@homeopatha.com</p>
-                      <p className="text-muted-foreground text-sm">support@homeopatha.com</p>
+                      <p className="text-muted-foreground text-sm">thehomeopatha@gmail.com</p>
                     </div>
                   </div>
 
@@ -332,7 +331,6 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Phone</h3>
-                      <p className="text-muted-foreground text-sm">+91 1234 567 890</p>
                       <p className="text-muted-foreground text-sm">Mon-Fri: 9:00 AM - 6:00 PM</p>
                     </div>
                   </div>
@@ -343,8 +341,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Address</h3>
-                      <p className="text-muted-foreground text-sm">123 Medical Street</p>
-                      <p className="text-muted-foreground text-sm">Healthcare City, HC 12345</p>
+                      <p className="text-muted-foreground text-sm">Mishrawari, Bathario Ka Chawk</p>
+                      <p className="text-muted-foreground text-sm">Nagaur, Rajasthan 341001</p>
                     </div>
                   </div>
                 </CardContent>

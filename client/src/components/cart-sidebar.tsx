@@ -197,7 +197,10 @@ export function CartSidebar() {
             <Separator />
 
             <div className="flex items-center justify-between">
-              <span className="font-semibold">Total</span>
+              <div>
+                <span className="font-semibold">Total</span>
+                <p className="text-xs text-muted-foreground">All taxes included</p>
+              </div>
               <span className="text-xl font-bold text-primary">₹{cart.totalAmount.toFixed(2)}</span>
             </div>
 

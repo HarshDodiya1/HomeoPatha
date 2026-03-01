@@ -1,5 +1,5 @@
 "use client"
-import { Heart, Leaf, Mail, MapPin, Phone } from "lucide-react"
+import { Heart, Leaf, Mail, MapPin } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -20,7 +20,7 @@ const serviceLinks = [
 
 const socialLinks = [
   { label: "Instagram", href: "https://instagram.com" },
-  { label: "WhatsApp", href: "9979488188" },
+  { label: "WhatsApp", href: "https://wa.me/919979488188" },
   { label: "Facebook", href: "https://facebook.com" },
 ]
 
@@ -98,22 +98,15 @@ export function Footer() {
                 <h3 className="mb-6 text-lg font-semibold text-white">Contact Us</h3>
                 <div className="space-y-3 mb-8">
                   <a
-                    href="mailto:info@homeopatha.com"
+                    href="mailto:thehomeopatha@gmail.com"
                     className="flex items-center gap-3 text-green-100/70 hover:text-white transition-colors"
                   >
                     <Mail className="w-4 h-4 text-green-300" />
-                    info@homeopatha.com
-                  </a>
-                  <a
-                    href="tel:+15551234567"
-                    className="flex items-center gap-3 text-green-100/70 hover:text-white transition-colors"
-                  >
-                    <Phone className="w-4 h-4 text-green-300" />
-                    +1 (555) 123-4567
+                    thehomeopatha@gmail.com
                   </a>
                   <div className="flex items-start gap-3 text-green-100/70">
                     <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5 text-green-300" />
-                    123 Healthcare Street, Medical City
+                    Mishrawari, Bathario Ka Chawk, Nagaur, Rajasthan 341001
                   </div>
                 </div>
 

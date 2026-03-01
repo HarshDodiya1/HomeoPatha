@@ -21,6 +21,7 @@ import {
   FileText,
   ArrowLeft,
   Printer,
+  Truck,
 } from "lucide-react"
 import { toast } from "sonner"
 import { ordersService } from "@/lib/services/orders.service"
@@ -54,6 +55,7 @@ export function CreateInvoiceForm() {
   const [orderStatus, setOrderStatus] = useState("confirmed")
   const [adminNotes, setAdminNotes] = useState("")
   const [estimatedDelivery, setEstimatedDelivery] = useState("")
+  const [shippingCharges, setShippingCharges] = useState(0)
 
   const addOrderItem = () => {
     setOrderItems([...orderItems, { title: "", quantity: 1, price: 0 }])
@@ -75,11 +77,15 @@ export function CreateInvoiceForm() {
     setOrderItems(updated)
   }
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return orderItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     )
+  }
+
+  const calculateTotal = () => {
+    return calculateSubtotal() + shippingCharges
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,6 +125,7 @@ export function CreateInvoiceForm() {
         orderStatus,
         adminNotes,
         estimatedDelivery: estimatedDelivery || undefined,
+        shippingCharges,
       })
 
       toast.success("Invoice created successfully!")
@@ -471,48 +478,100 @@ export function CreateInvoiceForm() {
             </CardContent>
           </Card>
 
-          {/* Summary + Actions */}
+          {/* Shipping Charges */}
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    Invoice Total
-                  </p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold tracking-tight">
-                      ₹{total.toFixed(2)}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                      {orderItems.length}{" "}
-                      {orderItems.length === 1 ? "item" : "items"}
-                    </Badge>
-                  </div>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Truck className="h-4 w-4 text-primary" />
+                Shipping
+              </CardTitle>
+              <CardDescription>Add delivery charges if applicable</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="flex-1 space-y-1.5">
+                  <Label className="text-xs">Shipping Charges (₹)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={shippingCharges || ""}
+                    onChange={(e) => setShippingCharges(parseFloat(e.target.value) || 0)}
+                    placeholder="Enter shipping charges"
+                  />
                 </div>
-
-                <div className="flex gap-3 w-full sm:w-auto">
+                {shippingCharges > 0 && (
                   <Button
                     type="button"
-                    variant="outline"
-                    onClick={() => router.push("/admin/orders")}
-                    disabled={isSubmitting}
+                    variant="ghost"
+                    size="sm"
+                    className="mt-5 text-muted-foreground hover:text-destructive"
+                    onClick={() => setShippingCharges(0)}
                   >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Cancel
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Clear
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 sm:flex-none"
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Printer className="h-4 w-4 mr-2" />
-                    )}
-                    Create & Print Invoice
-                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Summary + Actions */}
+          <Card>
+            <CardContent className="pt-6 space-y-5">
+              {/* Breakdown */}
+              <div className="rounded-lg border p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Subtotal ({orderItems.length} {orderItems.length === 1 ? "item" : "items"})
+                  </span>
+                  <span className="font-medium tabular-nums">₹{calculateSubtotal().toFixed(2)}</span>
                 </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Shipping</span>
+                  {shippingCharges > 0 ? (
+                    <span className="font-medium tabular-nums">₹{shippingCharges.toFixed(2)}</span>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">FREE</Badge>
+                  )}
+                </div>
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                      Invoice Total
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">All taxes included</p>
+                  </div>
+                  <span className="text-3xl font-bold tracking-tight tabular-nums">
+                    ₹{total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 justify-end pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/admin/orders")}
+                  disabled={isSubmitting}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  size="lg"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Printer className="h-4 w-4 mr-2" />
+                  )}
+                  Create & Print Invoice
+                </Button>
               </div>
             </CardContent>
           </Card>

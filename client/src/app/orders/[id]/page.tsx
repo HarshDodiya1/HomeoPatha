@@ -334,8 +334,18 @@ export default function OrderDetailPage() {
 
                 <Separator className="my-4" />
 
+                {order.shippingCharges > 0 && (
+                  <div className="flex justify-between items-center px-4 py-2 text-sm text-muted-foreground">
+                    <span>Shipping Charges</span>
+                    <span className="font-medium">₹{order.shippingCharges.toFixed(2)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5">
-                  <span className="text-lg font-semibold">Total Amount</span>
+                  <div>
+                    <span className="text-lg font-semibold">Total Amount</span>
+                    <p className="text-xs text-muted-foreground">All taxes included</p>
+                  </div>
                   <span className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                     ₹{order.totalAmount.toFixed(2)}
                   </span>

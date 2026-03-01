@@ -15,7 +15,8 @@ const { generateInvoiceHTML } = require("../utils/invoiceGenerator.js");
 const createOrderForCheckout = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { shippingAddress, paymentMethod } = req.body;
+    const { shippingAddress, paymentMethod, shippingCharges: reqShippingCharges } = req.body;
+    const shippingCharges = Number(reqShippingCharges) || 0;
 
     // Validate shipping address
     if (!shippingAddress?.addressLine1 || !shippingAddress?.city || 
@@ -74,6 +75,8 @@ const createOrderForCheckout = async (req, res) => {
       });
     }
 
+    totalAmount += shippingCharges;
+
     // For COD, create order directly and decrement stock
     if (paymentMethod === "cod") {
       const order = await Order.create({
@@ -82,6 +85,7 @@ const createOrderForCheckout = async (req, res) => {
         shippingAddress,
         paymentMethod: "cod",
         paymentStatus: "pending",
+        shippingCharges,
         totalAmount,
         orderStatus: "confirmed",
       });
@@ -137,6 +141,7 @@ const createOrderForCheckout = async (req, res) => {
       paymentDetails: {
         razorpayOrderId: razorpayOrder.id,
       },
+      shippingCharges,
       totalAmount,
       orderStatus: "pending",
     });

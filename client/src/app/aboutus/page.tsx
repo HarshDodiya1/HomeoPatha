@@ -400,7 +400,7 @@ export default function AboutPage() {
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Story</h2>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>
-                    HomeoPatha was founded with a simple yet powerful mission: to make quality homeopathic healthcare accessible to everyone. We understand that true healing goes beyond just treating symptoms—it's about nurturing the body's natural ability to heal itself.
+                    The HomeoPatha was founded with a simple yet powerful mission: to make quality homeopathic healthcare accessible to everyone. We understand that true healing goes beyond just treating symptoms—it's about nurturing the body's natural ability to heal itself.
                   </p>
                   <p>
                     Our journey began with a small team of passionate homeopaths who believed in the power of natural remedies. Today, we've grown into a trusted healthcare platform serving thousands of patients across the country.
@@ -582,9 +582,8 @@ export default function AboutPage() {
               className="grid md:grid-cols-3 gap-6"
             >
               {[
-                { icon: Mail, title: "Email Us", info: "support@homeopatha.com", color: "primary" },
-                { icon: Phone, title: "Call Us", info: "+91 1234 567 890", color: "accent" },
-                { icon: MapPin, title: "Visit Us", info: "123 Health Street, Mumbai", color: "primary" }
+                { icon: Mail, title: "Email Us", info: "thehomeopatha@gmail.com", color: "primary" },
+                { icon: MapPin, title: "Visit Us", info: "Mishrawari, Bathario Ka Chawk, Nagaur, Rajasthan 341001", color: "primary" }
               ].map((item, index) => (
                 <motion.div key={index} variants={itemVariants}>
                   <Card className="text-center p-8 rounded-3xl border-border/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 h-full">

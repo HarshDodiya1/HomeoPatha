@@ -78,6 +78,7 @@ export function OrdersTable() {
   const [editPaymentStatus, setEditPaymentStatus] = useState("")
   const [editAdminNotes, setEditAdminNotes] = useState("")
   const [editEstimatedDelivery, setEditEstimatedDelivery] = useState("")
+  const [editShippingCharges, setEditShippingCharges] = useState("")
 
   // Stats
   const [stats, setStats] = useState({
@@ -127,6 +128,7 @@ export function OrdersTable() {
     setEditPaymentStatus(order.paymentStatus)
     setEditAdminNotes(order.adminNotes || "")
     setEditEstimatedDelivery(order.estimatedDelivery || "")
+    setEditShippingCharges(String(order.shippingCharges || 0))
     setIsEditDialogOpen(true)
   }
 
@@ -139,6 +141,7 @@ export function OrdersTable() {
         orderStatus: editOrderStatus as any,
         adminNotes: editAdminNotes,
         estimatedDelivery: editEstimatedDelivery,
+        shippingCharges: Number(editShippingCharges) || 0,
       })
 
       if (editPaymentStatus !== selectedOrder.paymentStatus) {
@@ -487,8 +490,18 @@ export function OrdersTable() {
                 </div>
               </div>
 
+              {selectedOrder.shippingCharges > 0 && (
+                <div className="flex justify-between items-center pt-4 border-t text-sm text-muted-foreground">
+                  <span>Shipping Charges</span>
+                  <span className="font-medium">₹{selectedOrder.shippingCharges}</span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center pt-4 border-t">
-                <span className="text-lg font-semibold">Total Amount</span>
+                <div>
+                  <span className="text-lg font-semibold">Total Amount</span>
+                  <p className="text-xs text-muted-foreground">All taxes included</p>
+                </div>
                 <span className="text-2xl font-bold text-primary">₹{selectedOrder.totalAmount}</span>
               </div>
 
@@ -562,6 +575,17 @@ export function OrdersTable() {
                 type="date"
                 value={editEstimatedDelivery}
                 onChange={(e) => setEditEstimatedDelivery(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Shipping Charges (₹)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={editShippingCharges}
+                onChange={(e) => setEditShippingCharges(e.target.value)}
+                placeholder="0"
               />
             </div>
             <div>

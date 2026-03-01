@@ -42,6 +42,7 @@ const orderSchema = new mongoose.Schema(
       razorpayPaymentId: { type: String },
       razorpaySignature: { type: String },
     },
+    shippingCharges: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
     orderStatus: {
       type: String,

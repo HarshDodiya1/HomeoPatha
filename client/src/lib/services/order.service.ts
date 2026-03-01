@@ -11,6 +11,7 @@ export interface ShippingAddress {
 export interface CreateOrderRequest {
   shippingAddress: ShippingAddress
   paymentMethod: 'razorpay' | 'cod'
+  shippingCharges?: number
 }
 
 export interface VerifyOrderPaymentRequest {

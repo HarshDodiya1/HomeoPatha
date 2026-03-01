@@ -142,7 +142,7 @@ const getOrderById = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { orderStatus, adminNotes, estimatedDelivery } = req.body;
+    const { orderStatus, adminNotes, estimatedDelivery, shippingCharges } = req.body;
 
     if (!orderStatus) {
       return res.status(400).json({
@@ -174,6 +174,12 @@ const updateOrderStatus = async (req, res) => {
     order.orderStatus = orderStatus;
     if (adminNotes) order.adminNotes = adminNotes;
     if (estimatedDelivery) order.estimatedDelivery = estimatedDelivery;
+    if (shippingCharges !== undefined && shippingCharges !== null) {
+      const oldShipping = order.shippingCharges || 0;
+      const newShipping = Number(shippingCharges) || 0;
+      order.shippingCharges = newShipping;
+      order.totalAmount = order.totalAmount - oldShipping + newShipping;
+    }
 
     // Update timestamps based on status
     if (orderStatus === "confirmed" && !order.confirmedAt) {
@@ -325,7 +331,10 @@ const createManualOrder = async (req, res) => {
       orderStatus,
       adminNotes,
       estimatedDelivery,
+      shippingCharges: reqShippingCharges,
     } = req.body;
+
+    const shippingCharges = Number(reqShippingCharges) || 0;
 
     // Validation
     if (!customerName || !customerPhone || !shippingAddress || !orderItems || orderItems.length === 0) {
@@ -361,7 +370,7 @@ const createManualOrder = async (req, res) => {
     // Calculate total amount
     const totalAmount = orderItems.reduce((sum, item) => {
       return sum + (item.price * item.quantity);
-    }, 0);
+    }, 0) + shippingCharges;
 
     // Create order
     const order = await Order.create({
@@ -382,6 +391,7 @@ const createManualOrder = async (req, res) => {
       },
       paymentMethod: paymentMethod || "cod",
       paymentStatus: paymentStatus || "completed",
+      shippingCharges,
       totalAmount,
       orderStatus: orderStatus || "confirmed",
       adminNotes: adminNotes || "",

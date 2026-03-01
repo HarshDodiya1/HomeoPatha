@@ -46,6 +46,8 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay')
   
+  const [shippingCharges] = useState(0)
+
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     addressLine1: '',
     addressLine2: '',
@@ -70,9 +72,11 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, fetchCart])
 
-  const totalAmount = cart?.items.reduce((sum, item) => 
+  const subtotal = cart?.items.reduce((sum, item) => 
     sum + (item.product?.currentPrice || 0) * item.quantity, 0
   ) || 0
+
+  const totalAmount = subtotal + shippingCharges
 
   const handlePlaceOrder = async () => {
     // Validate shipping address
@@ -96,6 +100,7 @@ export default function CheckoutPage() {
       const createResponse = await orderService.createOrder({
         shippingAddress,
         paymentMethod,
+        shippingCharges,
       })
 
       const responseData = createResponse.data.data
@@ -125,7 +130,7 @@ export default function CheckoutPage() {
         key: keyId, // Use key from server response
         amount: amount * 100, // Convert to paise
         currency: currency || 'INR',
-        name: 'HomeoPatha',
+        name: 'The HomeoPatha',
         description: 'Product Purchase',
         order_id: razorpayOrderId,
         handler: async function (response: any) {
@@ -442,17 +447,24 @@ export default function CheckoutPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span className="font-medium">₹{totalAmount.toFixed(2)}</span>
+                      <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Shipping</span>
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs">
-                        FREE
-                      </Badge>
+                      {shippingCharges > 0 ? (
+                        <span className="font-medium">₹{shippingCharges.toFixed(2)}</span>
+                      ) : (
+                        <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs">
+                          FREE
+                        </Badge>
+                      )}
                     </div>
                     <Separator />
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold">Total</span>
+                      <div>
+                        <span className="text-lg font-semibold">Total</span>
+                        <p className="text-xs text-muted-foreground">All taxes included</p>
+                      </div>
                       <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                         ₹{totalAmount.toFixed(2)}
                       </span>

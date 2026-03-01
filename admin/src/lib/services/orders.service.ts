@@ -24,6 +24,7 @@ interface CreateManualOrderRequest {
   orderStatus?: string
   adminNotes?: string
   estimatedDelivery?: string
+  shippingCharges?: number
 }
 
 export const ordersService = {

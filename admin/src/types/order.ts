@@ -32,6 +32,7 @@ export interface Order {
     razorpayPaymentId?: string
     razorpaySignature?: string
   }
+  shippingCharges: number
   totalAmount: number
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   estimatedDelivery?: string
@@ -70,6 +71,7 @@ export interface UpdateOrderStatusRequest {
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   adminNotes?: string
   estimatedDelivery?: string
+  shippingCharges?: number
 }
 
 export interface UpdatePaymentStatusRequest {
