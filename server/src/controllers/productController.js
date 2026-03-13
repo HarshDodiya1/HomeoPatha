@@ -66,7 +66,14 @@ const getAllProducts = async (req, res) => {
     // Sort options
     let sortOption = {};
     const sortBy = req.query.sortBy || "createdAt";
-    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+    const sortOrder =
+      typeof req.query.sortOrder !== "undefined"
+        ? req.query.sortOrder === "asc"
+          ? 1
+          : -1
+        : sortBy === "createdAt"
+          ? 1
+          : -1;
 
     // Validate sort field
     const allowedSortFields = [
@@ -79,7 +86,7 @@ const getAllProducts = async (req, res) => {
     if (allowedSortFields.includes(sortBy)) {
       sortOption[sortBy] = sortOrder;
     } else {
-      sortOption.createdAt = -1; // Default sort
+      sortOption.createdAt = 1; // Default sort (oldest first)
     }
 
     // Get products with filters
