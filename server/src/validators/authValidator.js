@@ -9,7 +9,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[0-9]{7,15}$/;
 
 // Password validation: minimum 6 characters
-const MIN_PASSWORD_LENGTH = 8;
+const MIN_PASSWORD_LENGTH = 6;
 
 // Pincode validation: 5-6 digits
 const PINCODE_REGEX = /^[0-9]{5,6}$/;
