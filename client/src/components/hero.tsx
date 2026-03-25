@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from "react"
 const defaultHeroImages = [
   {
     _id: "default-1",
-    imageUrl: "/doctor-illustration-for-healthcare-hero.jpg",
+    imageUrl: "/hero.jpg",
     mobileImageUrl: "",
     title: "Expert Consultations",
     subtitle: "Connect with certified homeopaths",
