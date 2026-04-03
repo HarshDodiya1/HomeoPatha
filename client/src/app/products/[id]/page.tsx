@@ -339,7 +339,7 @@ export default function ProductDetailPage() {
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <Truck className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-xs text-center text-muted-foreground">Free Delivery</span>
+                  <span className="text-xs text-center text-muted-foreground">₹60 Delivery / Free above ₹499</span>
                 </div>
                 <div className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-secondary/30 border border-border/50">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">

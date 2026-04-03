@@ -183,26 +183,49 @@ export function CartSidebar() {
         {/* Footer */}
         {cart && cart.items.length > 0 && (
           <div className="border-t border-border/50 p-5 space-y-4 bg-secondary/20">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">₹{cart.totalAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Shipping</span>
-                <span className="text-accent font-medium">Free</span>
-              </div>
-            </div>
+            {(() => {
+              const DELIVERY_CHARGE = 60;
+              const FREE_DELIVERY_THRESHOLD = 499;
+              const subtotal = cart.totalAmount;
+              const shippingCharges = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
+              const total = subtotal + shippingCharges;
+              const amountForFree = FREE_DELIVERY_THRESHOLD - subtotal;
+              return (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Shipping</span>
+                        {shippingCharges > 0 ? (
+                          <span className="font-medium">₹{shippingCharges.toFixed(2)}</span>
+                        ) : (
+                          <span className="text-accent font-medium">Free</span>
+                        )}
+                      </div>
+                      {shippingCharges > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Add ₹{amountForFree.toFixed(2)} more for free delivery
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-            <Separator />
+                  <Separator />
 
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="font-semibold">Total</span>
-                <p className="text-xs text-muted-foreground">All taxes included</p>
-              </div>
-              <span className="text-xl font-bold text-primary">₹{cart.totalAmount.toFixed(2)}</span>
-            </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-semibold">Total</span>
+                      <p className="text-xs text-muted-foreground">All taxes included</p>
+                    </div>
+                    <span className="text-xl font-bold text-primary">₹{total.toFixed(2)}</span>
+                  </div>
+                </>
+              );
+            })()}
 
             <div className="space-y-2 pt-2">
               <Button 

@@ -46,8 +46,6 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay')
   
-  const [shippingCharges] = useState(0)
-
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     addressLine1: '',
     addressLine2: '',
@@ -72,9 +70,14 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, fetchCart])
 
-  const subtotal = cart?.items.reduce((sum, item) => 
+  const subtotal = cart?.items.reduce((sum, item) =>
     sum + (item.product?.currentPrice || 0) * item.quantity, 0
   ) || 0
+
+  const DELIVERY_CHARGE = 60
+  const FREE_DELIVERY_THRESHOLD = 499
+  const shippingCharges = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE
+  const amountForFreeDelivery = FREE_DELIVERY_THRESHOLD - subtotal
 
   const totalAmount = subtotal + shippingCharges
 
@@ -449,14 +452,21 @@ export default function CheckoutPage() {
                       <span className="text-muted-foreground">Subtotal</span>
                       <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Shipping</span>
-                      {shippingCharges > 0 ? (
-                        <span className="font-medium">₹{shippingCharges.toFixed(2)}</span>
-                      ) : (
-                        <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs">
-                          FREE
-                        </Badge>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Shipping</span>
+                        {shippingCharges > 0 ? (
+                          <span className="font-medium">₹{shippingCharges.toFixed(2)}</span>
+                        ) : (
+                          <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs">
+                            FREE
+                          </Badge>
+                        )}
+                      </div>
+                      {shippingCharges > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Add ₹{amountForFreeDelivery.toFixed(2)} more for free delivery
+                        </p>
                       )}
                     </div>
                     <Separator />
