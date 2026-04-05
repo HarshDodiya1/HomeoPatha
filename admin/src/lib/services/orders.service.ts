@@ -12,9 +12,17 @@ interface CreateManualOrderRequest {
     state: string
     pincode: string
   }
+  billingDetails?: {
+    accName?: string
+    accNo?: string
+    ifsc?: string
+    branch?: string
+    gstin?: string
+  }
   orderItems: Array<{
     productId?: string
     title: string
+    hsnCode?: string
     quantity: number
     price: number
     image?: string

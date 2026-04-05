@@ -7,6 +7,7 @@ const orderItemSchema = new mongoose.Schema({
     default: null,
   },
   title: { type: String, required: true },
+  hsnCode: { type: String },
   quantity: { type: Number, required: true, min: 1 },
   price: { type: Number, required: true },
   image: { type: String },
@@ -14,6 +15,7 @@ const orderItemSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema(
   {
+    invoiceNumber: { type: String, unique: true },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -41,6 +43,13 @@ const orderSchema = new mongoose.Schema(
       razorpayOrderId: { type: String },
       razorpayPaymentId: { type: String },
       razorpaySignature: { type: String },
+    },
+    billingDetails: {
+      accName: { type: String },
+      accNo: { type: String },
+      ifsc: { type: String },
+      branch: { type: String },
+      gstin: { type: String },
     },
     shippingCharges: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },

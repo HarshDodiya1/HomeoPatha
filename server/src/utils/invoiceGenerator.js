@@ -121,7 +121,7 @@ function escapeHtml(str) {
  * @returns {string} Complete HTML string
  */
 function generateInvoiceHTML(order, user) {
-  const invoiceNumber = `HP-${order._id.toString().slice(-8).toUpperCase()}`;
+  const invoiceNumber = order.invoiceNumber || `HP-${order._id.toString().slice(-8).toUpperCase()}`;
   const invoiceDate = formatDate(order.createdAt);
   const shippingCharges = order.shippingCharges || 0;
   const totalAmount = order.totalAmount;
@@ -138,6 +138,8 @@ function generateInvoiceHTML(order, user) {
   const customerCity = escapeHtml(
     [addr.city, addr.state, addr.pincode].filter(Boolean).join(", ")
   );
+  const bd = order.billingDetails || {};
+  const hasHsn = order.orderItems.some(item => item.hsnCode);
 
   // Build items rows
   const itemsHTML = order.orderItems
@@ -149,6 +151,7 @@ function generateInvoiceHTML(order, user) {
                         <td>
                             <div class="item-description">${escapeHtml(item.title)}</div>
                         </td>
+                        ${hasHsn ? `<td>${escapeHtml(item.hsnCode || "")}</td>` : ""}
                         <td>Nos</td>
                         <td>${item.quantity}</td>
                         <td>&#8377; ${item.price.toFixed(2)}</td>
@@ -532,6 +535,7 @@ function generateInvoiceHTML(order, user) {
             <div class="logo-section">
                 <div style="text-align: center;">
                     <div class="logo-text">The HomeoPatha</div>
+                    <div class="logo-subtitle" style="font-size: 12pt; font-weight: 700; color: #333; margin-top: 6px; letter-spacing: 1px;">MAHADEV &amp; SONS TRADING COMPANY</div>
                     <div class="logo-subtitle">Your Trusted Homeopathy Partner</div>
                     <div class="logo-subtitle" style="margin-top: 4px; font-weight: 600;">GSTIN: 08LVNPS5268K1ZD</div>
                 </div>
@@ -571,6 +575,11 @@ function generateInvoiceHTML(order, user) {
                 <div class="info-line"><span>${customerCity}</span></div>
                 <div class="info-line"><strong>Email:</strong> <span>${customerEmail}</span></div>
                 <div class="info-line"><strong>Phone:</strong> <span>${customerPhone}</span></div>
+                ${bd.gstin ? `<div class="info-line"><strong>GSTIN:</strong> <span>${escapeHtml(bd.gstin)}</span></div>` : ""}
+                ${bd.accName ? `<div class="info-line"><strong>ACC Name:</strong> <span>${escapeHtml(bd.accName)}</span></div>` : ""}
+                ${bd.accNo ? `<div class="info-line"><strong>ACC No:</strong> <span>${escapeHtml(bd.accNo)}</span></div>` : ""}
+                ${bd.ifsc ? `<div class="info-line"><strong>IFSC:</strong> <span>${escapeHtml(bd.ifsc)}</span></div>` : ""}
+                ${bd.branch ? `<div class="info-line"><strong>Branch:</strong> <span>${escapeHtml(bd.branch)}</span></div>` : ""}
             </div>
         </div>
 
@@ -580,7 +589,8 @@ function generateInvoiceHTML(order, user) {
                 <thead>
                     <tr>
                         <th style="width: 5%;">#</th>
-                        <th style="width: 45%;">Product</th>
+                        <th style="${hasHsn ? "width: 35%;" : "width: 45%;"}">Product</th>
+                        ${hasHsn ? '<th style="width: 12%;">HSN Code</th>' : ""}
                         <th style="width: 10%;">Unit</th>
                         <th style="width: 10%;">Qty</th>
                         <th style="width: 15%;">Unit Price</th>

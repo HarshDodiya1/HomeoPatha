@@ -28,6 +28,7 @@ import { ordersService } from "@/lib/services/orders.service"
 
 interface OrderItem {
   title: string
+  hsnCode: string
   quantity: number
   price: number
 }
@@ -47,8 +48,14 @@ export function CreateInvoiceForm() {
   const [pincode, setPincode] = useState("")
 
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
-    { title: "", quantity: 1, price: 0 },
+    { title: "", hsnCode: "", quantity: 1, price: 0 },
   ])
+
+  const [accName, setAccName] = useState("")
+  const [accNo, setAccNo] = useState("")
+  const [ifsc, setIfsc] = useState("")
+  const [branch, setBranch] = useState("")
+  const [gstin, setGstin] = useState("")
 
   const [paymentMethod, setPaymentMethod] = useState("cod")
   const [paymentStatus, setPaymentStatus] = useState("completed")
@@ -58,7 +65,7 @@ export function CreateInvoiceForm() {
   const [shippingCharges, setShippingCharges] = useState(0)
 
   const addOrderItem = () => {
-    setOrderItems([...orderItems, { title: "", quantity: 1, price: 0 }])
+    setOrderItems([...orderItems, { title: "", hsnCode: "", quantity: 1, price: 0 }])
   }
 
   const removeOrderItem = (index: number) => {
@@ -114,11 +121,16 @@ export function CreateInvoiceForm() {
 
     setIsSubmitting(true)
     try {
+      const billingDetails = accName || accNo || ifsc || branch || gstin
+        ? { accName, accNo, ifsc, branch, gstin }
+        : undefined
+
       const response = await ordersService.createManualOrder({
         customerName,
         customerEmail,
         customerPhone,
         shippingAddress: { addressLine1, addressLine2, city, state, pincode },
+        billingDetails,
         orderItems,
         paymentMethod,
         paymentStatus,
@@ -269,6 +281,61 @@ export function CreateInvoiceForm() {
             </CardContent>
           </Card>
 
+          {/* Billing Details */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <IndianRupee className="h-4 w-4 text-primary" />
+                Bill To — Extra Details
+              </CardTitle>
+              <CardDescription>Optional. Shown on invoice if filled.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">GSTIN</Label>
+                <Input
+                  value={gstin}
+                  onChange={(e) => setGstin(e.target.value)}
+                  placeholder="e.g. 08XXXXXXXXX1Z5"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">ACC Name</Label>
+                <Input
+                  value={accName}
+                  onChange={(e) => setAccName(e.target.value)}
+                  placeholder="Account holder name"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">ACC No</Label>
+                <Input
+                  value={accNo}
+                  onChange={(e) => setAccNo(e.target.value)}
+                  placeholder="Account number"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">IFSC</Label>
+                  <Input
+                    value={ifsc}
+                    onChange={(e) => setIfsc(e.target.value)}
+                    placeholder="e.g. SBIN0001234"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Branch</Label>
+                  <Input
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    placeholder="Branch name"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Notes */}
           <Card>
             <CardHeader className="pb-4">
@@ -327,8 +394,9 @@ export function CreateInvoiceForm() {
             </CardHeader>
             <CardContent className="p-0">
               {/* Table Header */}
-              <div className="grid grid-cols-[1fr_80px_110px_100px_40px] gap-3 px-6 py-2.5 bg-muted/50 text-xs font-medium text-muted-foreground uppercase tracking-wider border-y">
+              <div className="grid grid-cols-[1fr_100px_80px_110px_100px_40px] gap-3 px-6 py-2.5 bg-muted/50 text-xs font-medium text-muted-foreground uppercase tracking-wider border-y">
                 <span>Product</span>
+                <span className="text-center">HSN Code</span>
                 <span className="text-center">Qty</span>
                 <span className="text-center">Price (₹)</span>
                 <span className="text-right">Total</span>
@@ -340,7 +408,7 @@ export function CreateInvoiceForm() {
                 {orderItems.map((item, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-[1fr_80px_110px_100px_40px] gap-3 px-6 py-3 items-center"
+                    className="grid grid-cols-[1fr_100px_80px_110px_100px_40px] gap-3 px-6 py-3 items-center"
                   >
                     <Input
                       value={item.title}
@@ -350,6 +418,14 @@ export function CreateInvoiceForm() {
                       placeholder="Product name"
                       className="h-9"
                       required
+                    />
+                    <Input
+                      value={item.hsnCode}
+                      onChange={(e) =>
+                        updateOrderItem(index, "hsnCode", e.target.value)
+                      }
+                      placeholder="Optional"
+                      className="h-9 text-center"
                     />
                     <Input
                       type="number"

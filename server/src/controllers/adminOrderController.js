@@ -1,8 +1,18 @@
 const Order = require("../models/Order.js");
 const Product = require("../models/Product.js");
 const User = require("../models/User.js");
+const Counter = require("../models/Counter.js");
 const bcryptjs = require("bcryptjs");
 const { generateInvoiceHTML } = require("../utils/invoiceGenerator.js");
+
+async function generateInvoiceNumber() {
+  const counter = await Counter.findOneAndUpdate(
+    { _id: "invoiceNumber" },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  return `HP-${String(counter.seq).padStart(6, "0")}`;
+}
 
 /**
  * @desc Get all orders (Admin)
@@ -325,6 +335,7 @@ const createManualOrder = async (req, res) => {
       customerEmail,
       customerPhone,
       shippingAddress,
+      billingDetails,
       orderItems,
       paymentMethod,
       paymentStatus,
@@ -372,12 +383,16 @@ const createManualOrder = async (req, res) => {
       return sum + (item.price * item.quantity);
     }, 0) + shippingCharges;
 
+    const invoiceNumber = await generateInvoiceNumber();
+
     // Create order
     const order = await Order.create({
+      invoiceNumber,
       userId: user._id,
       orderItems: orderItems.map(item => ({
         productId: item.productId || null,
         title: item.title,
+        hsnCode: item.hsnCode || "",
         quantity: item.quantity,
         price: item.price,
         image: item.image || "",
@@ -389,6 +404,13 @@ const createManualOrder = async (req, res) => {
         state: shippingAddress.state,
         pincode: shippingAddress.pincode,
       },
+      billingDetails: billingDetails ? {
+        accName: billingDetails.accName || "",
+        accNo: billingDetails.accNo || "",
+        ifsc: billingDetails.ifsc || "",
+        branch: billingDetails.branch || "",
+        gstin: billingDetails.gstin || "",
+      } : undefined,
       paymentMethod: paymentMethod || "cod",
       paymentStatus: paymentStatus || "completed",
       shippingCharges,
