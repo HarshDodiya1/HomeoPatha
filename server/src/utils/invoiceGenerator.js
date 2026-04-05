@@ -641,6 +641,12 @@ function generateInvoiceHTML(order, user) {
                     <div class="info-line"><strong>Method:</strong> ${paymentMethodText}</div>
                     <div class="info-line"><strong>Status:</strong> <span class="status-badge status-${order.paymentStatus}">${paymentStatusText}</span></div>
                     ${order.paymentDetails?.razorpayPaymentId ? `<div class="info-line" style="margin-top: 8px;"><strong>Payment ID:</strong><br><span style="font-family: monospace; font-size: 10pt;">${escapeHtml(order.paymentDetails.razorpayPaymentId)}</span></div>` : ""}
+                    <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #ddd;">
+                        <div class="info-line"><strong>ACC Name:</strong> MAHADEV AND SONS TRADING COMPANY</div>
+                        <div class="info-line"><strong>ACC No:</strong> 04650410000199</div>
+                        <div class="info-line"><strong>IFSC:</strong> UCBA0000465</div>
+                        <div class="info-line"><strong>Branch:</strong> Nagaur, Rajasthan</div>
+                    </div>
                 </div>
             </div>
             <div class="notes-section">
