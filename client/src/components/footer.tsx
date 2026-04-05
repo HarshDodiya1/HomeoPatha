@@ -20,7 +20,7 @@ const serviceLinks = [
 
 const socialLinks = [
   { label: "Instagram", href: "https://instagram.com" },
-  { label: "WhatsApp", href: "https://wa.me/919979488188" },
+  { label: "WhatsApp", href: "https://wa.me/+919521235103" },
   { label: "Facebook", href: "https://facebook.com" },
 ]
 
@@ -29,7 +29,7 @@ export function Footer() {
     <div className="text-foreground">
       <footer className="relative">
         {/* Top gradient border */}
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary to-transparent" />
         
         <div className="pt-16 pb-4 px-4 md:px-8 lg:px-12">
           {/* Main Footer Content */}
