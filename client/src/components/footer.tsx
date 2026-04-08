@@ -19,9 +19,9 @@ const serviceLinks = [
 ]
 
 const socialLinks = [
-  { label: "Instagram", href: "https://instagram.com" },
+  { label: "Instagram", href: "https://www.instagram.com/the_homeopatha" },
   { label: "WhatsApp", href: "https://wa.me/+919521235103" },
-  { label: "Facebook", href: "https://facebook.com" },
+  { label: "Facebook", href: "https://www.facebook.com/share/1CfRHVR3PE" },
 ]
 
 export function Footer() {

@@ -213,9 +213,9 @@ export function Hero() {
               className="flex items-center gap-8 md:gap-12"
             >
               {[
-                { value: "500+", label: "Doctors" },
-                { value: "10K+", label: "Appointments" },
-                { value: "98%", label: "Satisfaction" },
+                { value: "100%", label: "Natural" },
+                { value: "Safe &", label: "Effective" },
+                { value: "Holistic", label: "Care" },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
                   <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">
