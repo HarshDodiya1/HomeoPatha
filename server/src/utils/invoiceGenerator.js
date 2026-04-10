@@ -124,8 +124,13 @@ function generateInvoiceHTML(order, user) {
   const invoiceNumber = order.invoiceNumber || `HP-${order._id.toString().slice(-8).toUpperCase()}`;
   const invoiceDate = formatDate(order.createdAt);
   const shippingCharges = order.shippingCharges || 0;
+  const cgstRate = order.cgstRate || 0;
+  const sgstRate = order.sgstRate || 0;
   const totalAmount = order.totalAmount;
-  const subtotal = totalAmount - shippingCharges;
+  const itemsSubtotal = order.orderItems.reduce((s, i) => s + i.price * i.quantity, 0);
+  const cgstAmount = itemsSubtotal * cgstRate / 100;
+  const sgstAmount = itemsSubtotal * sgstRate / 100;
+  const hasGst = cgstRate > 0 || sgstRate > 0;
   const amountInWords = numberToWords(totalAmount);
 
   const customerName = escapeHtml(user.fullName);
@@ -159,6 +164,77 @@ function generateInvoiceHTML(order, user) {
                     </tr>`;
     })
     .join("\n");
+
+  // Build GST table data grouped by HSN code
+  const gstTableHTML = (() => {
+    if (!hasGst) return "";
+
+    // Group items by HSN code
+    const groups = {};
+    order.orderItems.forEach(item => {
+      const key = item.hsnCode || "N/A";
+      if (!groups[key]) groups[key] = { hsnCode: key, taxableValue: 0 };
+      groups[key].taxableValue += item.price * item.quantity;
+    });
+
+    let totalTaxableValue = 0;
+    let totalCgstAmount = 0;
+    let totalSgstAmount = 0;
+    let totalTaxAmount = 0;
+
+    const rows = Object.values(groups).map(g => {
+      const cgst = g.taxableValue * cgstRate / 100;
+      const sgst = g.taxableValue * sgstRate / 100;
+      const tax = cgst + sgst;
+      totalTaxableValue += g.taxableValue;
+      totalCgstAmount += cgst;
+      totalSgstAmount += sgst;
+      totalTaxAmount += tax;
+      return `<tr>
+        <td class="hsn-col">${escapeHtml(g.hsnCode)}</td>
+        <td>&#8377; ${g.taxableValue.toFixed(2)}</td>
+        <td>${cgstRate}%</td>
+        <td>&#8377; ${cgst.toFixed(2)}</td>
+        <td>${sgstRate}%</td>
+        <td>&#8377; ${sgst.toFixed(2)}</td>
+        <td>&#8377; ${tax.toFixed(2)}</td>
+      </tr>`;
+    }).join("\n");
+
+    return `
+        <!-- GST Summary Table -->
+        <div class="gst-table-section">
+            <table class="gst-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="hsn-col" style="text-align:left;">HSN/SAC</th>
+                        <th rowspan="2">Taxable Value</th>
+                        <th colspan="2">CGST</th>
+                        <th colspan="2">SGST/UTGST</th>
+                        <th rowspan="2">Total Tax Amount</th>
+                    </tr>
+                    <tr>
+                        <th>Rate</th>
+                        <th>Amount</th>
+                        <th>Rate</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                    <tr class="total-row">
+                        <td class="hsn-col"><strong>Total</strong></td>
+                        <td><strong>&#8377; ${totalTaxableValue.toFixed(2)}</strong></td>
+                        <td></td>
+                        <td><strong>&#8377; ${totalCgstAmount.toFixed(2)}</strong></td>
+                        <td></td>
+                        <td><strong>&#8377; ${totalSgstAmount.toFixed(2)}</strong></td>
+                        <td><strong>&#8377; ${totalTaxAmount.toFixed(2)}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
+  })();
 
   const paymentMethodText =
     order.paymentMethod === "razorpay" ? "Online (Razorpay)" : "Cash on Delivery";
@@ -524,6 +600,43 @@ function generateInvoiceHTML(order, user) {
             background: #fecaca;
             color: #991b1b;
         }
+
+        .gst-table-section {
+            border-bottom: 2px solid #000;
+            background: white;
+        }
+
+        .gst-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5pt;
+        }
+
+        .gst-table th {
+            background: #f0fdf4;
+            color: #000;
+            padding: 8px 10px;
+            text-align: center;
+            font-weight: 700;
+            border: 1px solid #000;
+            font-size: 10pt;
+        }
+
+        .gst-table td {
+            padding: 7px 10px;
+            border: 1px solid #000;
+            text-align: center;
+            font-size: 10.5pt;
+        }
+
+        .gst-table .total-row td {
+            font-weight: 700;
+            background: #f9fafb;
+        }
+
+        .gst-table .hsn-col {
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -609,15 +722,24 @@ function generateInvoiceHTML(order, user) {
                 <div class="summary-table">
                     <div class="summary-row">
                         <div class="summary-label">Subtotal</div>
-                        <div class="summary-value">&#8377; ${subtotal.toFixed(2)}</div>
+                        <div class="summary-value">&#8377; ${itemsSubtotal.toFixed(2)}</div>
                     </div>
+                    ${hasGst ? `
+                    <div class="summary-row">
+                        <div class="summary-label">CGST @ ${cgstRate}%</div>
+                        <div class="summary-value">&#8377; ${cgstAmount.toFixed(2)}</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">SGST @ ${sgstRate}%</div>
+                        <div class="summary-value">&#8377; ${sgstAmount.toFixed(2)}</div>
+                    </div>` : `
+                    <div class="summary-row">
+                        <div class="summary-label" style="font-size: 9pt; color: #666;">No tax applied</div>
+                        <div class="summary-value"></div>
+                    </div>`}
                     <div class="summary-row">
                         <div class="summary-label">Shipping</div>
                         <div class="summary-value">&#8377; ${shippingCharges.toFixed(2)}</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label" style="font-size: 9pt; color: #666;">All taxes included</div>
-                        <div class="summary-value"></div>
                     </div>
                     <div class="summary-row">
                         <div class="summary-label">TOTAL</div>
@@ -627,10 +749,13 @@ function generateInvoiceHTML(order, user) {
             </div>
         </div>
 
+        ${gstTableHTML}
+
         <!-- Amount in Words -->
         <div class="amount-words-row">
-            <div class="label">Amount in Words:</div>
+            <div class="label">Amount Chargeable (in words):</div>
             <div class="value">${escapeHtml(amountInWords)}</div>
+            ${hasGst ? `<div class="label" style="margin-top:6px;">Tax Amount (in words): <strong>${escapeHtml(numberToWords(cgstAmount + sgstAmount))}</strong></div>` : ""}
         </div>
 
         <!-- Footer: Payment Info and Notes -->

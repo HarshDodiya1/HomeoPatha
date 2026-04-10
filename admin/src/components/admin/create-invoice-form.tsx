@@ -57,6 +57,9 @@ export function CreateInvoiceForm() {
   const [branch, setBranch] = useState("")
   const [gstin, setGstin] = useState("")
 
+  const [cgstRate, setCgstRate] = useState(0)
+  const [sgstRate, setSgstRate] = useState(0)
+
   const [paymentMethod, setPaymentMethod] = useState("cod")
   const [paymentStatus, setPaymentStatus] = useState("completed")
   const [orderStatus, setOrderStatus] = useState("confirmed")
@@ -91,8 +94,11 @@ export function CreateInvoiceForm() {
     )
   }
 
+  const calculateCgst = () => (calculateSubtotal() * cgstRate) / 100
+  const calculateSgst = () => (calculateSubtotal() * sgstRate) / 100
+
   const calculateTotal = () => {
-    return calculateSubtotal() + shippingCharges
+    return calculateSubtotal() + calculateCgst() + calculateSgst() + shippingCharges
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,6 +144,8 @@ export function CreateInvoiceForm() {
         adminNotes,
         estimatedDelivery: estimatedDelivery || undefined,
         shippingCharges,
+        cgstRate,
+        sgstRate,
       })
 
       toast.success("Invoice created successfully!")
@@ -592,6 +600,61 @@ export function CreateInvoiceForm() {
             </CardContent>
           </Card>
 
+          {/* GST / Tax */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <IndianRupee className="h-4 w-4 text-primary" />
+                GST / Tax
+              </CardTitle>
+              <CardDescription>Optional. Applied on subtotal. Leave 0 if not applicable.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">CGST (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={cgstRate || ""}
+                    onChange={(e) => setCgstRate(parseFloat(e.target.value) || 0)}
+                    placeholder="e.g. 9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">SGST (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={sgstRate || ""}
+                    onChange={(e) => setSgstRate(parseFloat(e.target.value) || 0)}
+                    placeholder="e.g. 9"
+                  />
+                </div>
+              </div>
+              {(cgstRate > 0 || sgstRate > 0) && (
+                <div className="mt-3 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground space-y-1">
+                  {cgstRate > 0 && (
+                    <div className="flex justify-between">
+                      <span>CGST @ {cgstRate}%</span>
+                      <span className="font-medium tabular-nums text-foreground">₹{calculateCgst().toFixed(2)}</span>
+                    </div>
+                  )}
+                  {sgstRate > 0 && (
+                    <div className="flex justify-between">
+                      <span>SGST @ {sgstRate}%</span>
+                      <span className="font-medium tabular-nums text-foreground">₹{calculateSgst().toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Summary + Actions */}
           <Card>
             <CardContent className="pt-6 space-y-5">
@@ -603,6 +666,18 @@ export function CreateInvoiceForm() {
                   </span>
                   <span className="font-medium tabular-nums">₹{calculateSubtotal().toFixed(2)}</span>
                 </div>
+                {cgstRate > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">CGST @ {cgstRate}%</span>
+                    <span className="font-medium tabular-nums">₹{calculateCgst().toFixed(2)}</span>
+                  </div>
+                )}
+                {sgstRate > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">SGST @ {sgstRate}%</span>
+                    <span className="font-medium tabular-nums">₹{calculateSgst().toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Shipping</span>
                   {shippingCharges > 0 ? (
@@ -617,7 +692,9 @@ export function CreateInvoiceForm() {
                     <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
                       Invoice Total
                     </p>
-                    <p className="text-[10px] text-muted-foreground">All taxes included</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {(cgstRate > 0 || sgstRate > 0) ? "Inclusive of GST" : "No tax applied"}
+                    </p>
                   </div>
                   <span className="text-3xl font-bold tracking-tight tabular-nums">
                     ₹{total.toFixed(2)}

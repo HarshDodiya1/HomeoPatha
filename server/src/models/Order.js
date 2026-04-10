@@ -52,6 +52,8 @@ const orderSchema = new mongoose.Schema(
       gstin: { type: String },
     },
     shippingCharges: { type: Number, default: 0 },
+    cgstRate: { type: Number, default: 0 },
+    sgstRate: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
     orderStatus: {
       type: String,

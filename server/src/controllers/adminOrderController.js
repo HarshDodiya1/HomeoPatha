@@ -343,9 +343,13 @@ const createManualOrder = async (req, res) => {
       adminNotes,
       estimatedDelivery,
       shippingCharges: reqShippingCharges,
+      cgstRate: reqCgstRate,
+      sgstRate: reqSgstRate,
     } = req.body;
 
     const shippingCharges = Number(reqShippingCharges) || 0;
+    const cgstRate = Number(reqCgstRate) || 0;
+    const sgstRate = Number(reqSgstRate) || 0;
 
     // Validation
     if (!customerName || !customerPhone || !shippingAddress || !orderItems || orderItems.length === 0) {
@@ -379,9 +383,12 @@ const createManualOrder = async (req, res) => {
     }
 
     // Calculate total amount
-    const totalAmount = orderItems.reduce((sum, item) => {
+    const subtotal = orderItems.reduce((sum, item) => {
       return sum + (item.price * item.quantity);
-    }, 0) + shippingCharges;
+    }, 0);
+    const cgstAmount = subtotal * cgstRate / 100;
+    const sgstAmount = subtotal * sgstRate / 100;
+    const totalAmount = subtotal + cgstAmount + sgstAmount + shippingCharges;
 
     const invoiceNumber = await generateInvoiceNumber();
 
@@ -414,6 +421,8 @@ const createManualOrder = async (req, res) => {
       paymentMethod: paymentMethod || "cod",
       paymentStatus: paymentStatus || "completed",
       shippingCharges,
+      cgstRate,
+      sgstRate,
       totalAmount,
       orderStatus: orderStatus || "confirmed",
       adminNotes: adminNotes || "",
