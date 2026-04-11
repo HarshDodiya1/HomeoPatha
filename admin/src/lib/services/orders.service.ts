@@ -26,6 +26,8 @@ interface CreateManualOrderRequest {
     quantity: number
     price: number
     image?: string
+    cgstRate?: number
+    sgstRate?: number
   }>
   paymentMethod?: string
   paymentStatus?: string
@@ -33,8 +35,6 @@ interface CreateManualOrderRequest {
   adminNotes?: string
   estimatedDelivery?: string
   shippingCharges?: number
-  cgstRate?: number
-  sgstRate?: number
 }
 
 export const ordersService = {

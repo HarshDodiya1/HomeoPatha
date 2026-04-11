@@ -343,13 +343,9 @@ const createManualOrder = async (req, res) => {
       adminNotes,
       estimatedDelivery,
       shippingCharges: reqShippingCharges,
-      cgstRate: reqCgstRate,
-      sgstRate: reqSgstRate,
     } = req.body;
 
     const shippingCharges = Number(reqShippingCharges) || 0;
-    const cgstRate = Number(reqCgstRate) || 0;
-    const sgstRate = Number(reqSgstRate) || 0;
 
     // Validation
     if (!customerName || !customerPhone || !shippingAddress || !orderItems || orderItems.length === 0) {
@@ -382,13 +378,13 @@ const createManualOrder = async (req, res) => {
       });
     }
 
-    // Calculate total amount
-    const subtotal = orderItems.reduce((sum, item) => {
-      return sum + (item.price * item.quantity);
-    }, 0);
-    const cgstAmount = subtotal * cgstRate / 100;
-    const sgstAmount = subtotal * sgstRate / 100;
-    const totalAmount = subtotal + cgstAmount + sgstAmount + shippingCharges;
+    // Calculate total amount (taxes are per-item)
+    const totalAmount = orderItems.reduce((sum, item) => {
+      const itemSubtotal = item.price * item.quantity;
+      const cgst = itemSubtotal * (Number(item.cgstRate) || 0) / 100;
+      const sgst = itemSubtotal * (Number(item.sgstRate) || 0) / 100;
+      return sum + itemSubtotal + cgst + sgst;
+    }, 0) + shippingCharges;
 
     const invoiceNumber = await generateInvoiceNumber();
 
@@ -403,6 +399,8 @@ const createManualOrder = async (req, res) => {
         quantity: item.quantity,
         price: item.price,
         image: item.image || "",
+        cgstRate: Number(item.cgstRate) || 0,
+        sgstRate: Number(item.sgstRate) || 0,
       })),
       shippingAddress: {
         addressLine1: shippingAddress.addressLine1,
@@ -421,8 +419,6 @@ const createManualOrder = async (req, res) => {
       paymentMethod: paymentMethod || "cod",
       paymentStatus: paymentStatus || "completed",
       shippingCharges,
-      cgstRate,
-      sgstRate,
       totalAmount,
       orderStatus: orderStatus || "confirmed",
       adminNotes: adminNotes || "",

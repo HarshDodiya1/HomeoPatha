@@ -31,6 +31,8 @@ interface OrderItem {
   hsnCode: string
   quantity: number
   price: number
+  cgstRate: number
+  sgstRate: number
 }
 
 export function CreateInvoiceForm() {
@@ -48,7 +50,7 @@ export function CreateInvoiceForm() {
   const [pincode, setPincode] = useState("")
 
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
-    { title: "", hsnCode: "", quantity: 1, price: 0 },
+    { title: "", hsnCode: "", quantity: 1, price: 0, cgstRate: 0, sgstRate: 0 },
   ])
 
   const [accName, setAccName] = useState("")
@@ -56,9 +58,6 @@ export function CreateInvoiceForm() {
   const [ifsc, setIfsc] = useState("")
   const [branch, setBranch] = useState("")
   const [gstin, setGstin] = useState("")
-
-  const [cgstRate, setCgstRate] = useState(0)
-  const [sgstRate, setSgstRate] = useState(0)
 
   const [paymentMethod, setPaymentMethod] = useState("cod")
   const [paymentStatus, setPaymentStatus] = useState("completed")
@@ -68,7 +67,7 @@ export function CreateInvoiceForm() {
   const [shippingCharges, setShippingCharges] = useState(0)
 
   const addOrderItem = () => {
-    setOrderItems([...orderItems, { title: "", hsnCode: "", quantity: 1, price: 0 }])
+    setOrderItems([...orderItems, { title: "", hsnCode: "", quantity: 1, price: 0, cgstRate: 0, sgstRate: 0 }])
   }
 
   const removeOrderItem = (index: number) => {
@@ -87,18 +86,20 @@ export function CreateInvoiceForm() {
     setOrderItems(updated)
   }
 
-  const calculateSubtotal = () => {
-    return orderItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    )
-  }
+  const calculateSubtotal = () =>
+    orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-  const calculateCgst = () => (calculateSubtotal() * cgstRate) / 100
-  const calculateSgst = () => (calculateSubtotal() * sgstRate) / 100
+  const calculateTotalTax = () =>
+    orderItems.reduce((sum, item) => {
+      const base = item.price * item.quantity
+      return sum + (base * item.cgstRate) / 100 + (base * item.sgstRate) / 100
+    }, 0)
 
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateCgst() + calculateSgst() + shippingCharges
+  const calculateTotal = () => calculateSubtotal() + calculateTotalTax() + shippingCharges
+
+  const itemRowTotal = (item: OrderItem) => {
+    const base = item.price * item.quantity
+    return base + (base * item.cgstRate) / 100 + (base * item.sgstRate) / 100
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -144,8 +145,6 @@ export function CreateInvoiceForm() {
         adminNotes,
         estimatedDelivery: estimatedDelivery || undefined,
         shippingCharges,
-        cgstRate,
-        sgstRate,
       })
 
       toast.success("Invoice created successfully!")
@@ -402,12 +401,14 @@ export function CreateInvoiceForm() {
             </CardHeader>
             <CardContent className="p-0">
               {/* Table Header */}
-              <div className="grid grid-cols-[1fr_100px_80px_110px_100px_40px] gap-3 px-6 py-2.5 bg-muted/50 text-xs font-medium text-muted-foreground uppercase tracking-wider border-y">
+              <div className="grid grid-cols-[1fr_90px_60px_100px_65px_65px_110px_40px] gap-2 px-6 py-2.5 bg-muted/50 text-xs font-medium text-muted-foreground uppercase tracking-wider border-y">
                 <span>Product</span>
                 <span className="text-center">HSN Code</span>
                 <span className="text-center">Qty</span>
                 <span className="text-center">Price (₹)</span>
-                <span className="text-right">Total</span>
+                <span className="text-center">CGST %</span>
+                <span className="text-center">SGST %</span>
+                <span className="text-right">Total (₹)</span>
                 <span />
               </div>
 
@@ -416,7 +417,7 @@ export function CreateInvoiceForm() {
                 {orderItems.map((item, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-[1fr_100px_80px_110px_100px_40px] gap-3 px-6 py-3 items-center"
+                    className="grid grid-cols-[1fr_90px_60px_100px_65px_65px_110px_40px] gap-2 px-6 py-3 items-center"
                   >
                     <Input
                       value={item.title}
@@ -464,8 +465,32 @@ export function CreateInvoiceForm() {
                       className="h-9 text-center"
                       required
                     />
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={item.cgstRate || ""}
+                      onChange={(e) =>
+                        updateOrderItem(index, "cgstRate", parseFloat(e.target.value) || 0)
+                      }
+                      placeholder="0"
+                      className="h-9 text-center"
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      value={item.sgstRate || ""}
+                      onChange={(e) =>
+                        updateOrderItem(index, "sgstRate", parseFloat(e.target.value) || 0)
+                      }
+                      placeholder="0"
+                      className="h-9 text-center"
+                    />
                     <div className="text-right font-medium text-sm tabular-nums">
-                      ₹{(item.price * item.quantity).toFixed(2)}
+                      ₹{itemRowTotal(item).toFixed(2)}
                     </div>
                     <div className="flex justify-center">
                       {orderItems.length > 1 ? (
@@ -600,61 +625,6 @@ export function CreateInvoiceForm() {
             </CardContent>
           </Card>
 
-          {/* GST / Tax */}
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <IndianRupee className="h-4 w-4 text-primary" />
-                GST / Tax
-              </CardTitle>
-              <CardDescription>Optional. Applied on subtotal. Leave 0 if not applicable.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">CGST (%)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.5"
-                    value={cgstRate || ""}
-                    onChange={(e) => setCgstRate(parseFloat(e.target.value) || 0)}
-                    placeholder="e.g. 9"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">SGST (%)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.5"
-                    value={sgstRate || ""}
-                    onChange={(e) => setSgstRate(parseFloat(e.target.value) || 0)}
-                    placeholder="e.g. 9"
-                  />
-                </div>
-              </div>
-              {(cgstRate > 0 || sgstRate > 0) && (
-                <div className="mt-3 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground space-y-1">
-                  {cgstRate > 0 && (
-                    <div className="flex justify-between">
-                      <span>CGST @ {cgstRate}%</span>
-                      <span className="font-medium tabular-nums text-foreground">₹{calculateCgst().toFixed(2)}</span>
-                    </div>
-                  )}
-                  {sgstRate > 0 && (
-                    <div className="flex justify-between">
-                      <span>SGST @ {sgstRate}%</span>
-                      <span className="font-medium tabular-nums text-foreground">₹{calculateSgst().toFixed(2)}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Summary + Actions */}
           <Card>
             <CardContent className="pt-6 space-y-5">
@@ -666,16 +636,10 @@ export function CreateInvoiceForm() {
                   </span>
                   <span className="font-medium tabular-nums">₹{calculateSubtotal().toFixed(2)}</span>
                 </div>
-                {cgstRate > 0 && (
+                {calculateTotalTax() > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">CGST @ {cgstRate}%</span>
-                    <span className="font-medium tabular-nums">₹{calculateCgst().toFixed(2)}</span>
-                  </div>
-                )}
-                {sgstRate > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">SGST @ {sgstRate}%</span>
-                    <span className="font-medium tabular-nums">₹{calculateSgst().toFixed(2)}</span>
+                    <span className="text-muted-foreground">Total Tax (GST)</span>
+                    <span className="font-medium tabular-nums">₹{calculateTotalTax().toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
@@ -693,7 +657,7 @@ export function CreateInvoiceForm() {
                       Invoice Total
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      {(cgstRate > 0 || sgstRate > 0) ? "Inclusive of GST" : "No tax applied"}
+                      {calculateTotalTax() > 0 ? "Inclusive of GST" : "No tax applied"}
                     </p>
                   </div>
                   <span className="text-3xl font-bold tracking-tight tabular-nums">

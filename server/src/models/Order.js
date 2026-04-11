@@ -11,6 +11,8 @@ const orderItemSchema = new mongoose.Schema({
   quantity: { type: Number, required: true, min: 1 },
   price: { type: Number, required: true },
   image: { type: String },
+  cgstRate: { type: Number, default: 0 },
+  sgstRate: { type: Number, default: 0 },
 });
 
 const orderSchema = new mongoose.Schema(

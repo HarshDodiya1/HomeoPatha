@@ -124,13 +124,11 @@ function generateInvoiceHTML(order, user) {
   const invoiceNumber = order.invoiceNumber || `HP-${order._id.toString().slice(-8).toUpperCase()}`;
   const invoiceDate = formatDate(order.createdAt);
   const shippingCharges = order.shippingCharges || 0;
-  const cgstRate = order.cgstRate || 0;
-  const sgstRate = order.sgstRate || 0;
   const totalAmount = order.totalAmount;
   const itemsSubtotal = order.orderItems.reduce((s, i) => s + i.price * i.quantity, 0);
-  const cgstAmount = itemsSubtotal * cgstRate / 100;
-  const sgstAmount = itemsSubtotal * sgstRate / 100;
-  const hasGst = cgstRate > 0 || sgstRate > 0;
+  const hasGst = order.orderItems.some(i => (i.cgstRate || 0) > 0 || (i.sgstRate || 0) > 0);
+  const totalCgstAmount = order.orderItems.reduce((s, i) => s + (i.price * i.quantity * (i.cgstRate || 0) / 100), 0);
+  const totalSgstAmount = order.orderItems.reduce((s, i) => s + (i.price * i.quantity * (i.sgstRate || 0) / 100), 0);
   const amountInWords = numberToWords(totalAmount);
 
   const customerName = escapeHtml(user.fullName);
@@ -149,7 +147,12 @@ function generateInvoiceHTML(order, user) {
   // Build items rows
   const itemsHTML = order.orderItems
     .map((item, index) => {
-      const itemTotal = (item.price * item.quantity).toFixed(2);
+      const base = item.price * item.quantity;
+      const cgstRate = item.cgstRate || 0;
+      const sgstRate = item.sgstRate || 0;
+      const cgstAmt = base * cgstRate / 100;
+      const sgstAmt = base * sgstRate / 100;
+      const itemTotal = (base + cgstAmt + sgstAmt).toFixed(2);
       return `
                     <tr>
                         <td>${index + 1}</td>
@@ -160,42 +163,46 @@ function generateInvoiceHTML(order, user) {
                         <td>Nos</td>
                         <td>${item.quantity}</td>
                         <td>&#8377; ${item.price.toFixed(2)}</td>
+                        ${hasGst ? `<td>${cgstRate > 0 ? cgstRate + "%" : "-"}</td><td>${cgstRate > 0 ? "&#8377; " + cgstAmt.toFixed(2) : "-"}</td><td>${sgstRate > 0 ? sgstRate + "%" : "-"}</td><td>${sgstRate > 0 ? "&#8377; " + sgstAmt.toFixed(2) : "-"}</td>` : ""}
                         <td>&#8377; ${itemTotal}</td>
                     </tr>`;
     })
     .join("\n");
 
-  // Build GST table data grouped by HSN code
+  // Build GST table data grouped by HSN code + tax rates
   const gstTableHTML = (() => {
     if (!hasGst) return "";
 
-    // Group items by HSN code
+    // Group items by HSN code + cgstRate + sgstRate combination
     const groups = {};
     order.orderItems.forEach(item => {
-      const key = item.hsnCode || "N/A";
-      if (!groups[key]) groups[key] = { hsnCode: key, taxableValue: 0 };
+      const cgstR = item.cgstRate || 0;
+      const sgstR = item.sgstRate || 0;
+      if (cgstR === 0 && sgstR === 0) return;
+      const key = `${item.hsnCode || "N/A"}_${cgstR}_${sgstR}`;
+      if (!groups[key]) groups[key] = { hsnCode: item.hsnCode || "N/A", cgstRate: cgstR, sgstRate: sgstR, taxableValue: 0 };
       groups[key].taxableValue += item.price * item.quantity;
     });
 
     let totalTaxableValue = 0;
-    let totalCgstAmount = 0;
-    let totalSgstAmount = 0;
+    let totalCgstAmt = 0;
+    let totalSgstAmt = 0;
     let totalTaxAmount = 0;
 
     const rows = Object.values(groups).map(g => {
-      const cgst = g.taxableValue * cgstRate / 100;
-      const sgst = g.taxableValue * sgstRate / 100;
+      const cgst = g.taxableValue * g.cgstRate / 100;
+      const sgst = g.taxableValue * g.sgstRate / 100;
       const tax = cgst + sgst;
       totalTaxableValue += g.taxableValue;
-      totalCgstAmount += cgst;
-      totalSgstAmount += sgst;
+      totalCgstAmt += cgst;
+      totalSgstAmt += sgst;
       totalTaxAmount += tax;
       return `<tr>
         <td class="hsn-col">${escapeHtml(g.hsnCode)}</td>
         <td>&#8377; ${g.taxableValue.toFixed(2)}</td>
-        <td>${cgstRate}%</td>
+        <td>${g.cgstRate}%</td>
         <td>&#8377; ${cgst.toFixed(2)}</td>
-        <td>${sgstRate}%</td>
+        <td>${g.sgstRate}%</td>
         <td>&#8377; ${sgst.toFixed(2)}</td>
         <td>&#8377; ${tax.toFixed(2)}</td>
       </tr>`;
@@ -226,9 +233,9 @@ function generateInvoiceHTML(order, user) {
                         <td class="hsn-col"><strong>Total</strong></td>
                         <td><strong>&#8377; ${totalTaxableValue.toFixed(2)}</strong></td>
                         <td></td>
-                        <td><strong>&#8377; ${totalCgstAmount.toFixed(2)}</strong></td>
+                        <td><strong>&#8377; ${totalCgstAmt.toFixed(2)}</strong></td>
                         <td></td>
-                        <td><strong>&#8377; ${totalSgstAmount.toFixed(2)}</strong></td>
+                        <td><strong>&#8377; ${totalSgstAmt.toFixed(2)}</strong></td>
                         <td><strong>&#8377; ${totalTaxAmount.toFixed(2)}</strong></td>
                     </tr>
                 </tbody>
@@ -701,13 +708,14 @@ function generateInvoiceHTML(order, user) {
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">#</th>
-                        <th style="${hasHsn ? "width: 35%;" : "width: 45%;"}">Product</th>
-                        ${hasHsn ? '<th style="width: 12%;">HSN Code</th>' : ""}
-                        <th style="width: 10%;">Unit</th>
-                        <th style="width: 10%;">Qty</th>
-                        <th style="width: 15%;">Unit Price</th>
-                        <th style="width: 15%;">Total</th>
+                        <th style="width: 4%;">#</th>
+                        <th style="${hasHsn ? "width: 25%;" : "width: 30%;"}">Product</th>
+                        ${hasHsn ? '<th style="width: 10%;">HSN Code</th>' : ""}
+                        <th style="width: 6%;">Unit</th>
+                        <th style="width: 6%;">Qty</th>
+                        <th style="width: 11%;">Unit Price</th>
+                        ${hasGst ? '<th style="width: 6%;">CGST%</th><th style="width: 9%;">CGST Amt</th><th style="width: 6%;">SGST%</th><th style="width: 9%;">SGST Amt</th>' : ""}
+                        <th style="width: 11%;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -726,12 +734,8 @@ function generateInvoiceHTML(order, user) {
                     </div>
                     ${hasGst ? `
                     <div class="summary-row">
-                        <div class="summary-label">CGST @ ${cgstRate}%</div>
-                        <div class="summary-value">&#8377; ${cgstAmount.toFixed(2)}</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">SGST @ ${sgstRate}%</div>
-                        <div class="summary-value">&#8377; ${sgstAmount.toFixed(2)}</div>
+                        <div class="summary-label">Total Tax (GST)</div>
+                        <div class="summary-value">&#8377; ${(totalCgstAmount + totalSgstAmount).toFixed(2)}</div>
                     </div>` : `
                     <div class="summary-row">
                         <div class="summary-label" style="font-size: 9pt; color: #666;">No tax applied</div>
@@ -755,7 +759,7 @@ function generateInvoiceHTML(order, user) {
         <div class="amount-words-row">
             <div class="label">Amount Chargeable (in words):</div>
             <div class="value">${escapeHtml(amountInWords)}</div>
-            ${hasGst ? `<div class="label" style="margin-top:6px;">Tax Amount (in words): <strong>${escapeHtml(numberToWords(cgstAmount + sgstAmount))}</strong></div>` : ""}
+            ${hasGst ? `<div class="label" style="margin-top:6px;">Tax Amount (in words): <strong>${escapeHtml(numberToWords(totalCgstAmount + totalSgstAmount))}</strong></div>` : ""}
         </div>
 
         <!-- Footer: Payment Info and Notes -->
