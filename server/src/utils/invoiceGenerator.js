@@ -163,7 +163,6 @@ function generateInvoiceHTML(order, user) {
                         <td>Nos</td>
                         <td>${item.quantity}</td>
                         <td>&#8377; ${item.price.toFixed(2)}</td>
-                        ${hasGst ? `<td>${cgstRate > 0 ? cgstRate + "%" : "-"}</td><td>${cgstRate > 0 ? "&#8377; " + cgstAmt.toFixed(2) : "-"}</td><td>${sgstRate > 0 ? sgstRate + "%" : "-"}</td><td>${sgstRate > 0 ? "&#8377; " + sgstAmt.toFixed(2) : "-"}</td>` : ""}
                         <td>&#8377; ${itemTotal}</td>
                     </tr>`;
     })
@@ -714,7 +713,6 @@ function generateInvoiceHTML(order, user) {
                         <th style="width: 6%;">Unit</th>
                         <th style="width: 6%;">Qty</th>
                         <th style="width: 11%;">Unit Price</th>
-                        ${hasGst ? '<th style="width: 6%;">CGST%</th><th style="width: 9%;">CGST Amt</th><th style="width: 6%;">SGST%</th><th style="width: 9%;">SGST Amt</th>' : ""}
                         <th style="width: 11%;">Total</th>
                     </tr>
                 </thead>
@@ -734,8 +732,12 @@ function generateInvoiceHTML(order, user) {
                     </div>
                     ${hasGst ? `
                     <div class="summary-row">
-                        <div class="summary-label">Total Tax (GST)</div>
-                        <div class="summary-value">&#8377; ${(totalCgstAmount + totalSgstAmount).toFixed(2)}</div>
+                        <div class="summary-label">TAX (CGST)</div>
+                        <div class="summary-value">&#8377; ${totalCgstAmount.toFixed(2)}</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">TAX (SGST)</div>
+                        <div class="summary-value">&#8377; ${totalSgstAmount.toFixed(2)}</div>
                     </div>` : `
                     <div class="summary-row">
                         <div class="summary-label" style="font-size: 9pt; color: #666;">No tax applied</div>
