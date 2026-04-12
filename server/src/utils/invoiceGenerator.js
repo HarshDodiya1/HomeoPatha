@@ -152,7 +152,7 @@ function generateInvoiceHTML(order, user) {
       const sgstRate = item.sgstRate || 0;
       const cgstAmt = base * cgstRate / 100;
       const sgstAmt = base * sgstRate / 100;
-      const itemTotal = (base + cgstAmt + sgstAmt).toFixed(2);
+      const itemTotal = base.toFixed(2);
       return `
                     <tr>
                         <td>${index + 1}</td>
