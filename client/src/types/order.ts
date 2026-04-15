@@ -17,6 +17,7 @@ export interface ShippingAddress {
 
 export interface Order {
   _id: string
+  invoiceNumber?: string
   userId: {
     _id: string
     fullName: string
@@ -34,7 +35,7 @@ export interface Order {
   }
   shippingCharges: number
   totalAmount: number
-  orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+  orderStatus: 'pending' | 'payment_failed' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   estimatedDelivery?: string
   deliveredAt?: string
   adminNotes?: string

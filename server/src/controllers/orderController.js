@@ -108,7 +108,7 @@ const createOrderForCheckout = async (req, res) => {
         code: "ORDER_CREATED",
         data: { 
           orderId: order._id,
-          orderNumber: order._id.toString().slice(-8).toUpperCase(),
+          orderNumber: order.invoiceNumber,
         },
       });
     }
@@ -259,7 +259,7 @@ const verifyOrderPayment = async (req, res) => {
       code: "PAYMENT_VERIFIED",
       data: {
         orderId: order._id,
-        orderNumber: order._id.toString().slice(-8).toUpperCase(),
+        orderNumber: order.invoiceNumber,
         orderStatus: order.orderStatus,
         paymentStatus: order.paymentStatus,
       },

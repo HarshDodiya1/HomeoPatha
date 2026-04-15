@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Counter = require("./Counter.js");
 
 const orderItemSchema = new mongoose.Schema({
   productId: {
@@ -61,6 +62,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: [
         "pending",
+        "payment_failed",
         "confirmed",
         "processing",
         "shipped",
@@ -78,5 +80,28 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+async function generateInvoiceNumber() {
+  const counter = await Counter.findOneAndUpdate(
+    { _id: "invoiceNumber" },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true },
+  );
+
+  return `HP-${String(counter.seq).padStart(6, "0")}`;
+}
+
+orderSchema.pre("validate", async function assignInvoiceNumber(next) {
+  if (this.invoiceNumber) {
+    return next();
+  }
+
+  try {
+    this.invoiceNumber = await generateInvoiceNumber();
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+});
 
 module.exports = mongoose.model("Order", orderSchema);

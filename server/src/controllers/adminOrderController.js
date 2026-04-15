@@ -1,18 +1,8 @@
 const Order = require("../models/Order.js");
 const Product = require("../models/Product.js");
 const User = require("../models/User.js");
-const Counter = require("../models/Counter.js");
 const bcryptjs = require("bcryptjs");
 const { generateInvoiceHTML } = require("../utils/invoiceGenerator.js");
-
-async function generateInvoiceNumber() {
-  const counter = await Counter.findOneAndUpdate(
-    { _id: "invoiceNumber" },
-    { $inc: { seq: 1 } },
-    { new: true, upsert: true }
-  );
-  return `HP-${String(counter.seq).padStart(6, "0")}`;
-}
 
 /**
  * @desc Get all orders (Admin)
@@ -386,11 +376,8 @@ const createManualOrder = async (req, res) => {
       return sum + itemSubtotal + cgst + sgst;
     }, 0) + shippingCharges;
 
-    const invoiceNumber = await generateInvoiceNumber();
-
     // Create order
     const order = await Order.create({
-      invoiceNumber,
       userId: user._id,
       orderItems: orderItems.map(item => ({
         productId: item.productId || null,

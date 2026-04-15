@@ -149,6 +149,12 @@ function ProfilePageContent() {
 
   const getStatusConfig = (status: string) => {
     switch (status) {
+      case 'payment_failed':
+        return { 
+          color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+          icon: XCircle,
+          bgGradient: 'from-red-500/10 to-red-600/5'
+        }
       case 'confirmed':
         return { 
           color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',

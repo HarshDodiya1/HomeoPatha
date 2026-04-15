@@ -24,6 +24,8 @@ import { toast } from "sonner"
 
 function getStatusColor(status: string) {
   switch (status) {
+    case 'payment_failed':
+      return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
     case 'confirmed':
       return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
     case 'pending':
@@ -290,6 +292,7 @@ export function OrdersTable() {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="payment_failed">Payment Failed</SelectItem>
                 <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="processing">Processing</SelectItem>
                 <SelectItem value="shipped">Shipped</SelectItem>
@@ -547,6 +550,7 @@ export function OrdersTable() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="payment_failed">Payment Failed</SelectItem>
                   <SelectItem value="confirmed">Confirmed</SelectItem>
                   <SelectItem value="processing">Processing</SelectItem>
                   <SelectItem value="shipped">Shipped</SelectItem>

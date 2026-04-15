@@ -17,6 +17,7 @@ export interface UserProfile {
 
 export interface Order {
   _id: string;
+  invoiceNumber?: string;
   userId: string;
   orderItems: Array<{
     productId: string;
@@ -33,7 +34,7 @@ export interface Order {
     pincode: string;
   };
   totalAmount: number;
-  orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  orderStatus: 'pending' | 'payment_failed' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
   createdAt: string;
   updatedAt: string;
