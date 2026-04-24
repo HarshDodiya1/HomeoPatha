@@ -395,35 +395,19 @@ export function LogoLoader({ onComplete, duration = 3000 }: LogoLoaderProps) {
             </motion.span>
           </motion.div>
 
-          {/* Decorative animated lines at bottom */}
+          {/* Bottom Attribution (WhatsApp / Meta style) */}
           <motion.div
-            className="absolute bottom-16 md:bottom-20 left-1/2 -translate-x-1/2 flex gap-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.4, duration: 0.5 }}
+            className="absolute bottom-8 left-0 right-0 flex flex-col items-center justify-center gap-1 z-20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.8 }}
           >
-            {[0, 1, 2, 3, 4].map((i) => (
-              <motion.div
-                key={i}
-                className="w-8 md:w-12 h-1 rounded-full"
-                style={{
-                  background:
-                    i === 2
-                      ? "linear-gradient(90deg, #22c55e, #16a34a)"
-                      : "rgba(34, 197, 94, 0.2)",
-                }}
-                animate={{
-                  scaleX: i === 2 ? [1, 1.5, 1] : [1, 0.8, 1],
-                  opacity: i === 2 ? [0.7, 1, 0.7] : [0.3, 0.5, 0.3],
-                }}
-                transition={{
-                  duration: 1.5,
-                  delay: i * 0.15,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
+            <span className="text-xs sm:text-sm font-bold text-green-900/80 uppercase tracking-[0.25em]">
+              from
+            </span>
+            <span className="text-base sm:text-lg font-extrabold text-green-950 drop-shadow-sm tracking-wide">
+              mahadev and sons trading company.
+            </span>
           </motion.div>
 
           {/* Floating leaf decorations */}

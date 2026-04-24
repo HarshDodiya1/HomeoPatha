@@ -126,6 +126,13 @@ export function Footer() {
                 </div>
               </div>
             </div>
+
+            {/* Powered By inside Green Panel */}
+            <div className="mt-12 pt-6 border-t border-green-500/30 flex flex-col items-center justify-center">
+              <p className="text-green-100/90 text-base md:text-lg italic font-semibold tracking-wide">
+                Powered by mahadev and sons trading company.
+              </p>
+            </div>
           </div>
 
           {/* Bottom Bar */}
@@ -137,9 +144,11 @@ export function Footer() {
               <p className="text-muted-foreground text-sm">
                 © {new Date().getFullYear()} The HomeoPatha. All rights reserved.
               </p>
-              <p className="text-muted-foreground text-sm flex items-center gap-1.5">
-                Made with <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" /> for your wellness
-              </p>
+              <div className="flex flex-col items-center gap-1 md:items-end">
+                <p className="text-muted-foreground text-sm flex items-center gap-1.5">
+                  Made with <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" /> for your wellness
+                </p>
+              </div>
             </div>
           </div>
         </div>
