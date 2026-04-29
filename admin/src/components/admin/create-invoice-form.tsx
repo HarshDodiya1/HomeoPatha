@@ -59,6 +59,9 @@ export function CreateInvoiceForm() {
   const [branch, setBranch] = useState("")
   const [gstin, setGstin] = useState("")
 
+  const today = new Date().toISOString().split("T")[0]
+  const [invoiceDate, setInvoiceDate] = useState(today)
+
   const [paymentMethod, setPaymentMethod] = useState("cod")
   const [paymentStatus, setPaymentStatus] = useState("completed")
   const [orderStatus, setOrderStatus] = useState("confirmed")
@@ -144,6 +147,7 @@ export function CreateInvoiceForm() {
         orderStatus,
         adminNotes,
         estimatedDelivery: estimatedDelivery || undefined,
+        invoiceDate: invoiceDate || undefined,
         shippingCharges,
       })
 
@@ -352,6 +356,17 @@ export function CreateInvoiceForm() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">
+                  Invoice Date <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={invoiceDate}
+                  onChange={(e) => setInvoiceDate(e.target.value)}
+                  required
+                />
+              </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Estimated Delivery</Label>
                 <Input

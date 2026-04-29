@@ -332,6 +332,7 @@ const createManualOrder = async (req, res) => {
       orderStatus,
       adminNotes,
       estimatedDelivery,
+      invoiceDate,
       shippingCharges: reqShippingCharges,
     } = req.body;
 
@@ -411,6 +412,7 @@ const createManualOrder = async (req, res) => {
       adminNotes: adminNotes || "",
       estimatedDelivery: estimatedDelivery || null,
       confirmedAt: new Date(),
+      invoiceDate: invoiceDate ? new Date(invoiceDate) : undefined,
     });
 
     return res.status(201).json({

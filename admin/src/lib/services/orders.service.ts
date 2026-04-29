@@ -34,6 +34,7 @@ interface CreateManualOrderRequest {
   orderStatus?: string
   adminNotes?: string
   estimatedDelivery?: string
+  invoiceDate?: string
   shippingCharges?: number
 }
 

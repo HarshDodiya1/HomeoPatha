@@ -122,7 +122,7 @@ function escapeHtml(str) {
  */
 function generateInvoiceHTML(order, user) {
   const invoiceNumber = order.invoiceNumber || `HP-${order._id.toString().slice(-8).toUpperCase()}`;
-  const invoiceDate = formatDate(order.createdAt);
+  const invoiceDate = formatDate(order.invoiceDate || order.createdAt);
   const shippingCharges = order.shippingCharges || 0;
   const totalAmount = order.totalAmount;
   const itemsSubtotal = order.orderItems.reduce((s, i) => s + i.price * i.quantity, 0);

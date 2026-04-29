@@ -71,6 +71,7 @@ const orderSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
+    invoiceDate: { type: Date },
     estimatedDelivery: { type: Date },
     deliveredAt: { type: Date },
     adminNotes: { type: String },
