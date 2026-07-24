@@ -4,7 +4,7 @@
  */
 
 import apiClient from '../api/client';
-import { CLOUDINARY_CONFIG } from '../api/config';
+import { uploadImageToR2, uploadMultipleImagesToR2 } from './upload.service';
 import {
   HeroImage,
   StickyBanner,
@@ -108,31 +108,16 @@ export const siteSettingsService = {
   // ==================== IMAGE UPLOAD ====================
 
   /**
-   * Upload image to Cloudinary
+   * Upload image to R2 (via backend)
    */
   async uploadImage(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'ml_default');
-
-    const response = await fetch(CLOUDINARY_CONFIG.uploadUrl, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to upload image');
-    }
-
-    const data = await response.json();
-    return data.secure_url;
+    return uploadImageToR2(file, 'hero');
   },
 
   /**
-   * Upload multiple images to Cloudinary
+   * Upload multiple images to R2 (via backend)
    */
   async uploadMultipleImages(files: File[]): Promise<string[]> {
-    const uploadPromises = files.map(file => this.uploadImage(file));
-    return Promise.all(uploadPromises);
+    return uploadMultipleImagesToR2(files, 'hero');
   },
 };

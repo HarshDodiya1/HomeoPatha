@@ -7,13 +7,15 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed": "node seed.js",
-    "clean": "node clean.js"
+    "clean": "node clean.js",
+    "audit:images": "node scripts/auditImageStorage.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1090.0",
     "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.7",
@@ -22,6 +24,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.20.0",
+    "multer": "^2.2.0",
     "nodemailer": "^7.0.10",
     "razorpay": "^2.9.6",
     "swagger-jsdoc": "^6.2.8",

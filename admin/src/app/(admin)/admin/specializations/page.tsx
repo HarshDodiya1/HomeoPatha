@@ -36,7 +36,7 @@ import { Loader2, Search, Plus, Edit, Trash2, HelpCircle, GripVertical, Upload, 
 import { toast } from "sonner"
 import { useSpecializationsStore } from "@/store/specializations.store"
 import { Specialization, AppointmentQuestion } from "@/types/specialization"
-import { CLOUDINARY_CONFIG } from "@/lib/api/config"
+import { uploadImageToR2 } from "@/lib/services/upload.service"
 
 const questionTypes = [
   { value: "text", label: "Text Input" },
@@ -143,21 +143,8 @@ export default function SpecializationsPage() {
 
     setIsUploadingImage(true)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset)
-
-      const response = await fetch(CLOUDINARY_CONFIG.uploadUrl, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image')
-      }
-
-      const data = await response.json()
-      setSpecForm({ ...specForm, imageUrl: data.secure_url })
+      const url = await uploadImageToR2(file, 'specializations')
+      setSpecForm({ ...specForm, imageUrl: url })
       toast.success('Image uploaded successfully')
     } catch (error) {
       console.error('Image upload error:', error)

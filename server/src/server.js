@@ -61,6 +61,7 @@ const adminFeedbackRoutes = require("./routes/adminRoutes/feedbackRoutes.js");
 const siteSettingsRoutes = require("./routes/siteSettingsRoutes.js");
 const blogRoutes = require("./routes/blogRoutes.js");
 const feedbackRoutes = require("./routes/feedbackRoutes.js");
+const uploadRoutes = require("./routes/uploadRoutes.js");
 
 // Swagger Documentation Route
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
@@ -121,6 +122,7 @@ app.use("/api/admin/feedbacks", adminFeedbackRoutes);
 app.use("/api/site-settings", siteSettingsRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
+app.use("/api/upload", uploadRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

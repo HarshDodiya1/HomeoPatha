@@ -92,11 +92,3 @@ export interface ProductFilters {
   sortBy?: 'createdAt' | 'title' | 'currentPrice' | 'rating';
   sortOrder?: 'asc' | 'desc';
 }
-
-export interface CloudinaryUploadResponse {
-  secure_url: string;
-  public_id: string;
-  format: string;
-  width: number;
-  height: number;
-}

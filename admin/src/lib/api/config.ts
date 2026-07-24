@@ -42,12 +42,6 @@ export const API_ENDPOINTS = {
   },
 } as const;
 
-// Cloudinary configuration
-export const CLOUDINARY_CONFIG = {
-  uploadUrl: 'https://api.cloudinary.com/v1_1/dxwdyse9a/image/upload',
-  uploadPreset: 'ml_default', // You may need to set this in Cloudinary dashboard
-} as const;
-
 // Token storage keys
 export const STORAGE_KEYS = {
   accessToken: 'homeopatha_access_token',

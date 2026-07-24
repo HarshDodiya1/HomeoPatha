@@ -4,7 +4,7 @@
  */
 
 import apiClient from '../api/client';
-import { CLOUDINARY_CONFIG } from '../api/config';
+import { uploadImageToR2 } from './upload.service';
 import {
   Blog,
   BlogsResponse,
@@ -72,23 +72,9 @@ export const blogService = {
   },
 
   /**
-   * Upload image to Cloudinary
+   * Upload image to R2 (via backend)
    */
   async uploadImage(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'ml_default');
-
-    const response = await fetch(CLOUDINARY_CONFIG.uploadUrl, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to upload image');
-    }
-
-    const data = await response.json();
-    return data.secure_url;
+    return uploadImageToR2(file, 'blogs');
   },
 };

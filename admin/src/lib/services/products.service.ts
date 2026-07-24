@@ -4,7 +4,8 @@
  */
 
 import apiClient from '../api/client';
-import { API_ENDPOINTS, CLOUDINARY_CONFIG } from '../api/config';
+import { API_ENDPOINTS } from '../api/config';
+import { uploadImageToR2, uploadMultipleImagesToR2 } from './upload.service';
 import {
   Product,
   ProductsResponse,
@@ -12,7 +13,6 @@ import {
   CreateProductRequest,
   UpdateProductRequest,
   ProductFilters,
-  CloudinaryUploadResponse,
 } from '@/types/product';
 
 export const productService = {
@@ -67,31 +67,16 @@ export const productService = {
   },
 
   /**
-   * Upload image to Cloudinary
+   * Upload image to R2 (via backend)
    */
   async uploadImage(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'ml_default');
-
-    const response = await fetch(CLOUDINARY_CONFIG.uploadUrl, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to upload image');
-    }
-
-    const data: CloudinaryUploadResponse = await response.json();
-    return data.secure_url;
+    return uploadImageToR2(file, 'products');
   },
 
   /**
-   * Upload multiple images to Cloudinary
+   * Upload multiple images to R2 (via backend)
    */
   async uploadMultipleImages(files: File[]): Promise<string[]> {
-    const uploadPromises = files.map(file => this.uploadImage(file));
-    return Promise.all(uploadPromises);
+    return uploadMultipleImagesToR2(files, 'products');
   },
 };
